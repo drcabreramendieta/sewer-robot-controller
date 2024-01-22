@@ -3,5 +3,5 @@ from Communication.domain.entities import WheelsModule
 
 class RobotLink(ABC):
     @abstractmethod
-    def send(self, wheelsModule:WheelsModule, speed:int) -> None:
+    def send(self, wheelsModule:WheelsModule) -> None:
         pass

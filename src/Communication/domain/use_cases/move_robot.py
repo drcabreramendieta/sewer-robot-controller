@@ -22,5 +22,5 @@ class MoveRobot:
             left_wheels = WheelsModule('L', 'S', speed)
             right_wheels = WheelsModule('R', 'S', speed)
 
-        self.link.send(left_wheels, speed)
-        self.link.send(right_wheels, speed)
+        self.link.send(left_wheels)
+        self.link.send(right_wheels)
