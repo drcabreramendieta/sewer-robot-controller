@@ -5,7 +5,8 @@ name = "pypi"
 
 [packages]
 dependency-injector = "*"
-python-can = {version = "*", extras = ["pcan"], , extras = ["serial"]}
+
+
 
 [dev-packages]
 
