@@ -4,6 +4,7 @@ from Communication.domain.entities import WheelsModule
 class MoveRobot:
     def __init__(self, link:RobotLink) -> None:
         self.link = link
+        
 
     def run(self, movement:str, speed:int):
         if movement == 'F':
@@ -22,5 +23,5 @@ class MoveRobot:
             left_wheels = WheelsModule('L', 'S', speed)
             right_wheels = WheelsModule('R', 'S', speed)
 
-        self.link.send(left_wheels)
-        self.link.send(right_wheels)
+        self.link.send(left_wheels,right_wheels)
+        
