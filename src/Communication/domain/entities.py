@@ -16,3 +16,9 @@ class Telemetry:
     tilt: int
     temperature: int
     wheels: list[WheelInformation]
+
+@dataclass
+class TelemetryMessage:
+    message_type: str
+    variables: dict
+    timestamp : float

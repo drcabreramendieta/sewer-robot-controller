@@ -7,7 +7,7 @@ import can
 
 class CommunicationModuleContainer(containers.DeclarativeContainer):
     configuration = providers.Configuration()
-    bus = providers.Singleton(can.interface.Bus, channel='test', interface='virtual')
+    bus = providers.Singleton(can.interface.Bus, device_id=0, interface='pcan', bitrate=1000000)
     robot_link = providers.Singleton(CANRobotLink, bus=bus)
     move_robot_use_case = providers.Factory(MoveRobot, link=robot_link)
     

@@ -1,5 +1,5 @@
 from Communication.ports.observer import TelemetryObserver
-from Communication.domain.entities import Telemetry
+from Communication.domain.entities import TelemetryMessage
 from Communication.ports.link import RobotLink
 
 class NotifyTelemetry:
@@ -8,7 +8,7 @@ class NotifyTelemetry:
         self.link = link
         link.callback_setup(self._notify)
 
-    def _notify(self, telemetry:Telemetry) -> None:
+    def _notify(self, telemetry:TelemetryMessage) -> None:
         for observer in self.telemetry_observers:
             observer.on_telemetry_ready(telemetry=telemetry)
 
