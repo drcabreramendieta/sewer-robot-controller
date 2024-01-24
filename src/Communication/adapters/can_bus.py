@@ -86,7 +86,7 @@ class CANRobotLink(RobotLink):
         self.notifier = can.Notifier(bus=self.bus,listeners=[self._can_message_handler],timeout=2)
 
     def stop_listening(self) -> None:
-        self.notifier.bus.shutdown()
+        self.bus.shutdown()
 
     def _can_message_handler(self,message:can.Message):
         print(message)
