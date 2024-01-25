@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c3ed91859f613baf0bd6b469c6a2f9f221993a5a82318df51841765aea5b2090"
+            "sha256": "39aa4949414a0622d3bcc527eeda907b7f805d3dcfe9e78115f78b7828c1a8e1"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -154,6 +154,14 @@
             "markers": "platform_system != 'Windows'",
             "version": "==1.0.7"
         },
+        "multipledispatch": {
+            "hashes": [
+                "sha256:0c53cd8b077546da4e48869f49b13164bebafd0c2a5afceb6bb6a316e7fb46e4",
+                "sha256:5c839915465c68206c3e9c473357908216c28383b425361e5d144594bf85a7e0"
+            ],
+            "index": "pypi",
+            "version": "==1.0.0"
+        },
         "packaging": {
             "hashes": [
                 "sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5",
@@ -170,6 +178,7 @@
                 "sha256:9f158aa29d205142c56f0f35d07784b8df0be28378d20a97bcda8bd64ffd0379"
             ],
             "index": "pypi",
+            "markers": "python_full_version >= '3.6.1'",
             "version": "==6.6.1"
         },
         "pyqt6-qt6": {
@@ -214,6 +223,7 @@
                 "sha256:eebb68db388b8c997fc7c92dce311656946c968ff407706f5b5f9cc671879479"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.8'",
             "version": "==4.3.1"
         },
         "six": {

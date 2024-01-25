@@ -2,6 +2,7 @@ from Communication.ports.link import RobotLink
 from Communication.domain.entities import WheelsModule, TelemetryMessage, TiltModule, PanModule, FocusModule
 from typing import Callable
 import can
+from multipledispatch import dispatch
 
 class CANRobotLink(RobotLink):
     def __init__(self, bus:can.BusABC) -> None:
@@ -9,6 +10,7 @@ class CANRobotLink(RobotLink):
         self.notifier = None
         self.bus = bus
 
+    @dispatch(WheelsModule, WheelsModule)
     def send(self, wheelsModuleLeft:WheelsModule, wheelsModuleRight:WheelsModule) -> None:
         # Get the speed message to the wheels modules considering the side. There are two ranges of values 
         # depending on the direction of rotation. The speed values go from -2048 to 2047, with 0 being the change
@@ -54,12 +56,15 @@ class CANRobotLink(RobotLink):
             print(f"Error CAN: {e}")
 
     # TODO: Implement specific behaviors
+    @dispatch(TiltModule)
     def send(self, module:TiltModule) -> None:
         print(module)
 
+    @dispatch(PanModule)
     def send(self, module:PanModule) -> None:
         print(module)
 
+    @dispatch(FocusModule)
     def send(self, module:FocusModule) -> None:
         print(module)
 
