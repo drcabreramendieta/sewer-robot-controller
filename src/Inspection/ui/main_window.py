@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
         # Connect buttons to command_service methods
         self.btn_forward.clicked.connect(lambda: self.robot_controller.move_forward())
         self.btn_backward.clicked.connect(lambda: self.robot_controller.move_backward())
-        self.btn_left.clicked.connect(lambda: self.robot_controller.rotate_left)
+        self.btn_left.clicked.connect(lambda: self.robot_controller.rotate_left())
         self.btn_right.clicked.connect(lambda: self.robot_controller.rotate_right())
 
         layout.addWidget(self.btn_forward)

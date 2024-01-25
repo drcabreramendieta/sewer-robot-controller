@@ -48,7 +48,7 @@ class CANRobotLink(RobotLink):
             message1 = can.Message(arbitration_id=0x0202, data=m1, is_extended_id=False)
             message2 = can.Message(arbitration_id=0x0203, data=m2, is_extended_id=False)
             self.bus.send(message1)
-            self.bus.send.send(message2)
+            self.bus.send(message2)
 
         except can.CanError as e:
             print(f"Error CAN: {e}")
@@ -60,8 +60,9 @@ class CANRobotLink(RobotLink):
         self.notifier = can.Notifier(bus=self.bus,listeners=[self._can_message_handler],timeout=2)
 
     def stop_listening(self) -> None:
-        self.notifier.stop(4)
-        self.notifier.bus.shutdown()
+        if self.notifier:
+            self.notifier.stop(4)
+        self.bus.shutdown()
 
     def _can_message_handler(self,message:can.Message):
         telemetry_message = self._processing_message(message)
