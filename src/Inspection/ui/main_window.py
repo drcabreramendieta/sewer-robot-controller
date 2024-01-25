@@ -20,10 +20,15 @@ class MainWindow(QMainWindow):
         self.btn_right = QPushButton('Right')
 
         # Connect buttons to command_service methods
-        self.btn_forward.clicked.connect(lambda: self.robot_controller.move_forward())
-        self.btn_backward.clicked.connect(lambda: self.robot_controller.move_backward())
-        self.btn_left.clicked.connect(lambda: self.robot_controller.rotate_left())
-        self.btn_right.clicked.connect(lambda: self.robot_controller.rotate_right())
+        self.btn_forward.pressed.connect(lambda: self.robot_controller.move_forward())
+        self.btn_backward.pressed.connect(lambda: self.robot_controller.move_backward())
+        self.btn_left.pressed.connect(lambda: self.robot_controller.rotate_left())
+        self.btn_right.pressed.connect(lambda: self.robot_controller.rotate_right())
+
+        self.btn_forward.released.connect(lambda: self.robot_controller.stop())
+        self.btn_backward.released.connect(lambda: self.robot_controller.stop())
+        self.btn_left.released.connect(lambda: self.robot_controller.stop())
+        self.btn_right.released.connect(lambda: self.robot_controller.stop())
 
         layout.addWidget(self.btn_forward)
         layout.addWidget(self.btn_backward)
