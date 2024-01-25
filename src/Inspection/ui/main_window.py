@@ -30,4 +30,6 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.btn_left)
         layout.addWidget(self.btn_right)
 
-        self.setLayout(layout)
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
