@@ -7,6 +7,9 @@ import can
 
 from Inspection.ui.main_window import MainWindow
 from Inspection.adapters.gidtec_robot_controller import GidtecRobotController
+from Inspection.adapters.gidtec_camera_controller import GidtecCameraController 
+from Communication.domain.use_cases.control_camera import ControlCamera
+
 
 class CommunicationModuleContainer(containers.DeclarativeContainer):
     configuration = providers.Configuration()
@@ -15,7 +18,9 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
     robot_link = providers.Singleton(CANRobotLink, bus=bus)
     move_robot_use_case = providers.Factory(MoveRobot, link=robot_link)
     robot_controller = providers.Singleton(GidtecRobotController, communication_controller=move_robot_use_case)
-    main_window = providers.Singleton(MainWindow, robot_controller=robot_controller)
+    control_camera_use_case = providers.Factory(ControlCamera, robot_link=robot_link)
+    camera_controller = providers.Singleton(GidtecCameraController, control_camera=control_camera_use_case)
+    main_window = providers.Singleton(MainWindow, robot_controller=robot_controller,camera_controller=camera_controller)
 
     telemetry_observer = providers.Factory(TestTelemetryObserver)
     list_observers = providers.List(telemetry_observer, telemetry_observer, telemetry_observer)

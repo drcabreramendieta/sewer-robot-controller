@@ -1,12 +1,13 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QWidget
 from Inspection.ports.robot_controller import RobotController
+from Inspection.ports.camera_controller import CameraController 
 
 class MainWindow(QMainWindow):
-    def __init__(self, robot_controller:RobotController) -> None:
+    def __init__(self, robot_controller:RobotController, camera_controller:CameraController) -> None:
         super().__init__()
         self.robot_controller = robot_controller
-
+        self.camera_controller = camera_controller
         self.init_ui()
 
     def init_ui(self):
@@ -19,6 +20,14 @@ class MainWindow(QMainWindow):
         self.btn_left = QPushButton('Left')
         self.btn_right = QPushButton('Right')
 
+        self.btn_tilt_down = QPushButton('Tilt Down')
+        self.btn_tilt_up = QPushButton('Tilt Up')
+        self.btn_pan_left = QPushButton('Pan Left')
+        self.btn_pan_right = QPushButton('Pan Right')
+        self.btn_focus_in = QPushButton('Focus In')
+        self.btn_focus_out = QPushButton('Focus Out')
+        
+
         # Connect buttons to command_service methods
         self.btn_forward.pressed.connect(lambda: self.robot_controller.move_forward())
         self.btn_backward.pressed.connect(lambda: self.robot_controller.move_backward())
@@ -30,10 +39,24 @@ class MainWindow(QMainWindow):
         self.btn_left.released.connect(lambda: self.robot_controller.stop())
         self.btn_right.released.connect(lambda: self.robot_controller.stop())
 
+        self.btn_tilt_down.pressed.connect(lambda: self.camera_controller.tilt_down())
+        self.btn_tilt_up.pressed.connect(lambda: self.camera_controller.tilt_up())
+        self.btn_pan_left.pressed.connect(lambda: self.camera_controller.pan_left())
+        self.btn_pan_right.pressed.connect(lambda: self.camera_controller.pan_right())
+        self.btn_focus_in.pressed.connect(lambda: self.camera_controller.focus_in())
+        self.btn_focus_out.pressed.connect(lambda: self.camera_controller.focus_out())
+                                          
         layout.addWidget(self.btn_forward)
         layout.addWidget(self.btn_backward)
         layout.addWidget(self.btn_left)
         layout.addWidget(self.btn_right)
+        
+        layout.addWidget(self.btn_tilt_down)
+        layout.addWidget(self.btn_tilt_up)
+        layout.addWidget(self.btn_pan_left)
+        layout.addWidget(self.btn_pan_right)
+        layout.addWidget(self.btn_focus_in)
+        layout.addWidget(self.btn_focus_out)
 
         container = QWidget()
         container.setLayout(layout)
