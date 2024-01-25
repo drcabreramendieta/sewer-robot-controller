@@ -1,10 +1,10 @@
 from Communication.ports.link import RobotLink
-from Communication.domain.entities import WheelsModule, Telemetry, WheelInformation, TelemetryMessage
+from Communication.domain.entities import WheelsModule, TelemetryMessage, TiltModule, PanModule, FocusModule
 from typing import Callable
 import can
 
 class CANRobotLink(RobotLink):
-    def __init__(self, bus:can.Bus) -> None:
+    def __init__(self, bus:can.BusABC) -> None:
         self.callback = None
         self.notifier = None
         self.bus = bus
@@ -53,7 +53,18 @@ class CANRobotLink(RobotLink):
         except can.CanError as e:
             print(f"Error CAN: {e}")
 
-    def callback_setup(self, callback:Callable[[Telemetry], None]) -> None:
+    # TODO: Implement specific behaviors
+    def send(self, module:TiltModule) -> None:
+        print(module)
+
+    def send(self, module:PanModule) -> None:
+        print(module)
+
+    def send(self, module:FocusModule) -> None:
+        print(module)
+
+    
+    def callback_setup(self, callback:Callable[[TelemetryMessage], None]) -> None:
         self.callback = callback
 
     def start_listening(self) -> None:

@@ -7,18 +7,19 @@ class WheelsModule:
     speed: int
 
 @dataclass
-class WheelInformation:
-    speed: int
-    temperature: int
-
-@dataclass
-class Telemetry:
-    tilt: int
-    temperature: int
-    wheels: list[WheelInformation]
-
-@dataclass
 class TelemetryMessage:
     message_type: str
     variables: dict
     timestamp : float
+
+@dataclass
+class TiltModule:
+    direction: str
+
+@dataclass
+class PanModule:
+    direction: str
+
+@dataclass
+class FocusModule:
+    direction: str
