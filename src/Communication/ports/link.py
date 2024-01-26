@@ -1,22 +1,21 @@
 from abc import ABC, abstractmethod
-from Communication.domain.entities import WheelsModule, TelemetryMessage, TiltModule, PanModule, FocusModule
+from Communication.domain.entities import WheelsModule, TelemetryMessage, CameraStateModule
 from typing import Callable
+from multipledispatch import dispatch
 
 class RobotLink(ABC):
+    @abstractmethod
+    def initialize_camera(self, camera_state:CameraStateModule) -> bool:
+        pass
+
+    @dispatch(WheelsModule, WheelsModule)
     @abstractmethod
     def send(self, wheelsModuleLeft:WheelsModule, wheelsModuleRight:WheelsModule) -> None:
         pass
     
+    @dispatch(CameraStateModule)
     @abstractmethod
-    def send(self, module:TiltModule) -> None:
-        pass
-
-    @abstractmethod
-    def send(self, module:PanModule) -> None:
-        pass
-
-    @abstractmethod
-    def send(self, module:FocusModule) -> None:
+    def send(self, module:CameraStateModule) -> None:
         pass
 
     @abstractmethod

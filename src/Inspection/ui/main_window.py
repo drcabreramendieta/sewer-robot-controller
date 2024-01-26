@@ -26,6 +26,7 @@ class MainWindow(QMainWindow):
         self.btn_pan_right = QPushButton('Pan Right')
         self.btn_focus_in = QPushButton('Focus In')
         self.btn_focus_out = QPushButton('Focus Out')
+        self.btn_init_camera = QPushButton('Initialize Camera')
         
 
         # Connect buttons to command_service methods
@@ -45,6 +46,15 @@ class MainWindow(QMainWindow):
         self.btn_pan_right.pressed.connect(lambda: self.camera_controller.pan_right())
         self.btn_focus_in.pressed.connect(lambda: self.camera_controller.focus_in())
         self.btn_focus_out.pressed.connect(lambda: self.camera_controller.focus_out())
+
+        self.btn_init_camera.clicked.connect(lambda: self.camera_controller.init_camera())
+
+        self.btn_tilt_up.released.connect(lambda: self.camera_controller.tilt_stop())
+        self.btn_tilt_down.released.connect(lambda: self.camera_controller.tilt_stop())
+        self.btn_pan_left.released.connect(lambda: self.camera_controller.pan_stop())
+        self.btn_pan_right.released.connect(lambda: self.camera_controller.pan_stop())
+        self.btn_focus_in.released.connect(lambda: self.camera_controller.focus_stop())
+        self.btn_focus_out.released.connect(lambda: self.camera_controller.focus_stop())
                                           
         layout.addWidget(self.btn_forward)
         layout.addWidget(self.btn_backward)
@@ -57,6 +67,8 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.btn_pan_right)
         layout.addWidget(self.btn_focus_in)
         layout.addWidget(self.btn_focus_out)
+
+        layout.addWidget(self.btn_init_camera)
 
         container = QWidget()
         container.setLayout(layout)

@@ -1,5 +1,5 @@
 from Communication.ports.link import RobotLink
-from Communication.domain.entities import WheelsModule, TelemetryMessage, TiltModule, PanModule, FocusModule
+from Communication.domain.entities import WheelsModule, TelemetryMessage, CameraStateModule
 from typing import Callable
 import can
 from multipledispatch import dispatch
@@ -56,16 +56,12 @@ class CANRobotLink(RobotLink):
             print(f"Error CAN: {e}")
 
     # TODO: Implement specific behaviors
-    @dispatch(TiltModule)
-    def send(self, module:TiltModule) -> None:
-        print(module)
+    def initialize_camera(self, camera_state:CameraStateModule) -> bool:
+        print(camera_state)
+        return True
 
-    @dispatch(PanModule)
-    def send(self, module:PanModule) -> None:
-        print(module)
-
-    @dispatch(FocusModule)
-    def send(self, module:FocusModule) -> None:
+    @dispatch(CameraStateModule)
+    def send(self, module:CameraStateModule) -> None:
         print(module)
 
     

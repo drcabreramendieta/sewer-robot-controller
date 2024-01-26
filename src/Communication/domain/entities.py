@@ -13,13 +13,10 @@ class TelemetryMessage:
     timestamp : float
 
 @dataclass
-class TiltModule:
-    direction: str
-
-@dataclass
-class PanModule:
-    direction: str
-
-@dataclass
-class FocusModule:
-    direction: str
+class CameraStateModule:
+    initialized: bool
+    tilt: str
+    pan: str
+    focus: str
+    zoom: str
+    light: int
