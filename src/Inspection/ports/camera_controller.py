@@ -38,6 +38,10 @@ class CameraController(ABC):
         pass
 
     @abstractmethod
+    def change_light(self, value:int) -> None:
+        pass
+
+    @abstractmethod
     def init_camera(self) -> None:
         pass
 

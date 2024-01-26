@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QWidget
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QWidget, QSlider
 from Inspection.ports.robot_controller import RobotController
-from Inspection.ports.camera_controller import CameraController 
+from Inspection.ports.camera_controller import CameraController
 
 class MainWindow(QMainWindow):
     def __init__(self, robot_controller:RobotController, camera_controller:CameraController) -> None:
@@ -26,6 +26,9 @@ class MainWindow(QMainWindow):
         self.btn_pan_right = QPushButton('Pan Right')
         self.btn_focus_in = QPushButton('Focus In')
         self.btn_focus_out = QPushButton('Focus Out')
+        self.slider_light = QSlider(Qt.Orientation.Horizontal)
+        self.slider_light.setMinimum(0)
+        self.slider_light.setMaximum(100)
         self.btn_init_camera = QPushButton('Initialize Camera')
         
 
@@ -55,6 +58,7 @@ class MainWindow(QMainWindow):
         self.btn_pan_right.released.connect(lambda: self.camera_controller.pan_stop())
         self.btn_focus_in.released.connect(lambda: self.camera_controller.focus_stop())
         self.btn_focus_out.released.connect(lambda: self.camera_controller.focus_stop())
+        self.slider_light.valueChanged.connect(lambda value: self.camera_controller.change_light(value))
                                           
         layout.addWidget(self.btn_forward)
         layout.addWidget(self.btn_backward)
@@ -67,6 +71,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.btn_pan_right)
         layout.addWidget(self.btn_focus_in)
         layout.addWidget(self.btn_focus_out)
+        layout.addWidget(self.slider_light)
 
         layout.addWidget(self.btn_init_camera)
 

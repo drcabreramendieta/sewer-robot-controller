@@ -33,5 +33,8 @@ class GidtecCameraController(CameraController):
     def focus_stop(self) -> None:
         self.control_camera.run('F', 'S')
 
+    def change_light(self, value:int) -> None:
+        self.control_camera.run('L', value)
+
     def init_camera(self) -> None:
         self.control_camera.run('I')
