@@ -8,10 +8,17 @@ def run():
     app = QApplication(sys.argv)
     container = CommunicationModuleContainer()
     robot_link = container.robot_link()
+    
+    notify_video_use_case = container.notify_video_use_case()
+    #notify_video_use_case.start_listening()
+
     main_window = container.main_window()
     main_window.show()
     code = app.exec()
+    #time.sleep(5)
     robot_link.stop_listening()
+    notify_video_use_case.stop_listening()
+    
     sys.exit(code)
     #move_robot_use_case = communication_module_container.move_robot_use_case()
     #move_robot_use_case.run('F', 100)

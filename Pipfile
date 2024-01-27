@@ -8,6 +8,7 @@ dependency-injector = "*"
 python-can = "*"
 pyqt6 = "*"
 multipledispatch = "*"
+opencv-contrib-python = "*"
 
 [dev-packages]
 

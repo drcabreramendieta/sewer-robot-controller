@@ -1,13 +1,22 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QWidget, QSlider
+import cv2
+from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QWidget, QSlider, QLabel
+from PyQt6.QtGui import QImage, QPixmap
 from Inspection.ports.robot_controller import RobotController
 from Inspection.ports.camera_controller import CameraController
+from Video.domain.use_cases.video_notifier import VideoNotifier
+from Video.domain.entities import VideoMessage
+from Inspection.adapters.qt_video_observer import QtVideoObserver
 
 class MainWindow(QMainWindow):
-    def __init__(self, robot_controller:RobotController, camera_controller:CameraController) -> None:
+    video_changed_signal = pyqtSignal(VideoMessage)
+    def __init__(self, robot_controller:RobotController, camera_controller:CameraController, video_observer:QtVideoObserver, video_notifier:VideoNotifier) -> None:
         super().__init__()
         self.robot_controller = robot_controller
         self.camera_controller = camera_controller
+        self.video_notifier = video_notifier
+        self.video_observer = video_observer
+        self.video_observer.register_signal(self.video_changed_signal)
         self.init_ui()
 
     def init_ui(self):
@@ -30,6 +39,11 @@ class MainWindow(QMainWindow):
         self.slider_light.setMinimum(0)
         self.slider_light.setMaximum(100)
         self.btn_init_camera = QPushButton('Initialize Camera')
+
+        self.disply_width = 640
+        self.display_height = 480
+        self.image_label = QLabel(self)
+        self.image_label.resize(self.disply_width, self.display_height)
         
 
         # Connect buttons to command_service methods
@@ -59,6 +73,9 @@ class MainWindow(QMainWindow):
         self.btn_focus_in.released.connect(lambda: self.camera_controller.focus_stop())
         self.btn_focus_out.released.connect(lambda: self.camera_controller.focus_stop())
         self.slider_light.valueChanged.connect(lambda value: self.camera_controller.change_light(value))
+
+        self.video_changed_signal.connect(self.update_image)
+        self.video_notifier.start_listening()
                                           
         layout.addWidget(self.btn_forward)
         layout.addWidget(self.btn_backward)
@@ -74,7 +91,21 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.slider_light)
 
         layout.addWidget(self.btn_init_camera)
+        layout.addWidget(self.image_label)
 
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
+
+    @pyqtSlot(VideoMessage)
+    def update_image(self, video:VideoMessage):
+        qt_img = self.convert_cv_qt(video.frame)
+        self.image_label.setPixmap(qt_img)
+
+    def convert_cv_qt(self, cv_img):
+        rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+        h, w, ch = rgb_image.shape
+        bytes_per_line = ch * w
+        convert_to_Qt_format = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
+        p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)
+        return QPixmap.fromImage(p)
