@@ -7,7 +7,6 @@ import threading
 class OpenCVVideoLink(VideoLink):
     def __init__(self, rtsp_url:str) -> None:
         super().__init__()
-        print('aqui')
         self.callback = None
         self.rtsp_url = rtsp_url
         self.running = True
@@ -32,13 +31,12 @@ class OpenCVVideoLink(VideoLink):
         cap = cv2.VideoCapture(self.rtsp_url)
         if (cap.isOpened()== False): 
             print("Error opening video stream or file")
+            self.running = False
 
         while self.running:
-            print('captura')
             ret, frame = cap.read()
             if not ret:
                 break
 
             self.callback(VideoMessage(frame=frame))
-            #cv2.imshow('frame', frame)
         cap.release()

@@ -6,8 +6,10 @@ class QtVideoObserver(VideoObserver):
     video_changed_signal = pyqtSignal(VideoMessage)
     def __init__(self) -> None:
         super().__init__()
+        self.video_changed_signal = None
         
     def on_video_ready(self, video:VideoMessage) -> None:
+        print('entró')
         if self.video_changed_signal:
             self.video_changed_signal.emit(video)
 

@@ -32,9 +32,7 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
     list_observers = providers.List(telemetry_observer, telemetry_observer, telemetry_observer)
     notify_telemetry_use_case = providers.Factory(NotifyTelemetry,telemetry_observers=list_observers, link=robot_link)
 
-    video_observer = providers.Singleton(QtVideoObserver)
-    list_video_observers = providers.List(video_observer)
+    video_observer = providers.Factory(QtVideoObserver)
     video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='/home/diego/robot/Terminal/src/example.mp4')
-    notify_video_use_case = providers.Factory(VideoNotifier, video_observers=list_video_observers, link=video_link)
+    notify_video_use_case = providers.Singleton(VideoNotifier, link=video_link)
     main_window = providers.Singleton(MainWindow, robot_controller=robot_controller,camera_controller=camera_controller, video_observer=video_observer, video_notifier=notify_video_use_case)
-

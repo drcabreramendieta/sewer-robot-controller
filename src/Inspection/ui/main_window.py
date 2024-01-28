@@ -17,6 +17,7 @@ class MainWindow(QMainWindow):
         self.video_notifier = video_notifier
         self.video_observer = video_observer
         self.video_observer.register_signal(self.video_changed_signal)
+        self.video_notifier.register_observer(self.video_observer)
         self.init_ui()
 
     def init_ui(self):
