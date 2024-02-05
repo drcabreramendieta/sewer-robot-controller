@@ -57,13 +57,69 @@ class CANRobotLink(RobotLink):
 
     # TODO: Implement specific behaviors
     def initialize_camera(self, camera_state:CameraStateModule) -> bool:
-        print(camera_state)
+        m1 = [0x77, 0x74, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+        print(m1)
+        # Configure CAN protocol communication
+        try:
+            message1 = can.Message(arbitration_id=0x0401, data=m1, is_extended_id=False)
+            self.bus.send(message1)
+            print(message1)
+        except can.CanError as e:
+            print(f"Error CAN: {e}")
         return True
 
     @dispatch(CameraStateModule)
     def send(self, module:CameraStateModule) -> None:
-        print(module)
+        if(module.focus == "O"):
+            byte1 = 0x94
+        elif(module.focus == "I"):
+            byte1 = 0x91
+        elif(module.focus == "S"):
+            byte1 = 0x04
+        
+        if(module.pan == "R"):
+            byte2 = 0x44
+        elif(module.pan == "L"):
+            byte2 = 0x33
+        elif(module.pan == "S"):
+            byte2 = 0x02
 
+        if(module.tilt == "U"):
+            byte3 = 0x11
+        elif(module.tilt == "D"):
+            byte3 = 0x22
+        elif(module.tilt == "S"):
+            byte3 = 0x01
+
+        if(0 <= module.light < 11):
+            byte4 = 0x2a
+        elif(11 <= module.light < 22):
+            byte4 = 0x3a
+        elif(22 <= module.light < 33):
+            byte4 = 0x4a
+        elif(33 <= module.light < 44):
+            byte4 = 0x5a
+        elif(44 <= module.light < 55):
+            byte4 = 0x6a
+        elif(55 <= module.light < 66):
+            byte4 = 0x9a
+        elif(66 <= module.light < 77):
+            byte4 = 0x5b
+        elif(77 <= module.light < 88):
+            byte4 = 0x9b
+        elif(88 <= module.light <= 100):
+            byte4 = 0x6c
+        
+        m1 = [byte1, byte2, byte3, byte4, 0x00, 0x00, 0x00, 0x00]
+
+        print(m1)
+        # Configure CAN protocol communication
+        try:
+            message1 = can.Message(arbitration_id=0x0400, data=m1, is_extended_id=False)
+            self.bus.send(message1)
+            print(message1)
+        except can.CanError as e:
+            print(f"Error CAN: {e}")
     
     def callback_setup(self, callback:Callable[[TelemetryMessage], None]) -> None:
         self.callback = callback

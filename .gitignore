@@ -2,3 +2,9 @@
 __pycache__/
 .env
 .idea
+venv/pyvenv.cfg
+venv/bin/python
+venv/bin/python3
+venv/bin/python3.10
+.gitignore
+venv/lib64
