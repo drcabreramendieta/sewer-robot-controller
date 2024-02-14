@@ -20,7 +20,7 @@ from PyQt6.QtCore import pyqtSignal
 
 class CommunicationModuleContainer(containers.DeclarativeContainer):
     configuration = providers.Configuration()
-    bus = providers.Singleton(can.interface.Bus, device_id=0, interface='pcan', bitrate=250000)
+    bus = providers.Singleton(can.interface.Bus, channel='can0', interface='socketcan', bitrate=250000)
     #bus = providers.Singleton(can.interface.Bus, channel='test', interface='virtual', bitrate=1000000)
     robot_link = providers.Singleton(CANRobotLink, bus=bus)
     move_robot_use_case = providers.Factory(MoveRobot, link=robot_link)
