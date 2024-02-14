@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 dependency-injector = "*"
 python-can = "*"
-pyqt6 = "*"
+pyqt6 = "*"ip
 multipledispatch = "*"
 opencv-contrib-python = "*"
 

@@ -8,9 +8,9 @@ class RobotLink(ABC):
     def initialize_camera(self, camera_state:CameraStateModule) -> bool:
         pass
 
-    @dispatch(WheelsModule, WheelsModule)
+    @dispatch(WheelsModule)
     @abstractmethod
-    def send(self, wheelsModuleLeft:WheelsModule, wheelsModuleRight:WheelsModule) -> None:
+    def send(self, wheelModule:WheelsModule) -> None:
         pass
     
     @dispatch(CameraStateModule)

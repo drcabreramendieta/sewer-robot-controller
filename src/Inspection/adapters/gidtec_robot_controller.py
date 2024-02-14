@@ -12,11 +12,17 @@ class GidtecRobotController(RobotController):
     def move_backward(self) -> None:
         self.communication_controller.run('B', 10)
 
-    def rotate_left(self) -> None:
-        self.communication_controller.run('L', 5)
+    def rotate_left_forward(self) -> None:
+        self.communication_controller.run('LF', 10)
 
-    def rotate_right(self) -> None:
-        self.communication_controller.run('R', 5)
+    def rotate_right_forward(self) -> None:
+        self.communication_controller.run('RF', 10)
+
+    def rotate_left_backward(self) -> None:
+        self.communication_controller.run('LB', 10)
+
+    def rotate_right_backward(self) -> None:
+        self.communication_controller.run('RB', 10)
         
     def stop(self) -> None:
         self.communication_controller.run('S', 0)
