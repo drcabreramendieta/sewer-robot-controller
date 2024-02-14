@@ -4,64 +4,51 @@ from typing import Callable
 import can
 from multipledispatch import dispatch
 
+
 class CANRobotLink(RobotLink):
-    def __init__(self, bus:can.BusABC) -> None:
+    def __init__(self, bus: can.BusABC) -> None:
         self.callback = None
         self.notifier = None
         self.bus = bus
 
-    @dispatch(WheelsModule, WheelsModule)
-    def send(self, wheelsModuleLeft:WheelsModule, wheelsModuleRight:WheelsModule) -> None:
+    @dispatch(WheelsModule)
+    def send(self, wheelsModule: WheelsModule) -> None:
         # Get the speed message to the wheels modules considering the side. There are two ranges of values 
         # depending on the direction of rotation. The speed values go from -2048 to 2047, with 0 being the change
         # side of rotation.
-        speed_left = 0
-        speed_right = 0
 
-        if wheelsModuleLeft.direction == "F":
-            speed_left = int(-2048 * (wheelsModuleLeft.speed / 100))
-        elif wheelsModuleLeft.direction == "B":
-            speed_left = int(2047 * (wheelsModuleLeft.speed / 100))
-        elif wheelsModuleLeft.direction == "S":
-            speed_left = 0
-
-        if wheelsModuleRight.direction == "F":
-            speed_right = int(2047 * (wheelsModuleRight.speed / 100))
-        elif wheelsModuleRight.direction == "B":
-            speed_right = int(-2048 * (wheelsModuleRight.speed / 100))
-        elif wheelsModuleRight.direction == "S":
-            speed_right = 0
-
-        speed_left = format((speed_left + (1 << 16)) % (1 << 16), '0{}b'.format(16))
-        speed_left_data0 = int(speed_left[:8], 2)
-        speed_left_data1 = int(speed_left[8:], 2)
-
-        speed_right = format((speed_right + (1 << 16)) % (1 << 16), '0{}b'.format(16))
-        speed_right_data0 = int(speed_right[:8], 2)
-        speed_right_data1 = int(speed_right[8:], 2)
-
-        m1 = [speed_left_data0, speed_left_data1, speed_left_data0, speed_left_data1, speed_left_data0,
-              speed_left_data1, speed_right_data0, speed_right_data1]
-        m2 = [speed_right_data0, speed_right_data1, speed_right_data0, speed_right_data1, 0, 0, 0, 0]
+        if wheelsModule.direction == "F":
+            if wheelsModule.rotation == "N":
+                m1 = [1, 0, wheelsModule.speed]
+            if wheelsModule.rotation == "L":
+                m1 = [1, 1, wheelsModule.speed]
+            if wheelsModule.rotation == "R":
+                m1 = [1, 2, wheelsModule.speed]
+        elif wheelsModule.direction == "B":
+            if wheelsModule.rotation == "N":
+                m1 = [2, 0, wheelsModule.speed]
+            if wheelsModule.rotation == "L":
+                m1 = [2, 1, wheelsModule.speed]
+            if wheelsModule.rotation == "R":
+                m1 = [2, 2, wheelsModule.speed]
+        elif wheelsModule.direction == "S":
+            m1 = [0, 0, wheelsModule.speed]
 
         print(m1)
         # Configure CAN protocol communication
         try:
-            message1 = can.Message(arbitration_id=0x0202, data=m1, is_extended_id=False)
-            message2 = can.Message(arbitration_id=0x0203, data=m2, is_extended_id=False)
+            message1 = can.Message(arbitration_id=0x0001, data=m1, is_extended_id=False)
             self.bus.send(message1)
-            self.bus.send(message2)
-
         except can.CanError as e:
             print(f"Error CAN: {e}")
 
     # TODO: Implement specific behaviors
-    def initialize_camera(self, camera_state:CameraStateModule) -> bool:
-        m1 = [0x77, 0x74, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+    def initialize_camera(self, camera_state: CameraStateModule) -> bool:
+        m1 = [0x77, 0x74]
         print(m1)
         # Configure CAN protocol communication
         try:
-            message1 = can.Message(arbitration_id=0x0401, data=m1, is_extended_id=False)
+            message1 = can.Message(arbitration_id=0x0002, data=m1, is_extended_id=False)
             self.bus.send(message1)
             print(message1)
         except can.CanError as e:
@@ -69,75 +56,74 @@ class CANRobotLink(RobotLink):
         return True
 
     @dispatch(CameraStateModule)
-    def send(self, module:CameraStateModule) -> None:
-        if(module.focus == "O"):
+    def send(self, module: CameraStateModule) -> None:
+        if (module.focus == "O"):
             byte1 = 0x94
-        elif(module.focus == "I"):
+        elif (module.focus == "I"):
             byte1 = 0x91
-        elif(module.focus == "S"):
+        elif (module.focus == "S"):
             byte1 = 0x04
-        
-        if(module.pan == "R"):
+
+        if (module.pan == "R"):
             byte2 = 0x44
-        elif(module.pan == "L"):
+        elif (module.pan == "L"):
             byte2 = 0x33
-        elif(module.pan == "S"):
+        elif (module.pan == "S"):
             byte2 = 0x02
 
-        if(module.tilt == "U"):
+        if (module.tilt == "U"):
             byte3 = 0x11
-        elif(module.tilt == "D"):
+        elif (module.tilt == "D"):
             byte3 = 0x22
-        elif(module.tilt == "S"):
+        elif (module.tilt == "S"):
             byte3 = 0x01
 
-        if(0 <= module.light < 11):
+        if (0 <= module.light < 11):
             byte4 = 0x2a
-        elif(11 <= module.light < 22):
+        elif (11 <= module.light < 22):
             byte4 = 0x3a
-        elif(22 <= module.light < 33):
+        elif (22 <= module.light < 33):
             byte4 = 0x4a
-        elif(33 <= module.light < 44):
+        elif (33 <= module.light < 44):
             byte4 = 0x5a
-        elif(44 <= module.light < 55):
+        elif (44 <= module.light < 55):
             byte4 = 0x6a
-        elif(55 <= module.light < 66):
+        elif (55 <= module.light < 66):
             byte4 = 0x9a
-        elif(66 <= module.light < 77):
+        elif (66 <= module.light < 77):
             byte4 = 0x5b
-        elif(77 <= module.light < 88):
+        elif (77 <= module.light < 88):
             byte4 = 0x9b
-        elif(88 <= module.light <= 100):
+        elif (88 <= module.light <= 100):
             byte4 = 0x6c
-        
-        m1 = [byte1, byte2, byte3, byte4, 0x00, 0x00, 0x00, 0x00]
+
+        m1 = [byte1, byte2, byte3, byte4]
 
         print(m1)
         # Configure CAN protocol communication
         try:
-            message1 = can.Message(arbitration_id=0x0400, data=m1, is_extended_id=False)
+            message1 = can.Message(arbitration_id=0x0003, data=m1, is_extended_id=False)
             self.bus.send(message1)
             print(message1)
         except can.CanError as e:
             print(f"Error CAN: {e}")
-    
-    def callback_setup(self, callback:Callable[[TelemetryMessage], None]) -> None:
+
+    def callback_setup(self, callback: Callable[[TelemetryMessage], None]) -> None:
         self.callback = callback
 
     def start_listening(self) -> None:
-        self.notifier = can.Notifier(bus=self.bus,listeners=[self._can_message_handler],timeout=2)
+        self.notifier = can.Notifier(bus=self.bus, listeners=[self._can_message_handler], timeout=2)
 
     def stop_listening(self) -> None:
         if self.notifier:
             self.notifier.stop(4)
         self.bus.shutdown()
 
-    def _can_message_handler(self,message:can.Message):
+    def _can_message_handler(self, message: can.Message):
         telemetry_message = self._processing_message(message)
         self.callback(telemetry_message)
 
-
-    def _get_message_type(self, id:int) -> str:
+    def _get_message_type(self, id: int) -> str:
         id_hex = hex(id).split(sep='x')[1]
 
         if id_hex[0] == '2':
@@ -165,9 +151,4 @@ class CANRobotLink(RobotLink):
                 variables['failure status'] = int(bin(int.from_bytes(message.data[2:3], byteorder='big'))[7:10])
         return TelemetryMessage(message_type=message_type, variables=variables, timestamp=message.timestamp)
 
-
-
-
-
-
-        #self.callback(Telemetry(20,20,w_list))
+        # self.callback(Telemetry(20,20,w_list))

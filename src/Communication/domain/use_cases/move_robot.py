@@ -8,20 +8,19 @@ class MoveRobot:
 
     def run(self, movement:str, speed:int):
         if movement == 'F':
-            left_wheels = WheelsModule('L', 'F', speed)
-            right_wheels = WheelsModule('R', 'F', speed)
+            wheels_module = WheelsModule('F', 'N', speed)
         elif movement == 'B':
-            left_wheels = WheelsModule('L', 'B', speed)
-            right_wheels = WheelsModule('R', 'B', speed)
-        elif movement == 'L':
-            left_wheels = WheelsModule('L', 'B', speed)
-            right_wheels = WheelsModule('R', 'F', speed)
-        elif movement == 'R':
-            left_wheels = WheelsModule('L', 'F', speed)
-            right_wheels = WheelsModule('R', 'B', speed)    
+            wheels_module = WheelsModule('B', 'N', speed)
+        elif movement == 'LF':
+            wheels_module = WheelsModule('F', 'L', speed)
+        elif movement == 'RF':
+            wheels_module = WheelsModule('F', 'R', speed)
+        elif movement == 'LB':
+            wheels_module = WheelsModule('B', 'L', speed)
+        elif movement == 'RB':
+            wheels_module = WheelsModule('B', 'R', speed)
         elif movement == 'S':
-            left_wheels = WheelsModule('L', 'S', speed)
-            right_wheels = WheelsModule('R', 'S', speed)
+            wheels_module = WheelsModule('S', 'N', speed)
 
-        self.link.send(left_wheels,right_wheels)
+        self.link.send(wheels_module)
         
