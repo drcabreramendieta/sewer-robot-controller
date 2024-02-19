@@ -126,9 +126,9 @@ class CANRobotLink(RobotLink):
     def _get_message_type(self, id: int) -> str:
         id_hex = hex(id).split(sep='x')[1]
 
-        if id_hex[0] == '2':
+        if (id_hex[0] == '2' & id_hex[1] == '0' & id_hex[2] == '8'):
             return 'motor telemetry'
-        elif id_hex[0] == '4':
+        elif (id_hex[0] == '2' & id_hex[1] == '0' & id_hex[2] == '2'):
             return 'ECU telemetry'
 
     def _processing_message(self, message: can.Message) -> TelemetryMessage:
@@ -149,6 +149,13 @@ class CANRobotLink(RobotLink):
                 variables['lock status'] = int(bin(int.from_bytes(message.data[2:3], byteorder='big'))[4])
                 variables['voltage control status'] = int(bin(int.from_bytes(message.data[2:3], byteorder='big'))[5:7])
                 variables['failure status'] = int(bin(int.from_bytes(message.data[2:3], byteorder='big'))[7:10])
-        return TelemetryMessage(message_type=message_type, variables=variables, timestamp=message.timestamp)
+        
+        if message_type == 'ECU telemetry':
+            if len(message.data) == 8:
+                variables['Temperature'] = int.from_bytes(message.data[0:1], byteorder='big')
+                variables['Humidity'] = int.from_bytes(message.data[1:2], byteorder='big') 
+                variables['X slop'] = int.from_bytes(message.data[2:4], byteorder='big')
+                variables['Y slop'] = int.from_bytes(message.data[4:6], byteorder='big')
 
+        return TelemetryMessage(message_type=message_type, variables=variables, timestamp=message.timestamp) 
         # self.callback(Telemetry(20,20,w_list))
