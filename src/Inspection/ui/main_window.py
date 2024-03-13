@@ -52,22 +52,22 @@ class MainWindow(QMainWindow):
         movement_layout = QGridLayout()
         self.btn_forward = QPushButton(' Forward')
         self.btn_forward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Forward.png'))
-        self.btn_forward.setIconSize(QSize(45,45))
+        self.btn_forward.setIconSize(QSize(45,30))
         self.btn_backward = QPushButton('Backward')
         self.btn_backward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Backward.png'))
-        self.btn_backward.setIconSize(QSize(45,45))
+        self.btn_backward.setIconSize(QSize(45,30))
         self.btn_left_forward = QPushButton('Left Forward')
         self.btn_left_forward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Left Forward.png'))
-        self.btn_left_forward.setIconSize(QSize(45,45))
+        self.btn_left_forward.setIconSize(QSize(45,30))
         self.btn_right_forward = QPushButton('Right Forward')
         self.btn_right_forward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Right Forward.png'))
-        self.btn_right_forward.setIconSize(QSize(45,45))
+        self.btn_right_forward.setIconSize(QSize(45,30))
         self.btn_left_backward = QPushButton('Left Backward')
         self.btn_left_backward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Left Backward.png'))
-        self.btn_left_backward.setIconSize(QSize(45,45))
+        self.btn_left_backward.setIconSize(QSize(45,30))
         self.btn_right_backward = QPushButton('Right Backward')
         self.btn_right_backward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Right Backward.png'))
-        self.btn_right_backward.setIconSize(QSize(45,45))
+        self.btn_right_backward.setIconSize(QSize(45,30))
 
         movement_layout.addWidget(self.btn_left_forward, 0, 0)
         movement_layout.addWidget(self.btn_right_forward, 0, 1)
@@ -76,6 +76,15 @@ class MainWindow(QMainWindow):
         movement_layout.addWidget(self.btn_left_backward, 3, 0)
         movement_layout.addWidget(self.btn_right_backward, 3, 1)
         controls_layout.addLayout(movement_layout)
+
+        #Slider para controlar velocidad de los motores
+        label_speed = QLabel('Speed Control')
+        label_speed.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        controls_layout.addWidget(label_speed)
+        self.slider_speed = QSlider(Qt.Orientation.Horizontal)
+        self.slider_speed.setMinimum(0)
+        self.slider_speed.setMaximum(100)
+        controls_layout.addWidget(self.slider_speed)
 
         # Etiqueta y controles de la cámara
         label_camera_controls = QLabel('Camera Controls')
@@ -149,6 +158,8 @@ class MainWindow(QMainWindow):
         self.btn_right_forward.released.connect(self.robot_controller.stop)
         self.btn_left_backward.released.connect(self.robot_controller.stop)
         self.btn_right_backward.released.connect(self.robot_controller.stop)
+
+        self.slider_speed.valueChanged.connect(self.robot_controller.change_speed)
 
         # Connect camera buttons
         self.btn_tilt_down.pressed.connect(self.camera_controller.tilt_down)
