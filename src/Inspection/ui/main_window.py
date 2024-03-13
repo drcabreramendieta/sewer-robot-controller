@@ -95,7 +95,7 @@ class MainWindow(QMainWindow):
         self.btn_init_camera = QPushButton('Initialize Camera')
         camera_layout.addWidget(self.btn_init_camera, 0, 0, 1, 2)  # Span 2 columns
         self.btn_init_camera.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/init.png'))
-        self.btn_init_camera.setIconSize(QSize(45,45))
+        self.btn_init_camera.setIconSize(QSize(45,30))
 
 
         self.btn_tilt_down = QPushButton('Tilt Down')
@@ -103,18 +103,18 @@ class MainWindow(QMainWindow):
         camera_layout.addWidget(self.btn_tilt_down, 1, 0)
         camera_layout.addWidget(self.btn_tilt_up, 1, 1)
         self.btn_tilt_down.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Tilt down.png'))
-        self.btn_tilt_down.setIconSize(QSize(45,45))
+        self.btn_tilt_down.setIconSize(QSize(45,30))
         self.btn_tilt_up.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Tilt up.png'))
-        self.btn_tilt_up.setIconSize(QSize(45,45))
+        self.btn_tilt_up.setIconSize(QSize(45,30))
 
         self.btn_pan_left = QPushButton('Pan Left')
         self.btn_pan_right = QPushButton('Pan Right')
         camera_layout.addWidget(self.btn_pan_left, 2, 0)
         camera_layout.addWidget(self.btn_pan_right, 2, 1)
         self.btn_pan_left.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Pan Left.png'))
-        self.btn_pan_left.setIconSize(QSize(45,45))
+        self.btn_pan_left.setIconSize(QSize(45,30))
         self.btn_pan_right.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Pan Right.png'))
-        self.btn_pan_right.setIconSize(QSize(45,45))
+        self.btn_pan_right.setIconSize(QSize(45,30))
 
         self.btn_focus_out = QPushButton('Focus Out')
         self.btn_focus_in = QPushButton('Focus In')
@@ -122,9 +122,9 @@ class MainWindow(QMainWindow):
         camera_layout.addWidget(self.btn_focus_in, 3, 1)
         controls_layout.addLayout(camera_layout)
         self.btn_focus_out.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Focus Out.png'))
-        self.btn_focus_out.setIconSize(QSize(45,45))
+        self.btn_focus_out.setIconSize(QSize(45,30))
         self.btn_focus_in.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Focus In.png'))
-        self.btn_focus_in.setIconSize(QSize(45,45))
+        self.btn_focus_in.setIconSize(QSize(45,30))
 
         # Slider de luz debajo de los controles de la cámara
         label_light_controls = QLabel('Illumination Controls')
