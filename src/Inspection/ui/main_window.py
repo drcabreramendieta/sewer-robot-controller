@@ -7,14 +7,18 @@ from Inspection.ports.camera_controller import CameraController
 from Video.domain.use_cases.video_notifier import VideoNotifier
 from Video.domain.entities import VideoMessage
 from Inspection.adapters.qt_video_observer import QtVideoObserver
+from Communication.adapters.test_observer import TestTelemetryObserver
+from Communication.domain.entities import TelemetryMessage
+from Communication.domain.use_cases.notify_telemetry import NotifyTelemetry
 
 
 
 class MainWindow(QMainWindow):
     video_changed_signal = pyqtSignal(VideoMessage)
+    telemetry_updated_signal = pyqtSignal(TelemetryMessage)
     
 
-    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier) -> None:
+    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry) -> None:
         super().__init__()
         self.robot_controller = robot_controller
         self.camera_controller = camera_controller
@@ -22,7 +26,12 @@ class MainWindow(QMainWindow):
         self.video_observer = video_observer
         self.video_observer.register_signal(self.video_changed_signal)
         self.video_notifier.register_observer(self.video_observer)
+        self.telemetry_notifier = telemetry_notifier
+        self.telemetry_observer = telemetry_observer
+        self.telemetry_observer.register_signal(self.telemetry_updated_signal)
+        self.telemetry_notifier.register_observer(self.telemetry_observer)
         self.translator = QTranslator(self)
+        self.telemetry_notifier
               
         self.disply_width = 960
         self.display_height = 480
@@ -32,7 +41,8 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.setup_connections()
         self.load_translation("es")
-
+        
+    
     def init_ui(self):
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         main_layout = QHBoxLayout()
@@ -70,10 +80,11 @@ class MainWindow(QMainWindow):
         video_telemetry_layout.addLayout(warning_layout)
         video_telemetry_layout.addLayout(record_layout)
 
-        self.telemetry_label = QLabel('Telemetry', self.image_label)
+        self.telemetry_label = QLabel(self.image_label)
         self.telemetry_label.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 128);")
-        self.telemetry_label.move(self.disply_width_telemetry - 210, self.display_height_telemetry - 60)
-        self.telemetry_label.setFixedSize(500, 100)
+        self.telemetry_label.move(self.disply_width_telemetry - 210, self.display_height_telemetry - 100)
+        self.telemetry_label.setFixedSize(500, 125)
+        self.telemetry_label.setWordWrap(True)
 
         # Botón de cerrar en la parte inferior central
         self.closeButton = QPushButton(self.tr('Close'))
@@ -188,8 +199,8 @@ class MainWindow(QMainWindow):
 
         # Añadir el QComboBox del idioma al layout de controles principal
         encoder_controls_layout = QHBoxLayout()
-        self.label_encoder_controls = QLabel(self.tr('Encoder'))
-        self.btn_init_encoder = QPushButton(self.tr('Initialize Encoder'))
+        self.label_encoder_controls = QLabel(self.tr('Reel'))
+        self.btn_init_encoder = QPushButton(self.tr('Initialize Reel'))
         self.btn_init_encoder.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Pan Left.png'))
         self.btn_init_encoder.setIconSize(QSize(45,25))
         encoder_controls_layout.addWidget(self.label_encoder_controls, alignment=Qt.AlignmentFlag.AlignVCenter)
@@ -264,6 +275,9 @@ class MainWindow(QMainWindow):
         # Connect translation
         self.languageComboBox.currentIndexChanged.connect(self.changeLanguage)
 
+        #Connect telemetry
+        self.telemetry_updated_signal.connect(self.update_telemetry)
+        self.telemetry_notifier.start_listening()
 
     def toggleTelemetryVisibility(self, state):
         self.telemetry_label.setVisible(self.telemetryCheckbox.isChecked())
@@ -293,12 +307,11 @@ class MainWindow(QMainWindow):
         self.label_light_controls.setText(self.tr("Illumination Control"))
         self.label_camera_controls.setText(self.tr("Camera Controls"))
         self.warning_label.setText(self.tr("Warning"))
-        self.label_encoder_controls.setText(self.tr("Encoder"))
+        self.label_encoder_controls.setText(self.tr("Reel"))
         self.label_language_controls.setText(self.tr("Language"))
 
 
         # Actualizar etiquetas y controles específicos
-        self.telemetry_label.setText(self.tr("Telemetry"))
         self.btn_forward.setText(self.tr("Forward"))
         self.btn_backward.setText(self.tr("Backward"))
         self.btn_left_forward.setText(self.tr("Left Forward"))
@@ -312,7 +325,7 @@ class MainWindow(QMainWindow):
         self.btn_pan_right.setText(self.tr("Pan Right"))
         self.btn_focus_in.setText(self.tr("Focus In"))
         self.btn_focus_out.setText(self.tr("Focus Out"))
-        self.btn_init_encoder.setText(self.tr("Initialize Encoder"))
+        self.btn_init_encoder.setText(self.tr("Initialize Reel"))
 
     def load_translation(self, language_code):
         translation_file = f"/home/iiot/Documents/Terminal/src/Translations/{language_code}.qm"
@@ -335,6 +348,24 @@ class MainWindow(QMainWindow):
         convert_to_Qt_format = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
         p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)
         return QPixmap.fromImage(p)
+    
+    @pyqtSlot(TelemetryMessage)
+    def update_telemetry(self, telemetry: TelemetryMessage):
+        temperature = telemetry.variables.get('Temperature', 'N/A')
+        humidity = telemetry.variables.get('Humidity', 'N/A')
+        x_slop = telemetry.variables.get('X slop', 'N/A')
+        y_slop = telemetry.variables.get('Y slop', 'N/A')
+
+       
+        telemetry_text = (f"{self.tr('Telemetry')}\n"
+                  f"{self.tr('Temperatura:')} {temperature} °C \n"
+                  f"{self.tr('Humedad:')} {humidity} HR \n"
+                  f"{self.tr('Inclinación en X:')} {x_slop} °\n"
+                  f"{self.tr('Inclinación en Y:')} {y_slop} °")
+        
+        self.telemetry_label.setText(telemetry_text)
+        self.telemetry_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+
     
     
     

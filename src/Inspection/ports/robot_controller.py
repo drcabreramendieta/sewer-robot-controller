@@ -28,3 +28,8 @@ class RobotController(ABC):
     @abstractmethod
     def stop(self) -> None:
         pass
+
+    @abstractmethod
+    def change_speed(self, value:int) -> None: 
+        pass 
+

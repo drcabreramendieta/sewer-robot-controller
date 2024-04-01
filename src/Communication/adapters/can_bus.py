@@ -126,9 +126,9 @@ class CANRobotLink(RobotLink):
     def _get_message_type(self, id: int) -> str:
         id_hex = hex(id).split(sep='x')[1]
 
-        if (id_hex[0] == '2' & id_hex[1] == '0' & id_hex[2] == '8'):
+        if (id_hex[0] == '2' and id_hex[1] == '0' and id_hex[2] == '8'):
             return 'motor telemetry'
-        elif (id_hex[0] == '2' & id_hex[1] == '0' & id_hex[2] == '2'):
+        elif (id_hex[0] == '4' and id_hex[1] == '0' and id_hex[2] == '0'):
             return 'ECU telemetry'
 
     def _processing_message(self, message: can.Message) -> TelemetryMessage:

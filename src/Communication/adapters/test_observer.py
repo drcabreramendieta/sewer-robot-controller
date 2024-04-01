@@ -1,6 +1,16 @@
 from Communication.ports.observer import TelemetryObserver
 from Communication.domain.entities import TelemetryMessage
+from PyQt6.QtCore import pyqtSignal
 
 class TestTelemetryObserver(TelemetryObserver):
+    telemetry_updated_signal = pyqtSignal(TelemetryMessage)
+    def __init__(self) -> None:
+        super().__init__()
+        self.telemetry_updated_signal = None
+
     def on_telemetry_ready(self, telemetry:TelemetryMessage) -> None:
-        print('observer:',telemetry)
+        if self.telemetry_updated_signal:
+            self.telemetry_updated_signal.emit(telemetry)
+
+    def register_signal(self, signal: pyqtSignal): 
+        self.telemetry_updated_signal = signal 

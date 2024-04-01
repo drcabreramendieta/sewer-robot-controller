@@ -29,10 +29,9 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
     camera_controller = providers.Singleton(GidtecCameraController, control_camera=control_camera_use_case)
 
     telemetry_observer = providers.Factory(TestTelemetryObserver)
-    list_observers = providers.List(telemetry_observer, telemetry_observer, telemetry_observer)
-    notify_telemetry_use_case = providers.Factory(NotifyTelemetry,telemetry_observers=list_observers, link=robot_link)
+    notify_telemetry_use_case = providers.Singleton(NotifyTelemetry, link=robot_link)
 
     video_observer = providers.Factory(QtVideoObserver)
     video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='rtsp://admin:inspection24@192.168.1.64:554/Streaming/Channels/101')
     notify_video_use_case = providers.Singleton(VideoNotifier, link=video_link)
-    main_window = providers.Singleton(MainWindow, robot_controller=robot_controller,camera_controller=camera_controller, video_observer=video_observer, video_notifier=notify_video_use_case)
+    main_window = providers.Singleton(MainWindow, robot_controller=robot_controller,camera_controller=camera_controller, video_observer=video_observer, video_notifier=notify_video_use_case, telemetry_observer=telemetry_observer, telemetry_notifier=notify_telemetry_use_case)
