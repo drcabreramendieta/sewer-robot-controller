@@ -1,6 +1,6 @@
 import cv2
-from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QRect
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QGridLayout, QPushButton, QWidget, QSlider, QLabel, QHBoxLayout
+from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QTranslator, QFile
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QGridLayout, QPushButton, QWidget, QSlider, QLabel, QHBoxLayout, QCheckBox, QComboBox, QApplication, QTextEdit
 from PyQt6.QtGui import QImage, QPixmap, QIcon
 from Inspection.ports.robot_controller import RobotController
 from Inspection.ports.camera_controller import CameraController
@@ -9,8 +9,10 @@ from Video.domain.entities import VideoMessage
 from Inspection.adapters.qt_video_observer import QtVideoObserver
 
 
+
 class MainWindow(QMainWindow):
     video_changed_signal = pyqtSignal(VideoMessage)
+    
 
     def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier) -> None:
         super().__init__()
@@ -20,54 +22,92 @@ class MainWindow(QMainWindow):
         self.video_observer = video_observer
         self.video_observer.register_signal(self.video_changed_signal)
         self.video_notifier.register_observer(self.video_observer)
-
-        self.disply_width = 640
+        self.translator = QTranslator(self)
+              
+        self.disply_width = 960
         self.display_height = 480
-        self.disply_width_telemetry = 200
-        self.display_height_telemetry = 200
-
+        self.disply_width_telemetry = 720
+        self.display_height_telemetry = 460
+        
         self.init_ui()
         self.setup_connections()
+        self.load_translation("es")
 
     def init_ui(self):
+        self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         main_layout = QHBoxLayout()
-
-        # Layout para video y telemetría a la izquierda
+        # Layout para video y controles de grabación
         video_telemetry_layout = QVBoxLayout()
         self.image_label = QLabel()
-        self.image_label.setFixedSize(400, 200)
+        self.image_label.setFixedSize(720, 460)
         video_telemetry_layout.addWidget(self.image_label)
+                        
 
-        self.telemetry_label = QLabel('Telemetría')
-        video_telemetry_layout.addWidget(self.telemetry_label)
+        record_layout = QHBoxLayout()  
+        self.button1 = QPushButton(self.tr('Start Record')) 
+        self.button2 = QPushButton(self.tr('Capture Image')) 
+        record_layout.addWidget(self.button1)
+        record_layout.addWidget(self.button2)
 
+        # Checkbox para controlar la visibilidad del label de telemetría 
+        settings_layout = QHBoxLayout()  
+        self.telemetryCheckbox = QCheckBox(self.tr("Show Telemetry"))
+        self.telemetryCheckbox.setChecked(True)
+        self.telemetryCheckbox.stateChanged.connect(self.toggleTelemetryVisibility)
+        settings_layout.addWidget(self.telemetryCheckbox, alignment=Qt.AlignmentFlag.AlignHCenter)
+
+        # Añadir un layout horizontal para el label de advertencia y el cuadro de texto
+        warning_layout = QHBoxLayout()
+        self.warning_label = QLabel(self.tr("Warning"))
+        warning_text = QTextEdit("Texto de advertencia aquí")  # Cambia el texto según sea necesario
+        warning_text.setReadOnly(True)  # Hacer el QTextEdit no editable
+        warning_text.setFixedHeight(25)  # Establecer la altura fija del cuadro de texto
+
+        warning_layout.addWidget(self.warning_label)
+        warning_layout.addWidget(warning_text)
+        
+        video_telemetry_layout.addLayout(settings_layout) 
+        video_telemetry_layout.addLayout(warning_layout)
+        video_telemetry_layout.addLayout(record_layout)
+
+        self.telemetry_label = QLabel('Telemetry', self.image_label)
+        self.telemetry_label.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 128);")
+        self.telemetry_label.move(self.disply_width_telemetry - 210, self.display_height_telemetry - 60)
+        self.telemetry_label.setFixedSize(500, 100)
+
+        # Botón de cerrar en la parte inferior central
+        self.closeButton = QPushButton(self.tr('Close'))
+        self.closeButton.clicked.connect(self.close)
+        video_telemetry_layout.addWidget(self.closeButton)
+        video_telemetry_layout.setAlignment(self.closeButton, Qt.AlignmentFlag.AlignCenter)  
+              
         # Layout para controles a la derecha
         controls_layout = QVBoxLayout()
-
+        
         # Etiqueta y controles de movimiento
-        label_robot_controls = QLabel('Robot Controls')
-        label_robot_controls.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        controls_layout.addWidget(label_robot_controls)
+        self.label_robot_controls = QLabel(self.tr('Robot Controls'))
+        self.label_robot_controls.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        controls_layout.addWidget(self.label_robot_controls)
 
         movement_layout = QGridLayout()
-        self.btn_forward = QPushButton(' Forward')
+        self.btn_forward = QPushButton(self.tr('Forward'))
         self.btn_forward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Forward.png'))
-        self.btn_forward.setIconSize(QSize(45,30))
-        self.btn_backward = QPushButton('Backward')
+        self.btn_forward.setIconSize(QSize(45,25))
+        self.btn_backward = QPushButton(self.tr('Backward'))
         self.btn_backward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Backward.png'))
-        self.btn_backward.setIconSize(QSize(45,30))
-        self.btn_left_forward = QPushButton('Left Forward')
+        self.btn_backward.setIconSize(QSize(45,25))
+        self.btn_left_forward = QPushButton(self.tr('Left Forward'))
         self.btn_left_forward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Left Forward.png'))
-        self.btn_left_forward.setIconSize(QSize(45,30))
-        self.btn_right_forward = QPushButton('Right Forward')
+        self.btn_left_forward.setIconSize(QSize(45,25))
+        self.btn_right_forward = QPushButton(self.tr('Right Forward'))
         self.btn_right_forward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Right Forward.png'))
-        self.btn_right_forward.setIconSize(QSize(45,30))
-        self.btn_left_backward = QPushButton('Left Backward')
+        self.btn_right_forward.setIconSize(QSize(45,25))
+        self.btn_left_backward = QPushButton(self.tr('Left Backward'))
         self.btn_left_backward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Left Backward.png'))
-        self.btn_left_backward.setIconSize(QSize(45,30))
-        self.btn_right_backward = QPushButton('Right Backward')
+        self.btn_left_backward.setIconSize(QSize(45,25))
+        self.btn_right_backward = QPushButton(self.tr('Right Backward'))
         self.btn_right_backward.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Right Backward.png'))
-        self.btn_right_backward.setIconSize(QSize(45,30))
+        self.btn_right_backward.setIconSize(QSize(45,25))
 
         movement_layout.addWidget(self.btn_left_forward, 0, 0)
         movement_layout.addWidget(self.btn_right_forward, 0, 1)
@@ -77,63 +117,98 @@ class MainWindow(QMainWindow):
         movement_layout.addWidget(self.btn_right_backward, 3, 1)
         controls_layout.addLayout(movement_layout)
 
+        
         #Slider para controlar velocidad de los motores
-        label_speed = QLabel('Speed Control')
-        label_speed.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        controls_layout.addWidget(label_speed)
+        self.label_speed = QLabel(self.tr('Speed Control'))
+        self.label_speed.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.slider_speed = QSlider(Qt.Orientation.Horizontal)
-        self.slider_speed.setMinimum(0)
-        self.slider_speed.setMaximum(100)
-        controls_layout.addWidget(self.slider_speed)
+        self.slider_speed.setMinimum(10)
+        self.slider_speed.setMaximum(1000)
+        
+        # Etiqueta y control deslizante de velocidad agrupados horizontalmente
+        speed_layout = QHBoxLayout()
+        speed_layout.addWidget(self.label_speed)
+        speed_layout.addWidget(self.slider_speed)
+
+        # Agregar el layout horizontal al layout vertical principal
+        controls_layout.addLayout(speed_layout)
 
         # Etiqueta y controles de la cámara
-        label_camera_controls = QLabel('Camera Controls')
-        label_camera_controls.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        controls_layout.addWidget(label_camera_controls)
+        self.label_camera_controls = QLabel(self.tr('Camera Controls'))
+        self.label_camera_controls.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        controls_layout.addWidget(self.label_camera_controls)
 
         camera_layout = QGridLayout()
-        self.btn_init_camera = QPushButton('Initialize Camera')
+        self.btn_init_camera = QPushButton(self.tr('Initialize Camera'))
         camera_layout.addWidget(self.btn_init_camera, 0, 0, 1, 2)  # Span 2 columns
         self.btn_init_camera.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/init.png'))
-        self.btn_init_camera.setIconSize(QSize(45,30))
+        self.btn_init_camera.setIconSize(QSize(45,25))
 
 
-        self.btn_tilt_down = QPushButton('Tilt Down')
-        self.btn_tilt_up = QPushButton('Tilt Up')
+        self.btn_tilt_down = QPushButton(self.tr('Tilt Down'))
+        self.btn_tilt_up = QPushButton(self.tr('Tilt Up'))
         camera_layout.addWidget(self.btn_tilt_down, 1, 0)
         camera_layout.addWidget(self.btn_tilt_up, 1, 1)
         self.btn_tilt_down.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Tilt down.png'))
-        self.btn_tilt_down.setIconSize(QSize(45,30))
+        self.btn_tilt_down.setIconSize(QSize(45,25))
         self.btn_tilt_up.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Tilt up.png'))
-        self.btn_tilt_up.setIconSize(QSize(45,30))
+        self.btn_tilt_up.setIconSize(QSize(45,25))
 
-        self.btn_pan_left = QPushButton('Pan Left')
-        self.btn_pan_right = QPushButton('Pan Right')
+        self.btn_pan_left = QPushButton(self.tr('Pan Left'))
+        self.btn_pan_right = QPushButton(self.tr('Pan Right'))
         camera_layout.addWidget(self.btn_pan_left, 2, 0)
         camera_layout.addWidget(self.btn_pan_right, 2, 1)
         self.btn_pan_left.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Pan Left.png'))
-        self.btn_pan_left.setIconSize(QSize(45,30))
+        self.btn_pan_left.setIconSize(QSize(45,25))
         self.btn_pan_right.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Pan Right.png'))
-        self.btn_pan_right.setIconSize(QSize(45,30))
+        self.btn_pan_right.setIconSize(QSize(45,25))
 
-        self.btn_focus_out = QPushButton('Focus Out')
-        self.btn_focus_in = QPushButton('Focus In')
+        self.btn_focus_out = QPushButton(self.tr('Focus Out'))
+        self.btn_focus_in = QPushButton(self.tr('Focus In'))
         camera_layout.addWidget(self.btn_focus_out, 3, 0)
         camera_layout.addWidget(self.btn_focus_in, 3, 1)
         controls_layout.addLayout(camera_layout)
         self.btn_focus_out.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Focus Out.png'))
-        self.btn_focus_out.setIconSize(QSize(45,30))
+        self.btn_focus_out.setIconSize(QSize(45,25))
         self.btn_focus_in.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Focus In.png'))
-        self.btn_focus_in.setIconSize(QSize(45,30))
+        self.btn_focus_in.setIconSize(QSize(45,25))
 
-        # Slider de luz debajo de los controles de la cámara
-        label_light_controls = QLabel('Illumination Controls')
-        label_light_controls.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        controls_layout.addWidget(label_light_controls)
+        # Layout para controles de iluminación
+        light_controls_layout = QHBoxLayout()
+        self.label_light_controls = QLabel(self.tr('Illumination Control'))
+        self.label_light_controls.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.slider_light = QSlider(Qt.Orientation.Horizontal)
         self.slider_light.setMinimum(0)
         self.slider_light.setMaximum(100)
-        controls_layout.addWidget(self.slider_light)
+        light_controls_layout.addWidget(self.label_light_controls)
+        light_controls_layout.addWidget(self.slider_light)
+        controls_layout.addLayout(light_controls_layout)
+
+       
+
+        # Añadir el QComboBox del idioma al layout de controles principal
+        encoder_controls_layout = QHBoxLayout()
+        self.label_encoder_controls = QLabel(self.tr('Encoder'))
+        self.btn_init_encoder = QPushButton(self.tr('Initialize Encoder'))
+        self.btn_init_encoder.setIcon(QIcon('/home/iiot/Documents/Terminal/src/Icons/Pan Left.png'))
+        self.btn_init_encoder.setIconSize(QSize(45,25))
+        encoder_controls_layout.addWidget(self.label_encoder_controls, alignment=Qt.AlignmentFlag.AlignVCenter)
+        encoder_controls_layout.addWidget(self.btn_init_encoder)
+        controls_layout.addLayout(encoder_controls_layout)
+
+         # Añadir el QComboBox del idioma al layout de controles principal
+        language_controls_layout = QHBoxLayout()
+        self.label_language_controls = QLabel(self.tr('Language'))
+        self.languageComboBox = QComboBox()
+        self.languageComboBox.addItem("English", "en")
+        self.languageComboBox.addItem("Español", "es")
+        # Establecer el idioma predeterminado en español
+        default_language = "Español"
+        self.languageComboBox.setCurrentText(default_language)
+
+        language_controls_layout.addWidget(self.label_language_controls, alignment=Qt.AlignmentFlag.AlignVCenter)
+        language_controls_layout.addWidget(self.languageComboBox)
+        controls_layout.addLayout(language_controls_layout)
 
         # Añadir los layouts de video/telemetría y controles al layout principal
         main_layout.addLayout(video_telemetry_layout)
@@ -161,6 +236,9 @@ class MainWindow(QMainWindow):
 
         self.slider_speed.valueChanged.connect(self.robot_controller.change_speed)
 
+        self.button1.clicked.connect(self.toggle_record)
+        
+
         # Connect camera buttons
         self.btn_tilt_down.pressed.connect(self.camera_controller.tilt_down)
         self.btn_tilt_up.pressed.connect(self.camera_controller.tilt_up)
@@ -183,6 +261,68 @@ class MainWindow(QMainWindow):
         self.video_changed_signal.connect(self.update_image)
         self.video_notifier.start_listening()
 
+        # Connect translation
+        self.languageComboBox.currentIndexChanged.connect(self.changeLanguage)
+
+
+    def toggleTelemetryVisibility(self, state):
+        self.telemetry_label.setVisible(self.telemetryCheckbox.isChecked())
+
+    def toggle_record(self):
+        if self.button1.text() == self.tr('Start Record'):
+            self.button1.setText(self.tr('Stop Record'))
+        else:
+            self.button1.setText(self.tr('Start Record'))
+
+    def changeLanguage(self, index):
+        language_code = self.languageComboBox.itemData(index)
+        self.translator.load(f"/home/iiot/Documents/Terminal/src/Translations/{language_code}.qm")
+        _app = QApplication.instance()
+        _app.installTranslator(self.translator)
+        
+        self.retranslateUi()
+        
+    def retranslateUi(self):
+        # Actualizar el título de la ventana y otros textos estáticos
+        self.button1.setText(self.tr("Start Record"))
+        self.button2.setText(self.tr("Capture Image"))
+        self.telemetryCheckbox.setText(self.tr("Show Telemetry"))
+        self.closeButton.setText(self.tr("Close"))
+        self.label_robot_controls.setText(self.tr("Robot Controls"))
+        self.label_speed.setText(self.tr("Speed Control"))
+        self.label_light_controls.setText(self.tr("Illumination Control"))
+        self.label_camera_controls.setText(self.tr("Camera Controls"))
+        self.warning_label.setText(self.tr("Warning"))
+        self.label_encoder_controls.setText(self.tr("Encoder"))
+        self.label_language_controls.setText(self.tr("Language"))
+
+
+        # Actualizar etiquetas y controles específicos
+        self.telemetry_label.setText(self.tr("Telemetry"))
+        self.btn_forward.setText(self.tr("Forward"))
+        self.btn_backward.setText(self.tr("Backward"))
+        self.btn_left_forward.setText(self.tr("Left Forward"))
+        self.btn_right_forward.setText(self.tr("Right Forward"))
+        self.btn_left_backward.setText(self.tr("Left Backward"))
+        self.btn_right_backward.setText(self.tr("Right Backward"))
+        self.btn_init_camera.setText(self.tr("Initialize Camera"))
+        self.btn_tilt_down.setText(self.tr("Tilt Down"))
+        self.btn_tilt_up.setText(self.tr("Tilt Up"))
+        self.btn_pan_left.setText(self.tr("Pan Left"))
+        self.btn_pan_right.setText(self.tr("Pan Right"))
+        self.btn_focus_in.setText(self.tr("Focus In"))
+        self.btn_focus_out.setText(self.tr("Focus Out"))
+        self.btn_init_encoder.setText(self.tr("Initialize Encoder"))
+
+    def load_translation(self, language_code):
+        translation_file = f"/home/iiot/Documents/Terminal/src/Translations/{language_code}.qm"
+        if QFile.exists(translation_file):
+            self.translator.load(translation_file)
+            _app = QApplication.instance()
+            _app.installTranslator(self.translator)
+
+        self.retranslateUi()
+        
     @pyqtSlot(VideoMessage)
     def update_image(self, video: VideoMessage):
         qt_img = self.convert_cv_qt(video.frame)
@@ -195,3 +335,7 @@ class MainWindow(QMainWindow):
         convert_to_Qt_format = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
         p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)
         return QPixmap.fromImage(p)
+    
+    
+    
+    
