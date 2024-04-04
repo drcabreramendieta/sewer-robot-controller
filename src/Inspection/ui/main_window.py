@@ -69,12 +69,12 @@ class MainWindow(QMainWindow):
         # Añadir un layout horizontal para el label de advertencia y el cuadro de texto
         warning_layout = QHBoxLayout()
         self.warning_label = QLabel(self.tr("Warning"))
-        warning_text = QTextEdit("Texto de advertencia aquí")  # Cambia el texto según sea necesario
-        warning_text.setReadOnly(True)  # Hacer el QTextEdit no editable
-        warning_text.setFixedHeight(25)  # Establecer la altura fija del cuadro de texto
+        self.warning_text = QTextEdit(f'No hay advertencias.')  # Cambia el texto según sea necesario
+        self.warning_text.setReadOnly(True)  # Hacer el QTextEdit no editable
+        self.warning_text.setFixedHeight(25)  # Establecer la altura fija del cuadro de texto
 
         warning_layout.addWidget(self.warning_label)
-        warning_layout.addWidget(warning_text)
+        warning_layout.addWidget(self.warning_text)
         
         video_telemetry_layout.addLayout(settings_layout) 
         video_telemetry_layout.addLayout(warning_layout)
@@ -355,7 +355,7 @@ class MainWindow(QMainWindow):
         humidity = telemetry.variables.get('Humidity', 'N/A')
         x_slop = telemetry.variables.get('X slop', 'N/A')
         y_slop = telemetry.variables.get('Y slop', 'N/A')
-
+        motor_status = telemetry.variables.get('Motor status', 'N/A')
        
         telemetry_text = (f"{self.tr('Telemetry')}\n"
                   f"{self.tr('Temperatura:')} {temperature} °C \n"
@@ -365,7 +365,10 @@ class MainWindow(QMainWindow):
         
         self.telemetry_label.setText(telemetry_text)
         self.telemetry_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-
+        if (motor_status == 0xC0):
+            self.warning_text.setText('No hay advertencias.')
+        elif (motor_status == 0xE0): 
+            self.warning_text.setText('Precaución ruedas bloqueadas.')
     
     
     
