@@ -156,6 +156,7 @@ class CANRobotLink(RobotLink):
                 variables['Humidity'] = int.from_bytes(message.data[1:2], byteorder='big') 
                 variables['X slop'] = int.from_bytes(message.data[2:4], byteorder='big')
                 variables['Y slop'] = int.from_bytes(message.data[4:6], byteorder='big')
+                variables['Motor status'] = int.from_bytes(message.data[6:7],byteorder='big')
 
         return TelemetryMessage(message_type=message_type, variables=variables, timestamp=message.timestamp) 
         # self.callback(Telemetry(20,20,w_list))
