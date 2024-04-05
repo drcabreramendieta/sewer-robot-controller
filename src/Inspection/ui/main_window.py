@@ -10,6 +10,7 @@ from Inspection.adapters.qt_video_observer import QtVideoObserver
 from Communication.adapters.test_observer import TestTelemetryObserver
 from Communication.domain.entities import TelemetryMessage
 from Communication.domain.use_cases.notify_telemetry import NotifyTelemetry
+from Inspection.ports.session_controller import SessionController
 
 class SessionNameDialog(QDialog):
     def __init__(self):
@@ -60,8 +61,7 @@ class MainWindow(QMainWindow):
     video_changed_signal = pyqtSignal(VideoMessage)
     telemetry_updated_signal = pyqtSignal(TelemetryMessage)
     
-
-    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry) -> None:
+    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController) -> None:
         super().__init__()
         self.robot_controller = robot_controller
         self.camera_controller = camera_controller
@@ -73,6 +73,9 @@ class MainWindow(QMainWindow):
         self.telemetry_observer = telemetry_observer
         self.telemetry_observer.register_signal(self.telemetry_updated_signal)
         self.telemetry_notifier.register_observer(self.telemetry_observer)
+
+        self.session_controller = session_controller
+
         self.translator = QTranslator(self)
         self.SessionState = False  
               
@@ -334,6 +337,11 @@ class MainWindow(QMainWindow):
         self.telemetry_updated_signal.connect(self.update_telemetry)
         self.telemetry_notifier.start_listening()
 
+        #Connect session
+        self.button1.pressed.connect(self.session_controller.start_recording)
+        self.button1.released.connect(self.session_controller.stop_recording)
+        self.button2.clicked.connect(self.session_controller.take_capture)
+
     def toggleTelemetryVisibility(self, state):
         self.telemetry_label.setVisible(self.telemetryCheckbox.isChecked())
 
@@ -357,6 +365,7 @@ class MainWindow(QMainWindow):
                     
                     self.button1.setEnabled(True)
                     self.button2.setEnabled(True)
+                    self.session_controller.begin_session()
             
         else:
             if self.button1.text() == self.tr("Stop Record"):
@@ -374,6 +383,7 @@ class MainWindow(QMainWindow):
                 
                 self.button1.setEnabled(False)
                 self.button2.setEnabled(False)
+                self.session_controller.finish_session()
 
 
     def changeLanguage(self, index):

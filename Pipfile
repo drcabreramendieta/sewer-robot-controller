@@ -9,6 +9,7 @@ python-can = "*"
 pyqt6 = "*"
 multipledispatch = "*"
 opencv-contrib-python = "*"
+tinydb = "*"
 
 [dev-packages]
 

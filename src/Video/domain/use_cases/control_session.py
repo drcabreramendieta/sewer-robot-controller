@@ -7,8 +7,8 @@ class ControlSession:
         self.dvr_link = dvr_link
         self.session = None
 
-    def create_session(self, name:str, photos:list|None, videos:list|None) -> Session:
-        self.session = Session(name=name, photos=photos, videos=videos)
+    def create_session(self, name:str) -> Session:
+        self.session = Session(name=name, captures=[], records=[], recording=False)
 
     def run(self, order:DvrOrder):
         if self.session:
@@ -18,3 +18,4 @@ class ControlSession:
                 self.session.recording = self.dvr_link.start_recording()
             elif order == DvrOrder.STOP_RECORDING and self.session.recording:
                 self.session.records.append(self.dvr_link.stop_recording())
+            print(self.session)
