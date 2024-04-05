@@ -24,7 +24,16 @@ class TinyDbLink(DbLink):
         self.db.update(lambda doc: doc['captures'].append(capture.__dict__), doc_ids=[self.doc_id])
 
     def add_record(self, record:RecordInfo):
-        self.db.update(lambda doc: doc['records'].append(record.__dict__), doc_ids=[self.doc_id])
+        def update_record(doc):
+            records = doc['records']
+            if records and record.path == records[-1]['path']:
+                records[-1]['stop_date_time'] = record.stop_date_time
+            else:
+                record_dict = record.__dict__
+                record_dict['stop_date_time'] = record.stop_date_time  
+                records.append(record_dict)
+
+        self.db.update(update_record, doc_ids=[self.doc_id])
 
     def update_status(self, recording:bool):
         self.db.update({'recording':recording}, doc_ids=[self.doc_id])

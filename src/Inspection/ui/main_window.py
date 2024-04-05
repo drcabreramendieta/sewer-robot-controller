@@ -1,6 +1,6 @@
 import cv2
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QTranslator, QFile
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QGridLayout, QPushButton, QWidget, QSlider, QLabel, QHBoxLayout, QCheckBox, QComboBox, QApplication, QTextEdit, QDialog, QLineEdit, QMessageBox
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QGridLayout, QPushButton, QWidget, QSlider, QLabel, QHBoxLayout, QCheckBox, QComboBox, QApplication, QTextEdit, QMessageBox
 from PyQt6.QtGui import QImage, QPixmap, QIcon
 from Inspection.ports.robot_controller import RobotController
 from Inspection.ports.camera_controller import CameraController
@@ -11,57 +11,14 @@ from Communication.adapters.test_observer import TestTelemetryObserver
 from Communication.domain.entities import TelemetryMessage
 from Communication.domain.use_cases.notify_telemetry import NotifyTelemetry
 from Inspection.ports.session_controller import SessionController
-
-class SessionNameDialog(QDialog):
-    def __init__(self):
-        super().__init__()
-        
-        self.setWindowTitle(self.tr("Enter the session name"))
-        layout = QVBoxLayout()
-        self.resize(400, 100)  
-        self.move_to_center()
-        self.lineEdit = QLineEdit()
-        self.lineEdit.setPlaceholderText(self.tr("Session name")) 
-        layout.addWidget(self.lineEdit)
-        
-        
-        buttonLayout = QHBoxLayout()
-        
-        self.acceptButton = QPushButton(self.tr("Save"))
-        self.acceptButton.setEnabled(False)  
-        self.acceptButton.clicked.connect(self.accept)
-        buttonLayout.addWidget(self.acceptButton)
-        
-        self.cancelButton = QPushButton(self.tr("Cancel")) 
-        self.cancelButton.clicked.connect(self.reject)  
-        buttonLayout.addWidget(self.cancelButton)
-        
-        layout.addLayout(buttonLayout)  
-        
-        self.setLayout(layout)
-
-        self.lineEdit.textChanged.connect(self.checkInput)
-    
-    def getSessionName(self):
-        return self.lineEdit.text().strip()
-
-    def move_to_center(self):
-        screen = QApplication.screens()[0]
-        screenGeometry = screen.geometry()
-            
-        centerX = screenGeometry.center().x()
-        centerY = screenGeometry.center().y()
-        
-        self.move(centerX - self.width() // 2, centerY - self.height() // 2)
-
-    def checkInput(self):
-        self.acceptButton.setEnabled(bool(self.lineEdit.text().strip()))
+from Inspection.ui.session_name_dialog import SessionNameDialog
 
 class MainWindow(QMainWindow):
     video_changed_signal = pyqtSignal(VideoMessage)
     telemetry_updated_signal = pyqtSignal(TelemetryMessage)
     
-    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController) -> None:
+    
+    def __init__(self, session_name_dialog: SessionNameDialog, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController, ) -> None:
         super().__init__()
         self.robot_controller = robot_controller
         self.camera_controller = camera_controller
@@ -75,9 +32,11 @@ class MainWindow(QMainWindow):
         self.telemetry_notifier.register_observer(self.telemetry_observer)
 
         self.session_controller = session_controller
+        self.session_name_dialog = session_name_dialog
 
         self.translator = QTranslator(self)
         self.SessionState = False  
+        self.isRecording = False
               
         self.disply_width = 960
         self.display_height = 470
@@ -100,16 +59,16 @@ class MainWindow(QMainWindow):
                         
 
         record_layout = QHBoxLayout()  
-        self.button1 = QPushButton(self.tr("Start Record")) 
-        self.button1.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/record.png"))
-        self.button1.setIconSize(QSize(45,20))
-        self.button1.setEnabled(False)
-        self.button2 = QPushButton(self.tr("Capture Image")) 
-        self.button2.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/capture.png"))
-        self.button2.setIconSize(QSize(45,20))
-        self.button2.setEnabled(False)
-        record_layout.addWidget(self.button1)
-        record_layout.addWidget(self.button2)
+        self.record_button = QPushButton(self.tr("Start Record")) 
+        self.record_button.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/record.png"))
+        self.record_button.setIconSize(QSize(45,20))
+        self.record_button.setEnabled(False)
+        self.capture_button = QPushButton(self.tr("Capture Image")) 
+        self.capture_button.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/capture.png"))
+        self.capture_button.setIconSize(QSize(45,20))
+        self.capture_button.setEnabled(False)
+        record_layout.addWidget(self.record_button)
+        record_layout.addWidget(self.capture_button)
 
         
         settings_layout = QHBoxLayout()  
@@ -304,7 +263,7 @@ class MainWindow(QMainWindow):
 
         self.slider_speed.valueChanged.connect(self.robot_controller.change_speed)
 
-        self.button1.clicked.connect(self.toggle_record)
+        self.record_button.clicked.connect(self.updateRecordButtonState)
         self.startButton.clicked.connect(self.openSessionNameDialog)
         
 
@@ -338,38 +297,39 @@ class MainWindow(QMainWindow):
         self.telemetry_notifier.start_listening()
 
         #Connect session
-        self.button1.pressed.connect(self.session_controller.start_recording)
-        self.button1.released.connect(self.session_controller.stop_recording)
-        self.button2.clicked.connect(self.session_controller.take_capture)
+        self.record_button.pressed.connect(self.session_controller.start_recording)
+        self.record_button.released.connect(self.session_controller.stop_recording)
+        self.capture_button.clicked.connect(self.session_controller.take_capture)
 
     def toggleTelemetryVisibility(self, state):
         self.telemetry_label.setVisible(self.telemetryCheckbox.isChecked())
 
-    def toggle_record(self):
-        if self.button1.text() == self.tr("Start Record"):
-            self.button1.setText(self.tr("Stop Record"))
-        else:
-            self.button1.setText(self.tr("Start Record"))
-
-    
+      
     def openSessionNameDialog(self):
         if not self.SessionState:
-            dialog = SessionNameDialog()
+            dialog = self.session_name_dialog()
             if dialog.exec():
                 session_name = dialog.getSessionName().strip()
                 if session_name and self.session_controller.begin_session(session_name):
+                    self.session_controller.update_session_name(session_name)
                     print(f"Nombre de la sesión: {session_name}")
                     self.startButton.setText(self.tr("Log Out")) 
                     self.SessionState = True
                     self.updateSessionButtonState()
                     
-                    self.button1.setEnabled(True)
-                    self.button2.setEnabled(True)                
+                    self.record_button.setEnabled(True)
+                    self.capture_button.setEnabled(True)                
                 else:
                     print('El nombre de la sesion no es valido')
+                    msgBox = QMessageBox()
+                    msgBox.setIcon(QMessageBox.Icon.Warning)  
+                    msgBox.setWindowTitle(self.tr("Error de sesión"))  
+                    msgBox.setText(self.tr("El nombre de la sesión no es válido.")) 
+                    msgBox.setStandardButtons(QMessageBox.StandardButton.Ok)  
+                    msgBox.exec()  
             
         else:
-            if self.button1.text() == self.tr("Stop Record"):
+            if self.record_button.text() == self.tr("Stop Record"):
                 msgBox = QMessageBox()
                 msgBox.setIcon(QMessageBox.Icon.Warning)
                 msgBox.setWindowTitle(self.tr(self.tr("Advertencia")))
@@ -382,8 +342,8 @@ class MainWindow(QMainWindow):
                 self.SessionState = False
                 self.updateSessionButtonState()
                 
-                self.button1.setEnabled(False)
-                self.button2.setEnabled(False)
+                self.record_button.setEnabled(False)
+                self.capture_button.setEnabled(False)
                 self.session_controller.finish_session()
 
 
@@ -395,6 +355,7 @@ class MainWindow(QMainWindow):
         
         self.retranslateUi()
         self.updateSessionButtonState()
+        self.updateRecordButtonState()
 
     def updateSessionButtonState(self):
         if self.SessionState:
@@ -402,20 +363,26 @@ class MainWindow(QMainWindow):
         else:
             self.startButton.setText(self.tr("Log In"))
 
+    def updateRecordButtonState(self):
+        self.isRecording = not self.isRecording
+        if self.isRecording:
+            self.record_button.setText(self.tr("Stop Record"))
+        else:
+            self.record_button.setText(self.tr("Start Record"))
         
     def retranslateUi(self):
         # Actualizar el título de la ventana y otros textos estáticos
-        if self.button1.text() == "Start Record" or self.button1.text() == "Iniciar Grabación": 
-            self.button1.setText(self.tr("Start Record"))
+        if self.record_button.text() == "Start Record" or self.record_button.text() == "Iniciar Grabación": 
+            self.record_button.setText(self.tr("Start Record"))
         else: 
-            self.button1.setText(self.tr("Stop Record"))
+            self.record_button.setText(self.tr("Stop Record"))
 
         if self.SessionState:
             self.startButton.setText(self.tr("Log Out"))
         else:
             self.startButton.setText(self.tr("Log In"))
 
-        self.button2.setText(self.tr("Capture Image"))
+        self.capture_button.setText(self.tr("Capture Image"))
         self.telemetryCheckbox.setText(self.tr("Show Telemetry"))
         self.closeButton.setText(self.tr("Close"))
         self.label_robot_controls.setText(self.tr("Robot Controls"))

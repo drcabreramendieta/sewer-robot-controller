@@ -10,6 +10,7 @@ pyqt6 = "*"
 multipledispatch = "*"
 opencv-contrib-python = "*"
 tinydb = "*"
+requests = "*"
 
 [dev-packages]
 

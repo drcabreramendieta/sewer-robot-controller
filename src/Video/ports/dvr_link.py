@@ -21,3 +21,7 @@ class DvrLink(ABC):
     @abstractmethod
     def stop_recording(self) -> RecordInfo:
         pass
+
+    @abstractmethod
+    def update_session_name(self) -> RecordInfo:
+        pass

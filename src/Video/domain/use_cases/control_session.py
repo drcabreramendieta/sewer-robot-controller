@@ -23,3 +23,6 @@ class ControlSession:
                 self.db_link.add_record(self.dvr_link.stop_recording())
                 self.db_link.update_status(recording=False)
             self.db_link.print_session()
+    
+    def update_session_name(self, new_session_name: str):
+        self.dvr_link.update_session_name(new_session_name)

@@ -6,6 +6,7 @@ from Communication.adapters.test_observer import TestTelemetryObserver
 import can
 
 from Inspection.ui.main_window import MainWindow
+from Inspection.ui.session_name_dialog import SessionNameDialog
 from Inspection.adapters.gidtec_robot_controller import GidtecRobotController
 from Inspection.adapters.gidtec_camera_controller import GidtecCameraController 
 from Communication.domain.use_cases.control_camera import ControlCamera
@@ -40,9 +41,11 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
     #video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='/home/mayrovy/ups/Terminal/src/example.mp4')
     notify_video_use_case = providers.Singleton(VideoNotifier, link=video_link)
     
-    dvr_link = providers.Factory(HikvisionDvrLink, url='Add URL for access to DVR')
+    
+    dvr_link = providers.Factory(HikvisionDvrLink, url='http://192.168.1.64:80', user="admin", password="inspection24", dir="/home/iiot/Pictures")
     db_link = providers.Factory(TinyDbLink, db_name='SessionsDB.json')
     control_session_use_case = providers.Factory(ControlSession, dvr_link=dvr_link, db_link=db_link)
     session_controller = providers.Factory(GidtecSessionController, control_session=control_session_use_case)
 
-    main_window = providers.Singleton(MainWindow, robot_controller=robot_controller,camera_controller=camera_controller, video_observer=video_observer, video_notifier=notify_video_use_case, telemetry_observer=telemetry_observer, telemetry_notifier=notify_telemetry_use_case, session_controller=session_controller)
+    main_window = providers.Singleton(MainWindow, SessionNameDialog, robot_controller=robot_controller,camera_controller=camera_controller, video_observer=video_observer, video_notifier=notify_video_use_case, telemetry_observer=telemetry_observer, telemetry_notifier=notify_telemetry_use_case, session_controller=session_controller)
+    

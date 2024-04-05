@@ -27,3 +27,6 @@ class GidtecSessionController(SessionController):
 
     def is_new(self, name) -> bool:
         return not self.control_session.name_exists(name)
+    
+    def update_session_name(self, new_session_name: str):
+        self.control_session.update_session_name(new_session_name)
