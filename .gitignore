@@ -8,3 +8,4 @@ venv/bin/python3
 venv/bin/python3.10
 .gitignore
 venv/lib64
+SessionsDB.json
