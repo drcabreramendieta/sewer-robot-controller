@@ -7,8 +7,8 @@ class GidtecSessionController(SessionController):
         super().__init__()
         self.control_session = control_session
 
-    def begin_session(self) -> None:
-        self.control_session.create_session('test')
+    def begin_session(self, name:str) -> bool:
+        return self.control_session.create_session(name)
     
     def take_capture(self) -> None:
         print('take capture')
@@ -24,3 +24,6 @@ class GidtecSessionController(SessionController):
 
     def finish_session(self) -> None:
         print('No implementado')
+
+    def is_new(self, name) -> bool:
+        return not self.control_session.name_exists(name)

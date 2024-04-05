@@ -13,13 +13,6 @@ class DvrOrder(IntEnum):
     GET_PHOTO = 5
 
 @dataclass
-class Session:
-    name: str
-    captures: list
-    records: list
-    recording: bool
-
-@dataclass
 class ImageInfo:
     path: str
     capture_date_time: str
@@ -29,3 +22,4 @@ class RecordInfo:
     path: str
     record_date_time: str
     duration: int
+

@@ -357,15 +357,16 @@ class MainWindow(QMainWindow):
             dialog = SessionNameDialog()
             if dialog.exec():
                 session_name = dialog.getSessionName().strip()
-                if session_name:
+                if session_name and self.session_controller.begin_session(session_name):
                     print(f"Nombre de la sesión: {session_name}")
                     self.startButton.setText(self.tr("Log Out")) 
                     self.SessionState = True
                     self.updateSessionButtonState()
                     
                     self.button1.setEnabled(True)
-                    self.button2.setEnabled(True)
-                    self.session_controller.begin_session()
+                    self.button2.setEnabled(True)                
+                else:
+                    print('El nombre de la sesion no es valido')
             
         else:
             if self.button1.text() == self.tr("Stop Record"):

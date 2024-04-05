@@ -2,8 +2,9 @@ from Video.ports.dvr_link import DvrLink
 from Video.domain.entities import ImageInfo, RecordInfo
 
 class HikvisionDvrLink(DvrLink):
-    def __init__(self) -> None:
+    def __init__(self, url:str) -> None:
         super().__init__()
+        self.url = url
 
     def take_image(self) -> ImageInfo:
         return ImageInfo('image/dvr/test', '2345')

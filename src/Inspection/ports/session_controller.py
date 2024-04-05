@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class SessionController(ABC):
     @abstractmethod
-    def begin_session(self) -> None:
+    def begin_session(self, name:str) -> bool:
         pass
     
     @abstractmethod
@@ -19,4 +19,8 @@ class SessionController(ABC):
 
     @abstractmethod
     def finish_session(self) -> None:
+        pass
+
+    @abstractmethod
+    def is_new(self, name) -> bool:
         pass
