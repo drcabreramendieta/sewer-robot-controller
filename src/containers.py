@@ -17,6 +17,10 @@ from Video.domain.use_cases.video_notifier import VideoNotifier
 from Video.domain.entities import VideoMessage
 from PyQt6.QtCore import pyqtSignal
 
+from Video.adapters.hikvision_dvr_link import HikvisionDvrLink
+from Video.adapters.tiny_db_link import TinyDbLink
+from Video.domain.use_cases.control_session import ControlSession
+from Inspection.adapters.gidtec_session_controller import GidtecSessionController
 
 class CommunicationModuleContainer(containers.DeclarativeContainer):
     configuration = providers.Configuration()
@@ -33,5 +37,12 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
 
     video_observer = providers.Factory(QtVideoObserver)
     video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='rtsp://admin:inspection24@192.168.1.64:554/Streaming/Channels/101')
+    #video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='/home/mayrovy/ups/Terminal/src/example.mp4')
     notify_video_use_case = providers.Singleton(VideoNotifier, link=video_link)
-    main_window = providers.Singleton(MainWindow, robot_controller=robot_controller,camera_controller=camera_controller, video_observer=video_observer, video_notifier=notify_video_use_case, telemetry_observer=telemetry_observer, telemetry_notifier=notify_telemetry_use_case)
+    
+    dvr_link = providers.Factory(HikvisionDvrLink, url='Add URL for access to DVR')
+    db_link = providers.Factory(TinyDbLink, db_name='SessionsDB.json')
+    control_session_use_case = providers.Factory(ControlSession, dvr_link=dvr_link, db_link=db_link)
+    session_controller = providers.Factory(GidtecSessionController, control_session=control_session_use_case)
+
+    main_window = providers.Singleton(MainWindow, robot_controller=robot_controller,camera_controller=camera_controller, video_observer=video_observer, video_notifier=notify_video_use_case, telemetry_observer=telemetry_observer, telemetry_notifier=notify_telemetry_use_case, session_controller=session_controller)
