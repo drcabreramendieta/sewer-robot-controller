@@ -18,7 +18,7 @@ class MainWindow(QMainWindow):
     telemetry_updated_signal = pyqtSignal(TelemetryMessage)
     
     
-    def __init__(self, session_name_dialog: SessionNameDialog, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController, ) -> None:
+    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController, ) -> None:
         super().__init__()
         self.robot_controller = robot_controller
         self.camera_controller = camera_controller
@@ -32,7 +32,6 @@ class MainWindow(QMainWindow):
         self.telemetry_notifier.register_observer(self.telemetry_observer)
 
         self.session_controller = session_controller
-        self.session_name_dialog = session_name_dialog
 
         self.translator = QTranslator(self)
         self.SessionState = False  
@@ -307,11 +306,10 @@ class MainWindow(QMainWindow):
       
     def openSessionNameDialog(self):
         if not self.SessionState:
-            dialog = self.session_name_dialog()
+            dialog = SessionNameDialog()
             if dialog.exec():
                 session_name = dialog.getSessionName().strip()
                 if session_name and self.session_controller.begin_session(session_name):
-                    self.session_controller.update_session_name(session_name)
                     print(f"Nombre de la sesión: {session_name}")
                     self.startButton.setText(self.tr("Log Out")) 
                     self.SessionState = True

@@ -33,3 +33,15 @@ class DbLink:
     @abstractmethod
     def print_all_sessions(self):
         pass
+    
+    @abstractmethod
+    def get_session(self, name:str)->dict:
+        pass
+
+    @abstractmethod
+    def get_sessions(self):
+        pass
+
+    @abstractmethod
+    def is_session_attached(self):
+        pass

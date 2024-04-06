@@ -23,5 +23,5 @@ class DvrLink(ABC):
         pass
 
     @abstractmethod
-    def update_session_name(self) -> RecordInfo:
+    def set_folder(self, name:str) -> None:
         pass

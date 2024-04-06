@@ -12,28 +12,28 @@ class HikvisionDvrLink(DvrLink):
         self.url = url
         self.username = user
         self.password = password
-        self.session_name = ''
-        self.session_directory = os.path.join(dir, self.session_name)
+        self.folder = None
         self.dir = dir
-        os.makedirs(self.session_directory, exist_ok=True)
+        os.makedirs(self.dir, exist_ok=True)
 
     def take_image(self) -> ImageInfo:
-        image_url = f"{self.url}/ISAPI/Streaming/channels/101/picture?videoResolutionWidth=1280&videoResolutionHeight=720"
-        
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        image_name = f'image_{timestamp}.jpg' 
-        image_path = os.path.join(self.session_directory, image_name)  
-        
-        response = requests.get(image_url, auth=HTTPBasicAuth(self.username, self.password))
-        
-        if response.status_code == 200:
-            with open(image_path, 'wb') as image_file:
-                image_file.write(response.content)
+        if self.folder:
+            image_url = f"{self.url}/ISAPI/Streaming/channels/101/picture?videoResolutionWidth=1280&videoResolutionHeight=720"
             
-            return ImageInfo(image_path, timestamp)
-        else:
-            print(f"Error al capturar la imagen: {response.status_code}")
-            return ImageInfo('', '')
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            image_name = f'image_{timestamp}.jpg' 
+            image_path = os.path.join(self.storage, image_name)  
+            
+            response = requests.get(image_url, auth=HTTPBasicAuth(self.username, self.password))
+            
+            if response.status_code == 200:
+                with open(image_path, 'wb') as image_file:
+                    image_file.write(response.content)
+                
+                return ImageInfo(image_path, timestamp)
+            else:
+                print(f"Error al capturar la imagen: {response.status_code}")
+                return ImageInfo('', '')
 
     def download_image(self, image_info: ImageInfo) -> str:
         if os.path.exists(image_info.path):
@@ -46,6 +46,7 @@ class HikvisionDvrLink(DvrLink):
             return ""
 
     def download_video(self, record_info:RecordInfo) -> str:
+        # TODO: Aquí implementar la descarga del archivo de video en una carpeta temporal del raspberry y devolver la ruta del archivo descargado
         return record_info.path
 
     def start_recording(self) -> bool:
@@ -66,10 +67,10 @@ class HikvisionDvrLink(DvrLink):
             end_time = datetime.now().strftime('%Y%m%d_%H%M%S')
         else:
             print(f"Error al detener grabación: {response.status_code}")
-        return RecordInfo(self.session_directory, end_time, self.start_time)
+        return RecordInfo(self.storage, end_time, self.start_time)
     
-    def update_session_name(self, new_session_name: str):
-        self.session_name = new_session_name
-        self.session_directory = os.path.join(self.dir, self.session_name)
-        os.makedirs(self.session_directory, exist_ok=True)
+    def set_folder(self, name: str):
+        self.folder = name
+        self.storage = os.path.join(self.dir, self.folder)
+        os.makedirs(self.storage, exist_ok=True)
     

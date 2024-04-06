@@ -5,6 +5,7 @@ from Video.ports.db_link import DbLink
 class TinyDbLink(DbLink):
     def __init__(self, db_name:str) -> None:
         self.db = TinyDB(db_name)
+        self.doc_id = None
         
     def create(self, name:str) -> bool:
         if not self.session_exists(name=name):
@@ -53,3 +54,15 @@ class TinyDbLink(DbLink):
 
     def print_all_sessions(self):
         print(self.db.all())
+
+    def get_sessions(self):
+        return self.db.all()
+    
+    def get_session(self, name:str)->dict:
+        return self.db.get(Query().name == name)
+    
+    def is_session_attached(self):
+        if self.doc_id:
+            return True
+        else:
+            return False
