@@ -12,14 +12,20 @@ from Communication.domain.entities import TelemetryMessage
 from Communication.domain.use_cases.notify_telemetry import NotifyTelemetry
 from Inspection.ports.session_controller import SessionController
 from Inspection.ui.session_name_dialog import SessionNameDialog
+from Inspection.ui.sessions_list_dialog import SessionsListDialog
+from Video.domain.use_cases.control_session import ControlSession
 
 class MainWindow(QMainWindow):
     video_changed_signal = pyqtSignal(VideoMessage)
     telemetry_updated_signal = pyqtSignal(TelemetryMessage)
     
     
-    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController, ) -> None:
+    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController, control_session_use_case: ControlSession,  ) -> None:
         super().__init__()
+        self.latest_temperature = "N/A"
+        self.latest_humidity = "N/A"
+        self.latest_x_slop = "N/A"
+        self.latest_y_slop = "N/A"
         self.robot_controller = robot_controller
         self.camera_controller = camera_controller
         self.video_notifier = video_notifier
@@ -32,6 +38,7 @@ class MainWindow(QMainWindow):
         self.telemetry_notifier.register_observer(self.telemetry_observer)
 
         self.session_controller = session_controller
+        self.control_session_user_case = control_session_use_case 
 
         self.translator = QTranslator(self)
         self.SessionState = False  
@@ -55,7 +62,7 @@ class MainWindow(QMainWindow):
         self.image_label = QLabel()
         self.image_label.setFixedSize(720, 450)
         video_telemetry_layout.addWidget(self.image_label)
-                        
+        
 
         record_layout = QHBoxLayout()  
         self.record_button = QPushButton(self.tr("Start Record")) 
@@ -79,7 +86,7 @@ class MainWindow(QMainWindow):
         
         warning_layout = QHBoxLayout()
         self.warning_label = QLabel(self.tr("Warning"))
-        self.warning_text = QTextEdit(self.tr(f"No hay advertencias.")) 
+        self.warning_text = QTextEdit(self.tr(f"There are no warnings.")) 
         self.warning_text.setReadOnly(True)  
         self.warning_text.setFixedHeight(25)  
         
@@ -101,11 +108,14 @@ class MainWindow(QMainWindow):
         self.startButton = QPushButton(self.tr('Log In'))
         self.startButton.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/session.png"))
         self.startButton.setIconSize(QSize(45,20))
-        self.closeButton = QPushButton(self.tr('Close'))
+        self.closeButton = QPushButton(self.tr("Close"))
         self.closeButton.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/close.png"))
         self.closeButton.setIconSize(QSize(45,20))
-        self.closeButton.clicked.connect(self.close)
+        self.downloadButton = QPushButton(self.tr("Download Sessions"))
+        self.downloadButton.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/download.png"))
+        self.downloadButton.setIconSize(QSize(45,20))
         session_layout.addWidget(self.startButton)
+        session_layout.addWidget(self.downloadButton)
         session_layout.addWidget(self.closeButton)        
         video_telemetry_layout.addLayout(session_layout)
                       
@@ -264,6 +274,8 @@ class MainWindow(QMainWindow):
 
         self.record_button.clicked.connect(self.updateRecordButtonState)
         self.startButton.clicked.connect(self.openSessionNameDialog)
+        self.downloadButton.clicked.connect(self.openSessionsListDialog)
+        self.closeButton.clicked.connect(self.close)
         
 
         # Connect camera buttons
@@ -296,12 +308,19 @@ class MainWindow(QMainWindow):
         self.telemetry_notifier.start_listening()
 
         #Connect session
-        self.record_button.pressed.connect(self.session_controller.start_recording)
-        self.record_button.released.connect(self.session_controller.stop_recording)
+        self.record_button.clicked.connect(self.toggleRecording)
         self.capture_button.clicked.connect(self.session_controller.take_capture)
 
     def toggleTelemetryVisibility(self, state):
         self.telemetry_label.setVisible(self.telemetryCheckbox.isChecked())
+    
+    def toggleRecording(self):
+        if self.isRecording:
+            self.session_controller.start_recording()
+        else:
+            self.session_controller.stop_recording()
+        self.isRecording = not self.isRecording
+        self.updateRecordButtonState()
 
       
     def openSessionNameDialog(self):
@@ -318,11 +337,11 @@ class MainWindow(QMainWindow):
                     self.record_button.setEnabled(True)
                     self.capture_button.setEnabled(True)                
                 else:
-                    print('El nombre de la sesion no es valido')
+                    print('The session name is not valid')
                     msgBox = QMessageBox()
                     msgBox.setIcon(QMessageBox.Icon.Warning)  
-                    msgBox.setWindowTitle(self.tr("Error de sesión"))  
-                    msgBox.setText(self.tr("El nombre de la sesión no es válido.")) 
+                    msgBox.setWindowTitle(self.tr("Session error"))  
+                    msgBox.setText(self.tr(f"The name {session_name} is not valid.")) 
                     msgBox.setStandardButtons(QMessageBox.StandardButton.Ok)  
                     msgBox.exec()  
             
@@ -330,9 +349,9 @@ class MainWindow(QMainWindow):
             if self.record_button.text() == self.tr("Stop Record"):
                 msgBox = QMessageBox()
                 msgBox.setIcon(QMessageBox.Icon.Warning)
-                msgBox.setWindowTitle(self.tr(self.tr("Advertencia")))
-                msgBox.setText(self.tr("La grabación está activa."))
-                msgBox.setInformativeText(self.tr("Por favor, detén la grabación antes de cerrar sesión."))
+                msgBox.setWindowTitle(self.tr(self.tr("Warning")))
+                msgBox.setText(self.tr("Recording in progress."))
+                msgBox.setInformativeText(self.tr("Please stop recording before loging out."))
                 msgBox.setStandardButtons(QMessageBox.StandardButton.Ok)
                 msgBox.exec()
             else:
@@ -343,6 +362,11 @@ class MainWindow(QMainWindow):
                 self.record_button.setEnabled(False)
                 self.capture_button.setEnabled(False)
                 self.session_controller.finish_session()
+
+    def openSessionsListDialog(self): 
+        dialog = SessionsListDialog(self.control_session_user_case, json_file_path= "/home/iiot/Documents/Terminal/SessionsDB.json")
+        if dialog.exec():
+            pass
 
 
     def changeLanguage(self, index):
@@ -370,11 +394,11 @@ class MainWindow(QMainWindow):
         
     def retranslateUi(self):
         # Actualizar el título de la ventana y otros textos estáticos
-        if self.record_button.text() == "Start Record" or self.record_button.text() == "Iniciar Grabación": 
-            self.record_button.setText(self.tr("Start Record"))
-        else: 
+        if self.isRecording:  
             self.record_button.setText(self.tr("Stop Record"))
-
+        else: 
+            self.record_button.setText(self.tr("Start Record"))
+        
         if self.SessionState:
             self.startButton.setText(self.tr("Log Out"))
         else:
@@ -408,6 +432,9 @@ class MainWindow(QMainWindow):
         self.btn_focus_in.setText(self.tr("Focus In"))
         self.btn_focus_out.setText(self.tr("Focus Out"))
         self.btn_init_encoder.setText(self.tr("Initialize Reel"))
+        self.warning_text.setText(self.tr("No warnings."))
+        self.downloadButton.setText(self.tr("Download Sessions"))
+        
 
     def load_translation(self, language_code):
         translation_file = f"/home/iiot/Documents/Terminal/src/Translations/{language_code}.qm"
@@ -422,9 +449,9 @@ class MainWindow(QMainWindow):
          if self.SessionState:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Icon.Warning)
-            msgBox.setWindowTitle(self.tr("Advertencia"))
-            msgBox.setText(self.tr("La sesión está activa."))
-            msgBox.setInformativeText(self.tr("Por favor, cierra la sesión antes de cerrar el programa."))
+            msgBox.setWindowTitle(self.tr("Warning"))
+            msgBox.setText(self.tr("Session in progress."))
+            msgBox.setInformativeText(self.tr("Please log out before closing the program."))
             msgBox.setStandardButtons(QMessageBox.StandardButton.Ok)
             msgBox.exec()
 
@@ -446,26 +473,31 @@ class MainWindow(QMainWindow):
         p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)
         return QPixmap.fromImage(p)
     
-    @pyqtSlot(TelemetryMessage)
     def update_telemetry(self, telemetry: TelemetryMessage):
-        temperature = telemetry.variables.get("Temperature", "N/A")
-        humidity = telemetry.variables.get("Humidity", "N/A")
-        x_slop = telemetry.variables.get("X slop", "N/A")
-        y_slop = telemetry.variables.get("Y slop", "N/A")
+        # Actualizar los atributos con los nuevos valores si están disponibles
+        self.latest_temperature = telemetry.variables.get("Temperature", self.latest_temperature)
+        self.latest_humidity = telemetry.variables.get("Humidity", self.latest_humidity)
+        self.latest_x_slop = telemetry.variables.get("X slop", self.latest_x_slop)
+        self.latest_y_slop = telemetry.variables.get("Y slop", self.latest_y_slop)
         motor_status = telemetry.variables.get("Motor status", "N/A")
-       
+
+        # Construir el texto de telemetría con los últimos valores conocidos
         telemetry_text = (f"{self.tr('Telemetry')}\n"
-                  f"{self.tr('Temperature:')} {temperature} °C \n"
-                  f"{self.tr('Humidity:')} {humidity} HR \n"
-                  f"{self.tr('X slop:')} {x_slop} °\n"
-                  f"{self.tr('Y slop:')} {y_slop} °")
-        
-        self.telemetry_label.setText(self.tr(telemetry_text))
+                          f"{self.tr('Temperature:')} {self.latest_temperature} °C \n"
+                          f"{self.tr('Humidity:')} {self.latest_humidity} HR \n"
+                          f"{self.tr('X slop:')} {self.latest_x_slop} °\n"
+                          f"{self.tr('Y slop:')} {self.latest_y_slop} °")
+
+        # Actualizar la etiqueta con el texto de telemetría
+        self.telemetry_label.setText(telemetry_text)
         self.telemetry_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        if (motor_status == 0xC0):
+        print(telemetry.variables) 
+        # Actualizar el texto de advertencia basado en el estado del motor
+        if motor_status == 0xC0:
             self.warning_text.setText(self.tr("No warnings."))
-        elif (motor_status == 0xE0): 
+        elif motor_status == 0xE0:
             self.warning_text.setText(self.tr("Caution locked wheels."))
+
     
     
     

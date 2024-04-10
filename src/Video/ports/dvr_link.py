@@ -7,11 +7,11 @@ class DvrLink(ABC):
         pass
 
     @abstractmethod
-    def download_image(self, image_info:ImageInfo) -> str:
+    def download_video(self, json_data, session_name, target_folder):
         pass
 
     @abstractmethod
-    def download_video(self, record_info:RecordInfo) -> str:
+    def search_video(self, json_path, session_name):
         pass
 
     @abstractmethod

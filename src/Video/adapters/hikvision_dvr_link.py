@@ -1,9 +1,13 @@
 from Video.ports.dvr_link import DvrLink
 from Video.domain.entities import ImageInfo, RecordInfo
-import requests
 from requests.auth import HTTPBasicAuth
+from datetime import datetime, timedelta
+import json
+import xml.etree.ElementTree as ET
 import os
-from datetime import datetime
+import requests
+import subprocess
+import shlex
 
 
 class HikvisionDvrLink(DvrLink):
@@ -35,19 +39,110 @@ class HikvisionDvrLink(DvrLink):
                 print(f"Error al capturar la imagen: {response.status_code}")
                 return ImageInfo('', '')
 
-    def download_image(self, image_info: ImageInfo) -> str:
-        if os.path.exists(image_info.path):
-            # Las imágenes no se guardan en el DVR, el jpg se envía como respuesta a la  
-            # petición HTTP y es almacendado en el propio computador en el path especificado
-            return image_info.path
-        else:
-            
-            print("El archivo de imagen no existe en la ruta proporcionada.")
-            return ""
+    def search_video(self, json_path, session_name):
+        print("Buscando video")
+        print(json_path)
+        playback_uris = []  
+        with open(json_path, 'r') as file:
+            json_data = json.load(file)
+            print("Abriendo base de datos ")
+        
+        print(f"Buscando sesión: {session_name}")  
+        self.session_found = False
+    
+        playback_uris = []  
 
-    def download_video(self, record_info:RecordInfo) -> str:
-        # TODO: Aquí implementar la descarga del archivo de video en una carpeta temporal del raspberry y devolver la ruta del archivo descargado
-        return record_info.path
+        for session_info in json_data["_default"].values():
+            print(f"Revisando sesión: {session_info['name']}")
+            if session_info["name"] == session_name:
+                print("Sesión encontrada.")
+                self.session_found = True
+                records = session_info.get("records", [])
+                if not records:
+                    print("No existen grabaciones.")
+                else:
+                    for record in records:
+                        start_time = record["start_date_time"]
+                        stop_time = record["stop_date_time"]
+                        start_time = datetime.strptime(start_time, "%Y%m%d_%H%M%S").strftime("%Y-%m-%dT%H:%M:%SZ")
+                        stop_time = datetime.strptime(stop_time, "%Y%m%d_%H%M%S").strftime("%Y-%m-%dT%H:%M:%SZ")
+                        print(f"Start Time: {start_time}, Stop Time: {stop_time}")
+
+                    video_url = f"{self.url}/ISAPI/ContentMgmt/search"
+                    xml_body = f"""<?xml version="1.0" encoding="utf-8"?>
+                                    <CMSearchDescription>
+                                    <searchID>484c3433-3733-3131-3636-e0baadf09c77</searchID>
+                                    <trackList>
+                                    <trackID>101</trackID></trackList>
+                                    <timeSpanList>
+                                    <timeSpan>
+                                    <startTime>{start_time}</startTime>
+                                    <endTime>{stop_time}</endTime>
+                                    </timeSpan>
+                                    </timeSpanList>
+                                    <maxResults>100</maxResults>
+                                    <searchResultPostion>0</searchResultPostion>
+                                    <metadataList>
+                                    <metadataDescriptor>//recordType.meta.std-cgi.com</metadataDescriptor>
+                                    </metadataList>
+                                    </CMSearchDescription>"""
+
+                    headers = {'Content-Type': 'application/xml'}
+
+                    response = requests.post(video_url, data=xml_body, headers=headers, auth=HTTPBasicAuth(self.username, self.password))
+
+                    if response.status_code == 200:
+                        print("Respuesta recibida con éxito.")
+                        root = ET.fromstring(response.text)
+                        ns = {'default': 'http://www.hikvision.com/ver20/XMLSchema'}
+                        playback_uris = [elem.text for elem in root.findall(".//default:mediaSegmentDescriptor/default:playbackURI", namespaces=ns)]
+
+                    else:
+                        print(f"Error en la petición: {response.status_code}")
+                        print(response.text)
+
+        return playback_uris
+     
+
+    def download_video(self, json_data, session_name, target_folder):
+        video_uris = self.search_video(json_data, session_name)
+        download_url = f"{self.url}/ISAPI/ContentMgmt/download"
+        download_success = True  
+
+        for i, uri in enumerate(video_uris, start=1):
+            xml_body = f"""<?xml version="1.0" encoding="utf-8"?>
+                        <downloadRequest version="1.0" xmlns="http://www.isapi.org/ver20/XMLSchema">
+                        <playbackURI>{uri}</playbackURI>
+                        </downloadRequest>"""
+
+            if not target_folder.endswith("/"):
+                target_folder += "/"
+            output_file = f"{target_folder}_video_{session_name}_{i}.mp4"
+
+            curl_command = f'curl -X POST -d \'{xml_body}\' -H "Content-Type: application/xml" --user "{self.username}:{self.password}" -o "{output_file}" "{download_url}"'
+
+            args = shlex.split(curl_command)
+
+            try:
+                subprocess.run(args, check=True)
+                print(f"Descarga exitosa para: {uri}, guardado en {output_file}")
+            except subprocess.CalledProcessError as e:
+                print(f"Error en la descarga para: {uri} - Error: {e}")
+                download_success = False  
+                
+        return download_success
+  
+        
+       
+
+         
+    
+    def adjust_time(self, time_str: str, delta: int, unit: str = 'minutes') -> str:
+        time = datetime.strptime(time_str, '%Y%m%d_%H%M%S')
+        adjusted_time = time - timedelta(**{unit: delta})
+        adjusted_time_str = adjusted_time.strftime('%Y%m%d_%H%M%S')
+        
+        return adjusted_time_str
 
     def start_recording(self) -> bool:
         start_url = f"{self.url}/ISAPI/ContentMgmt/record/control/manual/start/tracks/101"
