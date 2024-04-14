@@ -14,13 +14,21 @@ from Inspection.ports.session_controller import SessionController
 from Inspection.ui.session_name_dialog import SessionNameDialog
 from Inspection.ui.sessions_list_dialog import SessionsListDialog
 from Video.domain.use_cases.control_session import ControlSession
+from Panel_and_Feeder.adapters.qt_panel_observer import QtPanelObserver
+from Panel_and_Feeder.adapters.qt_feeder_observer import QtFeederObserver
+from Panel_and_Feeder.domain.feeder_notifier import FeederNotifier
+from Panel_and_Feeder.domain.panel_notifier import PanelNotifier
+from Panel_and_Feeder.domain.entities import RobotControlData, CameraControlData, FeederControlData
 
 class MainWindow(QMainWindow):
     video_changed_signal = pyqtSignal(VideoMessage)
     telemetry_updated_signal = pyqtSignal(TelemetryMessage)
+    robot_control_changed_signal = pyqtSignal(RobotControlData)
+    camera_control_changed_signal = pyqtSignal(CameraControlData)
+    feeder_control_changed_signal = pyqtSignal(FeederControlData)
     
     
-    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController, control_session_use_case: ControlSession,  ) -> None:
+    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController, control_session_use_case: ControlSession, panel_observer:QtPanelObserver, panel_notifier:PanelNotifier, feeder_observer:QtFeederObserver, feeder_notifier:FeederNotifier) -> None:
         super().__init__()
         self.latest_temperature = "N/A"
         self.latest_humidity = "N/A"
@@ -36,6 +44,15 @@ class MainWindow(QMainWindow):
         self.telemetry_observer = telemetry_observer
         self.telemetry_observer.register_signal(self.telemetry_updated_signal)
         self.telemetry_notifier.register_observer(self.telemetry_observer)
+        self.panel_notifier = panel_notifier
+        self.panel_observer = panel_observer
+        self.panel_observer.register_robot_signal(self.robot_control_changed_signal)
+        self.panel_observer.register_camera_signal(self.camera_control_changed_signal)
+        self.panel_notifier.register_observer(self.panel_observer)
+        self.feeder_notifier = feeder_notifier
+        self.feeder_observer = feeder_observer
+        self.feeder_observer.register_feeder_signal(self.feeder_control_changed_signal)
+        self.feeder_notifier.register_observer(self.feeder_observer)
 
         self.session_controller = session_controller
         self.control_session_user_case = control_session_use_case 
@@ -311,6 +328,12 @@ class MainWindow(QMainWindow):
         self.record_button.clicked.connect(self.toggleRecording)
         self.capture_button.clicked.connect(self.session_controller.take_capture)
 
+        # Connect panel and feeder controllers
+        self.robot_control_changed_signal.connect(self.robot_control_data_controller)
+        self.camera_control_changed_signal.connect(self.camera_control_data_controller)
+        self.feeder_control_changed_signal.connect(self.feeder_control_data_controller)
+        self.panel_notifier.start_listening()
+
     def toggleTelemetryVisibility(self, state):
         self.telemetry_label.setVisible(self.telemetryCheckbox.isChecked())
     
@@ -498,7 +521,15 @@ class MainWindow(QMainWindow):
         elif motor_status == 0xE0:
             self.warning_text.setText(self.tr("Caution locked wheels."))
 
-    
-    
-    
+    @pyqtSlot(RobotControlData)
+    def robot_control_data_controller(self, data: RobotControlData):
+        print('Robot data UI Controller:', data)
+
+    @pyqtSlot(CameraControlData)
+    def camera_control_data_controller(self, data: CameraControlData):
+        print('Camera data UI Controller:', data)
+
+    @pyqtSlot(FeederControlData)
+    def feeder_control_data_controller(self, data: FeederControlData):
+        print('Feeder data UI Controller:', data)
     

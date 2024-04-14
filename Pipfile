@@ -11,6 +11,7 @@ multipledispatch = "*"
 opencv-contrib-python = "*"
 tinydb = "*"
 requests = "*"
+pyserial = "*"
 
 [dev-packages]
 
