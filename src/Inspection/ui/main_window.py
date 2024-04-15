@@ -496,6 +496,7 @@ class MainWindow(QMainWindow):
         p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)
         return QPixmap.fromImage(p)
     
+    @pyqtSlot(TelemetryMessage)
     def update_telemetry(self, telemetry: TelemetryMessage):
         # Actualizar los atributos con los nuevos valores si están disponibles
         self.latest_temperature = telemetry.variables.get("Temperature", self.latest_temperature)
