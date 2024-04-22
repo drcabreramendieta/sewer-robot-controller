@@ -13,7 +13,6 @@ from Communication.domain.use_cases.notify_telemetry import NotifyTelemetry
 from Inspection.ports.session_controller import SessionController
 from Inspection.ui.session_name_dialog import SessionNameDialog
 from Inspection.ui.sessions_list_dialog import SessionsListDialog
-from Video.domain.use_cases.control_session import ControlSession
 from Panel_and_Feeder.adapters.qt_panel_observer import QtPanelObserver
 from Panel_and_Feeder.adapters.qt_feeder_observer import QtFeederObserver
 from Panel_and_Feeder.domain.feeder_notifier import FeederNotifier
@@ -28,12 +27,13 @@ class MainWindow(QMainWindow):
     feeder_control_changed_signal = pyqtSignal(FeederControlData)
     
     
-    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController, control_session_use_case: ControlSession, panel_observer:QtPanelObserver, panel_notifier:PanelNotifier, feeder_observer:QtFeederObserver, feeder_notifier:FeederNotifier) -> None:
+    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController, panel_observer:QtPanelObserver, panel_notifier:PanelNotifier, feeder_observer:QtFeederObserver, feeder_notifier:FeederNotifier) -> None:
         super().__init__()
         self.latest_temperature = "N/A"
         self.latest_humidity = "N/A"
         self.latest_x_slop = "N/A"
         self.latest_y_slop = "N/A"
+        self.latest_distance = "N/A"
         self.robot_controller = robot_controller
         self.camera_controller = camera_controller
         self.video_notifier = video_notifier
@@ -55,16 +55,16 @@ class MainWindow(QMainWindow):
         self.feeder_notifier.register_observer(self.feeder_observer)
 
         self.session_controller = session_controller
-        self.control_session_user_case = control_session_use_case 
+        
 
         self.translator = QTranslator(self)
         self.SessionState = False  
         self.isRecording = False
               
-        self.disply_width = 960
-        self.display_height = 470
+        self.disply_width = 720
+        self.display_height = 480
         self.disply_width_telemetry = 720
-        self.display_height_telemetry = 460
+        self.display_height_telemetry = 410
         
         self.init_ui()
         self.setup_connections()
@@ -80,14 +80,14 @@ class MainWindow(QMainWindow):
         self.image_label.setFixedSize(720, 450)
         video_telemetry_layout.addWidget(self.image_label)
         
-
+        
         record_layout = QHBoxLayout()  
         self.record_button = QPushButton(self.tr("Start Record")) 
-        self.record_button.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/record.png"))
+        self.record_button.setIcon(QIcon("src/Inspection/Icons/record.png"))
         self.record_button.setIconSize(QSize(45,20))
         self.record_button.setEnabled(False)
         self.capture_button = QPushButton(self.tr("Capture Image")) 
-        self.capture_button.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/capture.png"))
+        self.capture_button.setIcon(QIcon("src/Inspection/Icons/capture.png"))
         self.capture_button.setIconSize(QSize(45,20))
         self.capture_button.setEnabled(False)
         record_layout.addWidget(self.record_button)
@@ -123,13 +123,13 @@ class MainWindow(QMainWindow):
         
         session_layout = QHBoxLayout()  
         self.startButton = QPushButton(self.tr('Log In'))
-        self.startButton.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/session.png"))
+        self.startButton.setIcon(QIcon("src/Inspection/Icons/session.png"))
         self.startButton.setIconSize(QSize(45,20))
         self.closeButton = QPushButton(self.tr("Close"))
-        self.closeButton.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/close.png"))
+        self.closeButton.setIcon(QIcon("src/Inspection/Icons/close.png"))
         self.closeButton.setIconSize(QSize(45,20))
         self.downloadButton = QPushButton(self.tr("Download Sessions"))
-        self.downloadButton.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/download.png"))
+        self.downloadButton.setIcon(QIcon("src/Inspection/Icons/download.png"))
         self.downloadButton.setIconSize(QSize(45,20))
         session_layout.addWidget(self.startButton)
         session_layout.addWidget(self.downloadButton)
@@ -144,22 +144,22 @@ class MainWindow(QMainWindow):
 
         movement_layout = QGridLayout()
         self.btn_forward = QPushButton(self.tr("Forward"))
-        self.btn_forward.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Forward.png"))
+        self.btn_forward.setIcon(QIcon("src/Inspection/Icons/Forward.png"))
         self.btn_forward.setIconSize(QSize(45,25))
         self.btn_backward = QPushButton(self.tr("Backward"))
-        self.btn_backward.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Backward.png"))
+        self.btn_backward.setIcon(QIcon("src/Inspection/Icons/Backward.png"))
         self.btn_backward.setIconSize(QSize(45,25))
         self.btn_left_forward = QPushButton(self.tr("Left Forward"))
-        self.btn_left_forward.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Left Forward.png"))
+        self.btn_left_forward.setIcon(QIcon("src/Inspection/Icons/Left Forward.png"))
         self.btn_left_forward.setIconSize(QSize(45,25))
         self.btn_right_forward = QPushButton(self.tr("Right Forward"))
-        self.btn_right_forward.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Right Forward.png"))
+        self.btn_right_forward.setIcon(QIcon("src/Inspection/Icons/Right Forward.png"))
         self.btn_right_forward.setIconSize(QSize(45,25))
         self.btn_left_backward = QPushButton(self.tr("Left Backward"))
-        self.btn_left_backward.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Left Backward.png"))
+        self.btn_left_backward.setIcon(QIcon("src/Inspection/Icons/Left Backward.png"))
         self.btn_left_backward.setIconSize(QSize(45,25))
         self.btn_right_backward = QPushButton(self.tr("Right Backward"))
-        self.btn_right_backward.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Right Backward.png"))
+        self.btn_right_backward.setIcon(QIcon("src/Inspection/Icons/Right Backward.png"))
         self.btn_right_backward.setIconSize(QSize(45,25))
 
         movement_layout.addWidget(self.btn_left_forward, 0, 0)
@@ -194,7 +194,7 @@ class MainWindow(QMainWindow):
         camera_layout = QGridLayout()
         self.btn_init_camera = QPushButton(self.tr("Initialize Camera"))
         camera_layout.addWidget(self.btn_init_camera, 0, 0, 1, 2)  # Span 2 columns
-        self.btn_init_camera.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/init.png"))
+        self.btn_init_camera.setIcon(QIcon("src/Inspection/Icons/init.png"))
         self.btn_init_camera.setIconSize(QSize(45,25))
 
 
@@ -202,18 +202,18 @@ class MainWindow(QMainWindow):
         self.btn_tilt_up = QPushButton(self.tr("Tilt Up"))
         camera_layout.addWidget(self.btn_tilt_down, 1, 0)
         camera_layout.addWidget(self.btn_tilt_up, 1, 1)
-        self.btn_tilt_down.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Tilt down.png"))
+        self.btn_tilt_down.setIcon(QIcon("src/Inspection/Icons/Tilt down.png"))
         self.btn_tilt_down.setIconSize(QSize(45,25))
-        self.btn_tilt_up.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Tilt up.png"))
+        self.btn_tilt_up.setIcon(QIcon("src/Inspection/Icons/Tilt up.png"))
         self.btn_tilt_up.setIconSize(QSize(45,25))
 
         self.btn_pan_left = QPushButton(self.tr("Pan Left"))
         self.btn_pan_right = QPushButton(self.tr("Pan Right"))
         camera_layout.addWidget(self.btn_pan_left, 2, 0)
         camera_layout.addWidget(self.btn_pan_right, 2, 1)
-        self.btn_pan_left.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Pan Left.png"))
+        self.btn_pan_left.setIcon(QIcon("src/Inspection/Icons/Pan Left.png"))
         self.btn_pan_left.setIconSize(QSize(45,25))
-        self.btn_pan_right.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Pan Right.png"))
+        self.btn_pan_right.setIcon(QIcon("src/Inspection/Icons/Pan Right.png"))
         self.btn_pan_right.setIconSize(QSize(45,25))
 
         self.btn_focus_out = QPushButton(self.tr("Focus Out"))
@@ -221,9 +221,9 @@ class MainWindow(QMainWindow):
         camera_layout.addWidget(self.btn_focus_out, 3, 0)
         camera_layout.addWidget(self.btn_focus_in, 3, 1)
         controls_layout.addLayout(camera_layout)
-        self.btn_focus_out.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Focus Out.png"))
+        self.btn_focus_out.setIcon(QIcon("src/Inspection/Icons/Focus Out.png"))
         self.btn_focus_out.setIconSize(QSize(45,25))
-        self.btn_focus_in.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Focus In.png"))
+        self.btn_focus_in.setIcon(QIcon("src/Inspection/Icons/Focus In.png"))
         self.btn_focus_in.setIconSize(QSize(45,25))
 
         # Layout para controles de iluminación
@@ -243,7 +243,7 @@ class MainWindow(QMainWindow):
         encoder_controls_layout = QHBoxLayout()
         self.label_encoder_controls = QLabel(self.tr("Reel"))
         self.btn_init_encoder = QPushButton(self.tr("Initialize Reel"))
-        self.btn_init_encoder.setIcon(QIcon("/home/iiot/Documents/Terminal/src/Icons/Reel.png"))
+        self.btn_init_encoder.setIcon(QIcon("src/Inspection/Icons/Reel.png"))
         self.btn_init_encoder.setIconSize(QSize(45,25))
         encoder_controls_layout.addWidget(self.label_encoder_controls, alignment=Qt.AlignmentFlag.AlignVCenter)
         encoder_controls_layout.addWidget(self.btn_init_encoder)
@@ -387,14 +387,14 @@ class MainWindow(QMainWindow):
                 self.session_controller.finish_session()
 
     def openSessionsListDialog(self): 
-        dialog = SessionsListDialog(self.control_session_user_case, json_file_path= "/home/iiot/Documents/Terminal/SessionsDB.json")
+        dialog = SessionsListDialog(self.session_controller)
         if dialog.exec():
             pass
 
 
     def changeLanguage(self, index):
         language_code = self.languageComboBox.itemData(index)
-        self.translator.load(f"/home/iiot/Documents/Terminal/src/Translations/{language_code}.qm")
+        self.translator.load(f"src/Inspection/Translations/{language_code}.qm")
         _app = QApplication.instance()
         _app.installTranslator(self.translator)
         
@@ -460,7 +460,7 @@ class MainWindow(QMainWindow):
         
 
     def load_translation(self, language_code):
-        translation_file = f"/home/iiot/Documents/Terminal/src/Translations/{language_code}.qm"
+        translation_file = f"src/Inspection/Translations/{language_code}.qm"
         if QFile.exists(translation_file):
             self.translator.load(translation_file)
             _app = QApplication.instance()
@@ -469,6 +469,7 @@ class MainWindow(QMainWindow):
         self.retranslateUi()
 
     def closeEvent(self, event):
+         self.panel_notifier.stop_listening()
          if self.SessionState:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Icon.Warning)
@@ -503,19 +504,22 @@ class MainWindow(QMainWindow):
         self.latest_humidity = telemetry.variables.get("Humidity", self.latest_humidity)
         self.latest_x_slop = telemetry.variables.get("X slop", self.latest_x_slop)
         self.latest_y_slop = telemetry.variables.get("Y slop", self.latest_y_slop)
+        
         motor_status = telemetry.variables.get("Motor status", "N/A")
+        
 
         # Construir el texto de telemetría con los últimos valores conocidos
         telemetry_text = (f"{self.tr('Telemetry')}\n"
                           f"{self.tr('Temperature:')} {self.latest_temperature} °C \n"
                           f"{self.tr('Humidity:')} {self.latest_humidity} HR \n"
                           f"{self.tr('X slop:')} {self.latest_x_slop} °\n"
-                          f"{self.tr('Y slop:')} {self.latest_y_slop} °")
+                          f"{self.tr('Y slop:')} {self.latest_y_slop} °\n"
+                          f"{self.tr('Distance:')} {self.latest_distance}")
 
         # Actualizar la etiqueta con el texto de telemetría
         self.telemetry_label.setText(telemetry_text)
         self.telemetry_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        print(telemetry.variables) 
+        #print(telemetry.variables) 
         # Actualizar el texto de advertencia basado en el estado del motor
         if motor_status == 0xC0:
             self.warning_text.setText(self.tr("No warnings."))
@@ -524,13 +528,138 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(RobotControlData)
     def robot_control_data_controller(self, data: RobotControlData):
+        if (data.direction == "F"):
+            print("Mover hacia adelante")
+            self.robot_controller.move_forward()
+            self.btn_forward.setDown(True)
+            self.btn_right_forward.setDown(False)
+            self.btn_left_forward.setDown(False)
+            self.btn_backward.setDown(False)
+            self.btn_left_backward.setDown(False)
+            self.btn_right_backward.setDown(False)
+        elif (data.direction == "FR"):
+            print("Mover hacia adelante derecha")
+            self.robot_controller.rotate_right_forward()
+            self.btn_forward.setDown(False)
+            self.btn_right_forward.setDown(True)
+            self.btn_left_forward.setDown(False)
+            self.btn_backward.setDown(False)
+            self.btn_left_backward.setDown(False)
+            self.btn_right_backward.setDown(False)
+        elif (data.direction == "FL"):
+            print("Mover hacia adelante izquierda")
+            self.robot_controller.rotate_left_forward()
+            self.btn_forward.setDown(False)
+            self.btn_right_forward.setDown(False)
+            self.btn_left_forward.setDown(True)
+            self.btn_backward.setDown(False)
+            self.btn_left_backward.setDown(False)
+            self.btn_right_backward.setDown(False)
+        elif (data.direction == "B"):
+            print("Mover hacia atrás")
+            self.robot_controller.move_backward()
+            self.btn_forward.setDown(False)
+            self.btn_right_forward.setDown(False)
+            self.btn_left_forward.setDown(False)
+            self.btn_backward.setDown(True)
+            self.btn_left_backward.setDown(False)
+            self.btn_right_backward.setDown(False)
+        elif (data.direction == "BL"):
+            print("Mover hacia atrás izquierda")
+            self.robot_controller.rotate_left_backward()
+            self.btn_forward.setDown(False)
+            self.btn_right_forward.setDown(False)
+            self.btn_left_forward.setDown(False)
+            self.btn_backward.setDown(False)
+            self.btn_left_backward.setDown(True)
+            self.btn_right_backward.setDown(False)
+        elif (data.direction == "BR"):
+            print("Mover hacia atrás derecha")
+            self.robot_controller.rotate_right_backward()
+            self.btn_forward.setDown(False)
+            self.btn_right_forward.setDown(False)
+            self.btn_left_forward.setDown(False)
+            self.btn_backward.setDown(False)
+            self.btn_left_backward.setDown(False)
+            self.btn_right_backward.setDown(True)
+        elif (data.direction == "STOP"):
+            print("Detener")
+            self.robot_controller.stop()
+            self.btn_forward.setDown(False)
+            self.btn_right_forward.setDown(False)
+            self.btn_left_forward.setDown(False)
+            self.btn_backward.setDown(False)
+            self.btn_left_backward.setDown(False)
+            self.btn_right_backward.setDown(False)
+            
         print('Robot data UI Controller:', data)
 
     @pyqtSlot(CameraControlData)
     def camera_control_data_controller(self, data: CameraControlData):
+        if (data.movement == "TU"):
+            self.camera_controller.tilt_up()
+            self.btn_tilt_up.setDown(True)
+            self.btn_tilt_down.setDown(False)
+            self.btn_pan_left.setDown(False)
+            self.btn_pan_right.setDown(False)
+        elif (data.movement == "TD"): 
+            self.camera_controller.tilt_down()
+            self.btn_tilt_up.setDown(False)
+            self.btn_tilt_down.setDown(True)
+            self.btn_pan_left.setDown(False)
+            self.btn_pan_right.setDown(False)
+        elif (data.movement == "PL"): 
+            self.camera_controller.pan_left()
+            self.btn_tilt_up.setDown(False)
+            self.btn_tilt_down.setDown(False)
+            self.btn_pan_left.setDown(True)
+            self.btn_pan_right.setDown(False)
+        elif (data.movement == "PR"): 
+            self.camera_controller.pan_left()
+            self.btn_tilt_up.setDown(False)
+            self.btn_tilt_down.setDown(False)
+            self.btn_pan_left.setDown(False)
+            self.btn_pan_right.setDown(True)
+        elif (data.movement == "STOP"): 
+            self.camera_controller.tilt_stop()
+            self.camera_controller.pan_stop()
+            self.btn_tilt_up.setDown(False)
+            self.btn_tilt_down.setDown(False)
+            self.btn_pan_left.setDown(False)
+            self.btn_pan_right.setDown(False)
+        
+        if (int(data.light) >= 90):
+            data.light = "100"
+        elif (int(data.light) <= 10):
+            data.light = "0"
+
+        self.slider_light.setValue(int(data.light))
+
         print('Camera data UI Controller:', data)
 
     @pyqtSlot(FeederControlData)
     def feeder_control_data_controller(self, data: FeederControlData):
+        self.latest_distance = data.distance
+        # Construir el texto de telemetría con los últimos valores conocidos
+        telemetry_text = (f"{self.tr('Telemetry')}\n"
+                          f"{self.tr('Temperature:')} {self.latest_temperature} °C \n"
+                          f"{self.tr('Humidity:')} {self.latest_humidity} HR \n"
+                          f"{self.tr('X slop:')} {self.latest_x_slop} °\n"
+                          f"{self.tr('Y slop:')} {self.latest_y_slop} °\n"
+                          f"{self.tr('Distance:')} {self.latest_distance}")
+
+        # Actualizar la etiqueta con el texto de telemetría
+        self.telemetry_label.setText(telemetry_text)
+        self.telemetry_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        #print(telemetry.variables) 
+        
+        if (data.reset == "RESET"): 
+            self.btn_init_encoder.setDown(True)
+        elif (data.reset == "NO"):
+            self.btn_init_encoder.setDown(False)
+
         print('Feeder data UI Controller:', data)
+
+
+
     

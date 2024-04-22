@@ -2,7 +2,6 @@ from Video.ports.dvr_link import DvrLink
 from Video.domain.entities import ImageInfo, RecordInfo
 from requests.auth import HTTPBasicAuth
 from datetime import datetime, timedelta
-import json
 import xml.etree.ElementTree as ET
 import os
 import requests
@@ -18,6 +17,7 @@ class HikvisionDvrLink(DvrLink):
         self.password = password
         self.folder = None
         self.dir = dir
+        
         os.makedirs(self.dir, exist_ok=True)
 
     def take_image(self) -> ImageInfo:
@@ -39,75 +39,60 @@ class HikvisionDvrLink(DvrLink):
                 print(f"Error al capturar la imagen: {response.status_code}")
                 return ImageInfo('', '')
 
-    def search_video(self, json_path, session_name):
-        print("Buscando video")
-        print(json_path)
-        playback_uris = []  
-        with open(json_path, 'r') as file:
-            json_data = json.load(file)
-            print("Abriendo base de datos ")
-        
-        print(f"Buscando sesión: {session_name}")  
-        self.session_found = False
-    
-        playback_uris = []  
+    def search_video(self, session_info):
+        records = session_info.get("records", [])
+        if not records:
+            print("No existen grabaciones.")
+            return []
 
-        for session_info in json_data["_default"].values():
-            print(f"Revisando sesión: {session_info['name']}")
-            if session_info["name"] == session_name:
-                print("Sesión encontrada.")
-                self.session_found = True
-                records = session_info.get("records", [])
-                if not records:
-                    print("No existen grabaciones.")
+        playback_uris = []
+        for record in records:
+            start_time = datetime.strptime(record["start_date_time"], "%Y%m%d_%H%M%S").strftime("%Y-%m-%dT%H:%M:%SZ")
+            stop_time = datetime.strptime(record["stop_date_time"], "%Y%m%d_%H%M%S").strftime("%Y-%m-%dT%H:%M:%SZ")
+            print(f"Start Time: {start_time}, Stop Time: {stop_time}")
+
+            video_url = f"{self.url}/ISAPI/ContentMgmt/search"
+            xml_body = f"""<?xml version="1.0" encoding="utf-8"?>
+                            <CMSearchDescription>
+                            <searchID>484c3433-3733-3131-3636-e0baadf09c77</searchID>
+                            <trackList>
+                            <trackID>101</trackID>
+                            </trackList>
+                            <timeSpanList>
+                            <timeSpan>
+                            <startTime>{start_time}</startTime>
+                            <endTime>{stop_time}</endTime>
+                            </timeSpan>
+                            </timeSpanList>
+                            <maxResults>100</maxResults>
+                            <searchResultPosition>0</searchResultPosition>
+                            <metadataList>
+                            <metadataDescriptor>//recordType.meta.std-cgi.com</metadataDescriptor>
+                            </metadataList>
+                            </CMSearchDescription>"""
+
+            headers = {'Content-Type': 'application/xml'}
+            try:
+                response = requests.post(video_url, data=xml_body, headers=headers, auth=HTTPBasicAuth(self.username, self.password))
+                if response.status_code == 200:
+                    print("Respuesta recibida con éxito.")
+                    root = ET.fromstring(response.text)
+                    ns = {'default': 'http://www.hikvision.com/ver20/XMLSchema'}
+                    playback_uris.extend([elem.text for elem in root.findall(".//default:mediaSegmentDescriptor/default:playbackURI", namespaces=ns)])
                 else:
-                    for record in records:
-                        start_time = record["start_date_time"]
-                        stop_time = record["stop_date_time"]
-                        start_time = datetime.strptime(start_time, "%Y%m%d_%H%M%S").strftime("%Y-%m-%dT%H:%M:%SZ")
-                        stop_time = datetime.strptime(stop_time, "%Y%m%d_%H%M%S").strftime("%Y-%m-%dT%H:%M:%SZ")
-                        print(f"Start Time: {start_time}, Stop Time: {stop_time}")
+                    print(f"Error en la petición: {response.status_code}")
+                    print(response.text)
+            except requests.exceptions.RequestException as e:
+                print(f"Error en la conexión a la API: {e}")
 
-                    video_url = f"{self.url}/ISAPI/ContentMgmt/search"
-                    xml_body = f"""<?xml version="1.0" encoding="utf-8"?>
-                                    <CMSearchDescription>
-                                    <searchID>484c3433-3733-3131-3636-e0baadf09c77</searchID>
-                                    <trackList>
-                                    <trackID>101</trackID></trackList>
-                                    <timeSpanList>
-                                    <timeSpan>
-                                    <startTime>{start_time}</startTime>
-                                    <endTime>{stop_time}</endTime>
-                                    </timeSpan>
-                                    </timeSpanList>
-                                    <maxResults>100</maxResults>
-                                    <searchResultPostion>0</searchResultPostion>
-                                    <metadataList>
-                                    <metadataDescriptor>//recordType.meta.std-cgi.com</metadataDescriptor>
-                                    </metadataList>
-                                    </CMSearchDescription>"""
-
-                    headers = {'Content-Type': 'application/xml'}
-
-                    response = requests.post(video_url, data=xml_body, headers=headers, auth=HTTPBasicAuth(self.username, self.password))
-
-                    if response.status_code == 200:
-                        print("Respuesta recibida con éxito.")
-                        root = ET.fromstring(response.text)
-                        ns = {'default': 'http://www.hikvision.com/ver20/XMLSchema'}
-                        playback_uris = [elem.text for elem in root.findall(".//default:mediaSegmentDescriptor/default:playbackURI", namespaces=ns)]
-
-                    else:
-                        print(f"Error en la petición: {response.status_code}")
-                        print(response.text)
-
-        return playback_uris
+            return playback_uris
      
 
-    def download_video(self, json_data, session_name, target_folder):
-        video_uris = self.search_video(json_data, session_name)
+    def download_video(self, session_info, target_folder):
+        video_uris = self.search_video(session_info)
         download_url = f"{self.url}/ISAPI/ContentMgmt/download"
         download_success = True  
+        session_name = session_info.get("name")
 
         for i, uri in enumerate(video_uris, start=1):
             xml_body = f"""<?xml version="1.0" encoding="utf-8"?>
@@ -131,8 +116,6 @@ class HikvisionDvrLink(DvrLink):
                 download_success = False  
                 
         return download_success
-  
-        
        
 
          

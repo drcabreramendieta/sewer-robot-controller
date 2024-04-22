@@ -2,19 +2,17 @@ from dataclasses import dataclass
 
 @dataclass
 class RobotControlData:
-    speed: str
     direction: str
 
 @dataclass
 class CameraControlData:
-    pan: str
-    tilt: str
+    movement :str
     light: str
 
 @dataclass
 class FeederControlData:
-    speed: str
-    direction: str
+    distance: str
+    reset: str
 
 @dataclass
 class SerialConfig:

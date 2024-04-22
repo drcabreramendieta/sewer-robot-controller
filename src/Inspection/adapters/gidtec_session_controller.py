@@ -22,11 +22,14 @@ class GidtecSessionController(SessionController):
         print('stop recording')
         self.control_session.run(DvrOrder.STOP_RECORDING)
 
-    def download_session(self, name:str, target:str) -> None:
-        self.control_session.download_session(name=name, target=target)
-
     def finish_session(self) -> None:
         print('No implementado')
 
     def is_new(self, name) -> bool:
         return not self.control_session.name_exists(name)
+    
+    def get_sessions(self) -> list:
+        return self.control_session.get_sessions()
+    
+    def download_session(self, session_name, target_folder): 
+        return self.control_session.download_session(session_name, target_folder)

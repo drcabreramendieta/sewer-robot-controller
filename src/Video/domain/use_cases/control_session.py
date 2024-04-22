@@ -2,7 +2,7 @@ from Video.ports.dvr_link import DvrLink
 from Video.ports.db_link import DbLink
 from Video.domain.entities import DvrOrder
 
-import json
+
 import shutil
 import os
 
@@ -21,50 +21,44 @@ class ControlSession:
     def name_exists(self, name:str) -> bool:
         return self.db_link.session_exists(name=name)
     
-    def get_sessions(self, json_file_path) -> list:
-        with open(json_file_path, 'r') as file:
-            json_data = json.load(file)
-        return [session_info["name"] for session_info in json_data["_default"].values()]
-        
+    def get_sessions(self) -> list:
+        sessions = self.db_link.get_sessions()
+        return [session["name"] for session in sessions]
+
     
-    def download_session(self, json_path, session_name, target_folder):
+    def download_session(self, session_name, target_folder):
         os.makedirs(target_folder, exist_ok=True)
-        with open(json_path, 'r') as file:
-            json_data = json.load(file)
-
-        print(f"Buscando sesión: {session_name}")
-        image_success = True
-        session_found = False
-        content_found = False
-
-        for session_info in json_data["_default"].values():
-            if session_info["name"] == session_name:
-                print(f"Sesión encontrada: {session_name}")
-                session_found = True
-                captures = session_info.get("captures", [])
-                if captures:
-                    content_found = True
-                    for capture in captures:
-                        source_path = capture["path"]
-                        if os.path.exists(source_path):
-                            file_name = os.path.basename(source_path)
-                            destination_path = os.path.join(target_folder, file_name)
-                            shutil.copy(source_path, destination_path)
-                            print(f"Archivo {file_name} copiado correctamente.")
-                        else:
-                            print(f"El archivo {source_path} no existe y no puede ser copiado.")
-                            image_success = False
-                break
-
-        if not session_found:
+        session_info = self.db_link.get_session(session_name)
+        print(session_info)
+        
+        if not session_info:
             print("Sesión no encontrada.")
             return False
 
-        video_uris = self.dvr_link.search_video(json_path, session_name)
+        print(f"Sesión encontrada: {session_name}")
+        image_success = True
+        content_found = False
+
+        captures = session_info.get("captures", [])
+        if captures:
+            content_found = True
+            for capture in captures:
+                source_path = capture["path"]
+                if os.path.exists(source_path):
+                    file_name = os.path.basename(source_path)
+                    destination_path = os.path.join(target_folder, file_name)
+                    print(destination_path)
+                    shutil.copy(source_path, destination_path)
+                    print(f"Archivo {file_name} copiado correctamente.")
+                else:
+                    print(f"El archivo {source_path} no existe y no puede ser copiado.")
+                    image_success = False
+
+        video_uris = self.dvr_link.search_video(session_info)
         video_success = True
         if video_uris:
             content_found = True
-            video_success = self.dvr_link.download_video(json_path, session_name, target_folder)
+            video_success = self.dvr_link.download_video(session_info, target_folder)
 
         if not content_found:
             print("La sesión no cuenta con videos ni imágenes.")

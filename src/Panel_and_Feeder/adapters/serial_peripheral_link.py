@@ -35,18 +35,21 @@ class SerialPeripheralLink(PeripheralLink):
 
     def _process_data(self, data:str) -> None:
         print('Arrived data:', data)
+        data = data.decode('utf-8').strip()
         data_fields = data.split(sep=' ')
         if data_fields[0] == 'robot':
-            # TODO: Process data for robot and create RobotControlData instance
-            robot_control_data = RobotControlData(speed='speed', direction='direction')
+            direction = data_fields[1]
+            robot_control_data = RobotControlData(direction=direction)
             self.robot_callback(robot_control_data)
         elif data_fields[0] == 'camera':
-            # TODO: Process data for camera and create CameraControlData instance
-            camera_control_data = CameraControlData(pan='pan', tilt='tilt', light='light')
+            movement = data_fields[1]
+            light = data_fields[2]
+            camera_control_data = CameraControlData(movement=movement,light=light)
             self.camera_callback(camera_control_data)
         elif data_fields[0] == 'feeder':
-            # TODO: Process data for feeder and create FeederControlData instance
-            feeder_control_data = FeederControlData(speed='speed', direction='direction')
+            distance = data_fields[1]
+            reset = data_fields[2]
+            feeder_control_data = FeederControlData(distance=distance, reset=reset)
             self.feeder_callback(feeder_control_data)
 
     def _capture_peripheral_data(self):
@@ -55,9 +58,14 @@ class SerialPeripheralLink(PeripheralLink):
                 data = input("Ingresa datos seriales:")
                 self._process_data(data=data)
         else:
-            with serial.Serial(port=self.serial_conf.port, baudrate=self.serial_conf.baudrate, timeout=self.serial_conf.timeout) as ser:
-                while self.running:
-                    data = ser.readline()
-                    data = input("Ingresa datos seriales:")
-                    self._process_data(data=data)
-        
+            try:
+                with serial.Serial(port=self.serial_conf.port, baudrate=self.serial_conf.baudrate, timeout=self.serial_conf.timeout) as ser:
+                    while self.running:
+                        data = ser.readline()
+                        if data:
+                            #data = input("Ingresa datos seriales:")
+                            self._process_data(data=data)
+            finally:
+                ser.close()
+                print("Finalizando el hilo de captura de datos serial.")
+            

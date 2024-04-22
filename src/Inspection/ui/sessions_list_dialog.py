@@ -1,18 +1,17 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QListWidget, QApplication, QPushButton, QHBoxLayout, QFileDialog, QMessageBox
-from Video.domain.use_cases.control_session import ControlSession
+from Inspection.adapters.gidtec_session_controller import SessionController
 import os 
 
 class SessionsListDialog(QDialog):
-    def __init__(self, control_session_use_case: ControlSession, json_file_path: str):
+    def __init__(self, control_session=SessionController ):
         super().__init__()
-        self.control_session = control_session_use_case
-        self.json_path = json_file_path
+        self.control_session = control_session
         self.setWindowTitle(self.tr("Session Names"))
         self.resize(400, 300)
         layout = QVBoxLayout()
         
         self.listWidget = QListWidget()
-        session_names = self.control_session.get_sessions(self.json_path)
+        session_names = self.control_session.get_sessions()
         self.listWidget.addItems(session_names)
         layout.addWidget(self.listWidget)
         
@@ -50,10 +49,11 @@ class SessionsListDialog(QDialog):
 
             if baseFolder:
                 sessionFolder = os.path.join(baseFolder, selected_session)
+                print(sessionFolder)
                 try:
                     os.makedirs(sessionFolder, exist_ok=True)
                     print(f"Se creó la carpeta para la sesión: '{sessionFolder}'.")
-                    download_session_result = self.control_session.download_session(self.json_path, selected_session, sessionFolder)
+                    download_session_result = self.control_session.download_session(selected_session, sessionFolder)
                     
                     if download_session_result is True:
                         QMessageBox.information(self, self.tr("Saved Session"), self.tr("Successful session save."))
