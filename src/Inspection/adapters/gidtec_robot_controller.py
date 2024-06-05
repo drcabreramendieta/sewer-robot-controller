@@ -5,7 +5,7 @@ class GidtecRobotController(RobotController):
     def __init__(self, communication_controller:MoveRobot) -> None:
         super().__init__()
         self.communication_controller = communication_controller
-        self.value = 10
+        self.value = 3
         
     def change_speed(self, value:int) -> None:
         self.value = value  

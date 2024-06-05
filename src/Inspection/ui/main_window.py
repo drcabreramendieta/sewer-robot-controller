@@ -55,6 +55,7 @@ class MainWindow(QMainWindow):
         self.feeder_notifier.register_observer(self.feeder_observer)
 
         self.session_controller = session_controller
+
         
 
         self.translator = QTranslator(self)
@@ -64,7 +65,7 @@ class MainWindow(QMainWindow):
         self.disply_width = 720
         self.display_height = 480
         self.disply_width_telemetry = 720
-        self.display_height_telemetry = 410
+        self.display_height_telemetry = 402
         
         self.init_ui()
         self.setup_connections()
@@ -175,7 +176,7 @@ class MainWindow(QMainWindow):
         self.label_speed = QLabel(self.tr("Speed Control"))
         self.label_speed.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.slider_speed = QSlider(Qt.Orientation.Horizontal)
-        self.slider_speed.setMinimum(10)
+        self.slider_speed.setMinimum(3)
         self.slider_speed.setMaximum(1000)
         
         
@@ -333,6 +334,15 @@ class MainWindow(QMainWindow):
         self.camera_control_changed_signal.connect(self.camera_control_data_controller)
         self.feeder_control_changed_signal.connect(self.feeder_control_data_controller)
         self.panel_notifier.start_listening()
+
+        #Connect init encoder button 
+        self.btn_init_encoder.clicked.connect(self.initializate_encoder)
+    
+    def initializate_encoder(self):
+        print("Enviar por serial")
+        self.feeder_notifier.send_message("feeder RESET")
+        
+
 
     def toggleTelemetryVisibility(self, state):
         self.telemetry_label.setVisible(self.telemetryCheckbox.isChecked())
@@ -615,7 +625,7 @@ class MainWindow(QMainWindow):
             self.btn_pan_left.setDown(True)
             self.btn_pan_right.setDown(False)
         elif (data.movement == "PR"): 
-            self.camera_controller.pan_left()
+            self.camera_controller.pan_right()
             self.btn_tilt_up.setDown(False)
             self.btn_tilt_down.setDown(False)
             self.btn_pan_left.setDown(False)
@@ -651,7 +661,7 @@ class MainWindow(QMainWindow):
         # Actualizar la etiqueta con el texto de telemetría
         self.telemetry_label.setText(telemetry_text)
         self.telemetry_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        #print(telemetry.variables) 
+        
         
         if (data.reset == "RESET"): 
             self.btn_init_encoder.setDown(True)

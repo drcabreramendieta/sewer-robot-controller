@@ -22,3 +22,7 @@ class PeripheralLink(ABC):
     @abstractmethod
     def stop_listening(self) -> None:
         pass
+    
+    @abstractmethod
+    def send_message(self, message:str): 
+        pass

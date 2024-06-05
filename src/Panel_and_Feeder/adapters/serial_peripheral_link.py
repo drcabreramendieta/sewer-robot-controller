@@ -63,9 +63,19 @@ class SerialPeripheralLink(PeripheralLink):
                     while self.running:
                         data = ser.readline()
                         if data:
-                            #data = input("Ingresa datos seriales:")
                             self._process_data(data=data)
             finally:
                 ser.close()
                 print("Finalizando el hilo de captura de datos serial.")
+
+    def send_message(self, message: str):
+        try:
+            with serial.Serial(port=self.serial_conf.port, baudrate=self.serial_conf.baudrate, timeout=self.serial_conf.timeout) as ser:
+                ser.write((message + "\n").encode())
+                print("Mensaje enviado:", message)
+        except serial.SerialException as e:
+            print("Error al enviar mensaje:", e)
+
+
+
             

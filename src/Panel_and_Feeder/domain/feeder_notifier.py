@@ -8,6 +8,7 @@ class FeederNotifier:
         self.link = link
         self.link.feeder_callback_setup(self._notify_feeder_control_data)
 
+
     def _notify_feeder_control_data(self, feeder_control_data:FeederControlData) -> None:
         for observer in self.feeder_observers:
             observer.on_feeder_control_data_ready(feeder_control_data=feeder_control_data)
@@ -21,3 +22,6 @@ class FeederNotifier:
 
     def stop_listening(self):
         self.link.stop_listening()
+
+    def send_message(self, message:str): 
+        self.link.send_message(message)
