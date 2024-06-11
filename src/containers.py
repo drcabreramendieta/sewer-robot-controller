@@ -54,7 +54,7 @@ def get_logger(name='app_logger'):
 
 class CommunicationModuleContainer(containers.DeclarativeContainer):
     configuration = providers.Configuration()
-    logger = providers.Singleton(get_logger)
+    logger = providers.ThreadSafeSingleton(get_logger)
     bus = providers.Singleton(can.interface.Bus, channel='can0', interface='socketcan', bitrate=250000)
     #bus = providers.Singleton(can.interface.Bus, channel='test', interface='virtual', bitrate=1000000)
     robot_link = providers.Singleton(CANRobotLink, bus=bus, logger=logger)
