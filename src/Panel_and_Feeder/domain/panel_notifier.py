@@ -1,11 +1,13 @@
 from Panel_and_Feeder.ports.panel_observer import PanelObserver
 from Panel_and_Feeder.domain.entities import RobotControlData, CameraControlData
 from Panel_and_Feeder.ports.peripheral_link import PeripheralLink
+from logging import Logger
 
 class PanelNotifier:
-    def __init__(self, link:PeripheralLink) -> None:
+    def __init__(self, link:PeripheralLink, logger:Logger) -> None:
         self.panel_observers:list[PanelObserver] = []
         self.link = link
+        self.logger = logger
         self.link.robot_callback_setup(self._notify_robot_control_data)
         self.link.camera_callback_setup(self._notify_camera_control_data)
 

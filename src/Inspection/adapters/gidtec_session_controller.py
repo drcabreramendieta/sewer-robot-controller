@@ -1,11 +1,13 @@
 from Inspection.ports.session_controller import SessionController
 from Video.domain.use_cases.control_session import ControlSession
 from Video.domain.entities import DvrOrder
+from logging import Logger
 
 class GidtecSessionController(SessionController):
-    def __init__(self, control_session:ControlSession) -> None:
+    def __init__(self, control_session:ControlSession, logger:Logger) -> None:
         super().__init__()
         self.control_session = control_session
+        self.logger = logger
 
     def begin_session(self, name:str) -> bool:
         return self.control_session.create_session(name)

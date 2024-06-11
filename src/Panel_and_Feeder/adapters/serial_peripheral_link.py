@@ -3,15 +3,17 @@ from typing import Callable
 from Panel_and_Feeder.domain.entities import RobotControlData, CameraControlData, FeederControlData, SerialConfig
 import threading
 import serial
+from logging import Logger
 
 class SerialPeripheralLink(PeripheralLink):
-    def __init__(self, serial_conf:SerialConfig) -> None:
+    def __init__(self, serial_conf:SerialConfig, logger:Logger) -> None:
         super().__init__()
         self.robot_callback = None
         self.camera_callback = None
         self.feeder_callback = None
         self.serial_conf = serial_conf
         self.running = None
+        self.logger = logger
         self.thread_capture = threading.Thread(target=self._capture_peripheral_data)
 
     def robot_callback_setup(self, robot_callback:Callable[[RobotControlData],None]) -> None:

@@ -1,9 +1,11 @@
 from Communication.ports.link import RobotLink
 from Communication.domain.entities import WheelsModule
+from logging import Logger
 
 class MoveRobot:
-    def __init__(self, link:RobotLink) -> None:
+    def __init__(self, link:RobotLink, logger:Logger) -> None:
         self.link = link
+        self.logger = logger
         
 
     def run(self, movement:str, speed:int):

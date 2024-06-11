@@ -1,10 +1,12 @@
 from Inspection.ports.robot_controller import RobotController
 from Communication.domain.use_cases.move_robot import MoveRobot
+from logging import Logger
 
 class GidtecRobotController(RobotController):
-    def __init__(self, communication_controller:MoveRobot) -> None:
+    def __init__(self, communication_controller:MoveRobot, logger:Logger) -> None:
         super().__init__()
         self.communication_controller = communication_controller
+        self.logger = logger
         self.value = 3
         
     def change_speed(self, value:int) -> None:

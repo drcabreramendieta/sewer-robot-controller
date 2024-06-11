@@ -1,11 +1,13 @@
 from Video.ports.video_observer import VideoObserver
 from Video.domain.entities import VideoMessage
 from Video.ports.video_link import VideoLink
+from logging import Logger
 
 class VideoNotifier:
-    def __init__(self, link:VideoLink, video_observers:list[VideoObserver]|None=None) -> None:
+    def __init__(self, link:VideoLink, logger:Logger, video_observers:list[VideoObserver]|None=None) -> None:
         self.video_observers = video_observers if video_observers else []
         self.link = link
+        self.logger = logger
         link.callback_setup(self._notify)
 
     def _notify(self, video:VideoMessage) -> None:

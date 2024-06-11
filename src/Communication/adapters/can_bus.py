@@ -3,13 +3,15 @@ from Communication.domain.entities import WheelsModule, TelemetryMessage, Camera
 from typing import Callable
 import can
 from multipledispatch import dispatch
+from logging import Logger
 
 
 class CANRobotLink(RobotLink):
-    def __init__(self, bus: can.BusABC) -> None:
+    def __init__(self, bus: can.BusABC, logger:Logger) -> None:
         self.callback = None
         self.notifier = None
         self.bus = bus
+        self.logger = logger
 
     @dispatch(WheelsModule)
     def send(self, wheelsModule: WheelsModule) -> None:

@@ -1,16 +1,16 @@
 from Video.ports.dvr_link import DvrLink
 from Video.ports.db_link import DbLink
 from Video.domain.entities import DvrOrder
-
-
 import shutil
 import os
+from logging import Logger
 
 
 class ControlSession:
-    def __init__(self, dvr_link:DvrLink, db_link:DbLink) -> None:
+    def __init__(self, dvr_link:DvrLink, db_link:DbLink, logger:Logger) -> None:
         self.dvr_link = dvr_link
         self.db_link = db_link
+        self.logger = logger
 
     def create_session(self, name:str) -> bool:
         if self.db_link.create(name=name):

@@ -1,11 +1,13 @@
 from Video.domain.entities import ImageInfo, RecordInfo
 from tinydb import TinyDB, Query
 from Video.ports.db_link import DbLink
+from logging import Logger
 
 class TinyDbLink(DbLink):
-    def __init__(self, db_name:str) -> None:
+    def __init__(self, db_name:str, logger:Logger) -> None:
         self.db = TinyDB(db_name)
         self.doc_id = None
+        self.logger = logger
         
     def create(self, name:str) -> bool:
         if not self.session_exists(name=name):

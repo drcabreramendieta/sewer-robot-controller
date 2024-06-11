@@ -1,14 +1,16 @@
 from Panel_and_Feeder.ports.panel_observer import PanelObserver
 from Panel_and_Feeder.domain.entities import RobotControlData, CameraControlData
 from PyQt6.QtCore import pyqtSignal
+from logging import Logger
 
 class QtPanelObserver(PanelObserver):
     robot_control_changed_signal = pyqtSignal(RobotControlData)
     camera_control_changed_signal = pyqtSignal(CameraControlData)
-    def __init__(self) -> None:
+    def __init__(self, logger:Logger) -> None:
         super().__init__()
         self.robot_control_changed_signal = None
         self.camera_control_changed_signal = None
+        self.logger = logger
 
     def on_robot_control_data_ready(self, robot_control_data:RobotControlData) -> None:
         if self.robot_control_changed_signal:

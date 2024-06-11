@@ -7,16 +7,18 @@ import os
 import requests
 import subprocess
 import shlex
+from logging import Logger
 
 
 class HikvisionDvrLink(DvrLink):
-    def __init__(self, url: str, user: str, password: str, dir:str) -> None:
+    def __init__(self, url: str, user: str, password: str, dir:str, logger:Logger) -> None:
         super().__init__()
         self.url = url
         self.username = user
         self.password = password
         self.folder = None
         self.dir = dir
+        self.logger = logger
         
         os.makedirs(self.dir, exist_ok=True)
 

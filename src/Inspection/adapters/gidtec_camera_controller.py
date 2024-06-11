@@ -1,10 +1,12 @@
 from Inspection.ports.camera_controller import CameraController
 from Communication.domain.use_cases.control_camera import ControlCamera
+from logging import Logger
 
 class GidtecCameraController(CameraController):
-    def __init__(self, control_camera:ControlCamera) -> None:
+    def __init__(self, control_camera:ControlCamera, logger:Logger) -> None:
         super().__init__()
         self.control_camera = control_camera
+        self.logger = logger
 
     def tilt_up(self) -> None:
         self.control_camera.run('T', 'U')

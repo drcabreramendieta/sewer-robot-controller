@@ -30,35 +30,58 @@ from Panel_and_Feeder.domain.entities import SerialConfig
 from Panel_and_Feeder.domain.feeder_notifier import FeederNotifier
 from Panel_and_Feeder.domain.panel_notifier import PanelNotifier
 
+import logging
+
+def get_logger(name='app_logger'):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    file_handler = logging.FileHandler('app.log')
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+    console_handler.setFormatter(formatter)
+
+    if not logger.handlers:
+        logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
+
+    return logger
+
 class CommunicationModuleContainer(containers.DeclarativeContainer):
     configuration = providers.Configuration()
+    logger = providers.Singleton(get_logger)
     bus = providers.Singleton(can.interface.Bus, channel='can0', interface='socketcan', bitrate=250000)
     #bus = providers.Singleton(can.interface.Bus, channel='test', interface='virtual', bitrate=1000000)
-    robot_link = providers.Singleton(CANRobotLink, bus=bus)
-    move_robot_use_case = providers.Factory(MoveRobot, link=robot_link)
-    robot_controller = providers.Singleton(GidtecRobotController, communication_controller=move_robot_use_case)
-    control_camera_use_case = providers.Factory(ControlCamera, robot_link=robot_link)
-    camera_controller = providers.Singleton(GidtecCameraController, control_camera=control_camera_use_case)
+    robot_link = providers.Singleton(CANRobotLink, bus=bus, logger=logger)
+    move_robot_use_case = providers.Factory(MoveRobot, link=robot_link, logger=logger)
+    robot_controller = providers.Singleton(GidtecRobotController, communication_controller=move_robot_use_case, logger=logger)
+    control_camera_use_case = providers.Factory(ControlCamera, robot_link=robot_link, logger=logger)
+    camera_controller = providers.Singleton(GidtecCameraController, control_camera=control_camera_use_case, logger=logger)
 
-    telemetry_observer = providers.Factory(TestTelemetryObserver)
-    notify_telemetry_use_case = providers.Singleton(NotifyTelemetry, link=robot_link)
+    telemetry_observer = providers.Factory(TestTelemetryObserver, logger=logger)
+    notify_telemetry_use_case = providers.Singleton(NotifyTelemetry, link=robot_link, logger=logger)
 
-    video_observer = providers.Factory(QtVideoObserver)
-    video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='rtsp://admin:inspection24@192.168.18.155:554/Streaming/Channels/101')
+    video_observer = providers.Factory(QtVideoObserver, logger=logger)
+    video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='rtsp://admin:inspection24@192.168.18.155:554/Streaming/Channels/101', logger=logger)
     #video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='/home/dcabrera/UPS/Terminal/src/example.mp4')
-    notify_video_use_case = providers.Singleton(VideoNotifier, link=video_link)
+    notify_video_use_case = providers.Singleton(VideoNotifier, link=video_link, logger=logger)
     
-    db_link = providers.Factory(TinyDbLink, db_name='SessionsDB.json')
-    dvr_link = providers.Factory(HikvisionDvrLink, url='http://192.168.18.155:80', user="admin", password="inspection24", dir="/home/iiot/Pictures")
-    control_session_use_case = providers.Factory(ControlSession, dvr_link=dvr_link, db_link=db_link)
-    session_controller = providers.Factory(GidtecSessionController, control_session=control_session_use_case)
+    db_link = providers.Factory(TinyDbLink, db_name='SessionsDB.json', logger=logger)
+    dvr_link = providers.Factory(HikvisionDvrLink, url='http://192.168.18.155:80', user="admin", password="inspection24", dir="/home/iiot/Pictures", logger=logger)
+    control_session_use_case = providers.Factory(ControlSession, dvr_link=dvr_link, db_link=db_link, logger=logger)
+    session_controller = providers.Factory(GidtecSessionController, control_session=control_session_use_case, logger=logger)
 
     serial_conf = providers.Factory(SerialConfig, port='/dev/ttyACM0', baudrate=115200, timeout=0.1)
-    peripheral_link = providers.Singleton(SerialPeripheralLink, serial_conf=serial_conf)
-    panel_observer = providers.Factory(QtPanelObserver)
-    panel_notifier = providers.Factory(PanelNotifier, link=peripheral_link)
-    feeder_observer = providers.Factory(QtFeederObserver)
-    feeder_notifier = providers.Factory(FeederNotifier, link=peripheral_link)
+    peripheral_link = providers.Singleton(SerialPeripheralLink, serial_conf=serial_conf, logger=logger)
+    panel_observer = providers.Factory(QtPanelObserver, logger=logger)
+    panel_notifier = providers.Factory(PanelNotifier, link=peripheral_link, logger=logger)
+    feeder_observer = providers.Factory(QtFeederObserver, logger=logger)
+    feeder_notifier = providers.Factory(FeederNotifier, link=peripheral_link, logger=logger)
 
     main_window = providers.Singleton(MainWindow, robot_controller=robot_controller,camera_controller=camera_controller, video_observer=video_observer, video_notifier=notify_video_use_case, telemetry_observer=telemetry_observer, telemetry_notifier=notify_telemetry_use_case, session_controller=session_controller,  panel_observer=panel_observer, panel_notifier=panel_notifier, feeder_observer=feeder_observer, feeder_notifier=feeder_notifier)
     

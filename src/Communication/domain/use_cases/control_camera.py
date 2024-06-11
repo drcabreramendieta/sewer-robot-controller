@@ -1,9 +1,11 @@
 from Communication.ports.link import RobotLink
 from Communication.domain.entities import CameraStateModule
+from logging import Logger
 
 class ControlCamera:
-    def __init__(self, robot_link:RobotLink) -> None:
+    def __init__(self, robot_link:RobotLink, logger:Logger) -> None:
         self.robot_link = robot_link
+        self.logger = logger
         self.camera_state = CameraStateModule(initialized=False, tilt='S',pan='S',focus='S',zoom='S',light=0)
 
     def run(self, module:str, order:str|int|None=None) -> None:        

@@ -1,11 +1,13 @@
 from Communication.ports.observer import TelemetryObserver
 from Communication.domain.entities import TelemetryMessage
 from Communication.ports.link import RobotLink
+from logging import Logger
 
 class NotifyTelemetry:
-    def __init__(self, link:RobotLink, telemetry_observers:list[TelemetryObserver]|None=None) -> None:
+    def __init__(self, link:RobotLink, logger:Logger, telemetry_observers:list[TelemetryObserver]|None=None) -> None:
         self.telemetry_observers = telemetry_observers if telemetry_observers else [] 
         self.link = link
+        self.logger = logger
         link.callback_setup(self._notify)
 
     def _notify(self, telemetry:TelemetryMessage) -> None:

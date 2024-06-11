@@ -1,11 +1,13 @@
 from Panel_and_Feeder.ports.feeder_observer import FeederObserver
 from Panel_and_Feeder.domain.entities import FeederControlData
 from Panel_and_Feeder.ports.peripheral_link import PeripheralLink
+from logging import Logger
 
 class FeederNotifier:
-    def __init__(self, link:PeripheralLink) -> None:
+    def __init__(self, link:PeripheralLink, logger:Logger) -> None:
         self.feeder_observers:list[FeederObserver] = []
         self.link = link
+        self.logger = logger
         self.link.feeder_callback_setup(self._notify_feeder_control_data)
 
 
