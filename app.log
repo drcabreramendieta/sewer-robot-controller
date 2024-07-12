@@ -1,0 +1,493 @@
+2024-06-13 15:35:05,950 - app_logger - INFO - Camera message sent successfully
+2024-06-13 15:35:05,950 - app_logger - INFO - Camera message sent successfully
+2024-06-13 15:35:05,951 - app_logger - INFO - Camera message sent successfully
+2024-06-13 15:35:05,951 - app_logger - ERROR - CAN Error: Failed to transmit: No buffer space available [Error Code 105]
+2024-06-13 15:35:05,951 - app_logger - ERROR - Unknown CAN error
+2024-06-13 15:35:24,811 - app_logger - ERROR - CAN Error: Failed to transmit: No buffer space available [Error Code 105]
+2024-06-13 15:35:24,812 - app_logger - ERROR - Unknown CAN error
+2024-06-13 15:35:24,896 - app_logger - ERROR - CAN Error: Failed to transmit: No buffer space available [Error Code 105]
+2024-06-13 15:35:24,896 - app_logger - ERROR - Unknown CAN error
+2024-06-13 15:35:29,779 - app_logger - INFO - CAN bus shutdown completed
+2024-06-13 15:36:50,555 - app_logger - INFO - Camera message sent successfully
+2024-06-13 15:36:50,558 - app_logger - INFO - Camera message sent successfully
+2024-06-13 15:36:50,559 - app_logger - INFO - Camera message sent successfully
+2024-06-13 15:36:50,559 - app_logger - INFO - Camera message sent successfully
+2024-06-13 15:36:52,903 - app_logger - INFO - Robot message sent successfully
+2024-06-13 15:36:52,997 - app_logger - INFO - Robot message sent successfully
+2024-06-13 15:36:53,911 - app_logger - INFO - Robot message sent successfully
+2024-06-13 15:36:53,995 - app_logger - INFO - Robot message sent successfully
+2024-06-13 15:36:58,789 - app_logger - INFO - CAN bus shutdown completed
+2024-06-13 16:08:54,210 - app_logger - ERROR - Failed to establish communication with the CAN bus: [Errno 19] No such device
+Traceback (most recent call last):
+  File "/home/iiot/Documents/Terminal/src/containers.py", line 57, in create_can_bus
+    return can.interface.Bus(channel=channel, interface=interface, bitrate=bitrate)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/util.py", line 378, in wrapper
+    return f(*args, **kwargs)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interface.py", line 135, in Bus
+    bus = cls(channel, **kwargs)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interfaces/socketcan/socketcan.py", line 706, in __init__
+    bind_socket(self.socket, channel)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interfaces/socketcan/socketcan.py", line 512, in bind_socket
+    sock.bind((channel,))
+OSError: [Errno 19] No such device
+2024-06-13 16:10:52,079 - app_logger - ERROR - Failed to establish communication with the CAN bus: [Errno 19] No such device
+Traceback (most recent call last):
+  File "/home/iiot/Documents/Terminal/src/containers.py", line 57, in create_can_bus
+    return can.interface.Bus(channel=channel, interface=interface, bitrate=bitrate)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/util.py", line 378, in wrapper
+    return f(*args, **kwargs)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interface.py", line 135, in Bus
+    bus = cls(channel, **kwargs)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interfaces/socketcan/socketcan.py", line 706, in __init__
+    bind_socket(self.socket, channel)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interfaces/socketcan/socketcan.py", line 512, in bind_socket
+    sock.bind((channel,))
+OSError: [Errno 19] No such device
+2024-06-13 16:11:11,045 - app_logger - ERROR - Failed to establish communication with the CAN bus: [Errno 19] No such device
+Traceback (most recent call last):
+  File "/home/iiot/Documents/Terminal/src/containers.py", line 57, in create_can_bus
+    return can.interface.Bus(channel=channel, interface=interface, bitrate=bitrate)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/util.py", line 378, in wrapper
+    return f(*args, **kwargs)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interface.py", line 135, in Bus
+    bus = cls(channel, **kwargs)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interfaces/socketcan/socketcan.py", line 706, in __init__
+    bind_socket(self.socket, channel)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interfaces/socketcan/socketcan.py", line 512, in bind_socket
+    sock.bind((channel,))
+OSError: [Errno 19] No such device
+2024-06-13 16:11:17,187 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:11:17,187 - app_logger - ERROR - Network is down
+2024-06-13 16:11:17,193 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:11:17,193 - app_logger - ERROR - Network is down
+2024-06-13 16:11:17,193 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:11:17,193 - app_logger - ERROR - Network is down
+2024-06-13 16:11:17,194 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:11:17,194 - app_logger - ERROR - Network is down
+2024-06-13 16:11:23,496 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:11:23,498 - app_logger - ERROR - Network is down
+2024-06-13 16:11:23,597 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:11:23,597 - app_logger - ERROR - Network is down
+2024-06-13 16:11:25,897 - app_logger - INFO - CAN bus shutdown completed
+2024-06-13 16:11:38,872 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:11:38,872 - app_logger - ERROR - Network is down
+2024-06-13 16:11:38,879 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:11:38,881 - app_logger - ERROR - Network is down
+2024-06-13 16:11:38,881 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:11:38,882 - app_logger - ERROR - Network is down
+2024-06-13 16:11:38,882 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:11:38,883 - app_logger - ERROR - Network is down
+2024-06-13 16:11:46,328 - app_logger - INFO - Session info: {'name': 'pruebas lab 2', 'captures': [{'path': '/home/iiot/Pictures/pruebas lab 2/image_20240613_144958.jpg', 'capture_date_time': '20240613_144958'}, {'path': '/home/iiot/Pictures/pruebas lab 2/image_20240613_144958.jpg', 'capture_date_time': '20240613_144958'}], 'records': [{'path': '/home/iiot/Pictures/pruebas lab 2', 'stop_date_time': '20240613_144957', 'start_date_time': '20240613_144956'}], 'recording': False}
+2024-06-13 16:11:46,329 - app_logger - INFO - Session 'pruebas lab 2' found.
+2024-06-13 16:11:46,331 - app_logger - INFO - File 'image_20240613_144958.jpg' copied successfully.
+2024-06-13 16:11:46,332 - app_logger - INFO - File 'image_20240613_144958.jpg' copied successfully.
+2024-06-13 16:11:46,334 - app_logger - INFO - Start Time: 2024-06-13T14:49:56Z, Stop Time: 2024-06-13T14:49:57Z
+2024-06-13 16:11:46,363 - app_logger - INFO - All images and videos processed successfully for session 'pruebas lab 2'.
+2024-06-13 16:11:53,477 - app_logger - INFO - Session info: {'name': 'pruebas lab 2', 'captures': [{'path': '/home/iiot/Pictures/pruebas lab 2/image_20240613_144958.jpg', 'capture_date_time': '20240613_144958'}, {'path': '/home/iiot/Pictures/pruebas lab 2/image_20240613_144958.jpg', 'capture_date_time': '20240613_144958'}], 'records': [{'path': '/home/iiot/Pictures/pruebas lab 2', 'stop_date_time': '20240613_144957', 'start_date_time': '20240613_144956'}], 'recording': False}
+2024-06-13 16:11:53,477 - app_logger - INFO - Session 'pruebas lab 2' found.
+2024-06-13 16:11:53,478 - app_logger - INFO - File 'image_20240613_144958.jpg' copied successfully.
+2024-06-13 16:11:53,506 - app_logger - INFO - File 'image_20240613_144958.jpg' copied successfully.
+2024-06-13 16:11:53,508 - app_logger - INFO - Start Time: 2024-06-13T14:49:56Z, Stop Time: 2024-06-13T14:49:57Z
+2024-06-13 16:11:55,518 - app_logger - ERROR - Timeout en la conexión a la API.
+2024-06-13 16:11:56,920 - app_logger - ERROR - Videos could not be processed for session 'pruebas lab 2'.
+2024-06-13 16:12:00,340 - app_logger - INFO - CAN bus shutdown completed
+2024-06-13 16:25:22,750 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:25:22,751 - app_logger - ERROR - Network is down
+2024-06-13 16:25:22,756 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:25:22,756 - app_logger - ERROR - Network is down
+2024-06-13 16:25:22,756 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:25:22,756 - app_logger - ERROR - Network is down
+2024-06-13 16:25:22,756 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:25:22,756 - app_logger - ERROR - Network is down
+2024-06-13 16:25:46,044 - app_logger - INFO - Session info: {'name': 'pruebas lab 2', 'captures': [{'path': '/home/iiot/Pictures/pruebas lab 2/image_20240613_144958.jpg', 'capture_date_time': '20240613_144958'}, {'path': '/home/iiot/Pictures/pruebas lab 2/image_20240613_144958.jpg', 'capture_date_time': '20240613_144958'}], 'records': [{'path': '/home/iiot/Pictures/pruebas lab 2', 'stop_date_time': '20240613_144957', 'start_date_time': '20240613_144956'}], 'recording': False}
+2024-06-13 16:25:46,045 - app_logger - INFO - Session 'pruebas lab 2' found.
+2024-06-13 16:25:46,047 - app_logger - INFO - File 'image_20240613_144958.jpg' copied successfully.
+2024-06-13 16:25:46,047 - app_logger - INFO - File 'image_20240613_144958.jpg' copied successfully.
+2024-06-13 16:25:46,055 - app_logger - INFO - Start Time: 2024-06-13T14:49:56Z, Stop Time: 2024-06-13T14:49:57Z
+2024-06-13 16:25:48,060 - app_logger - ERROR - Timeout en la conexión a la API.
+2024-06-13 16:25:50,691 - app_logger - ERROR - Videos could not be processed for session 'pruebas lab 2'.
+2024-06-13 16:25:59,437 - app_logger - INFO - CAN bus shutdown completed
+2024-06-13 16:26:07,128 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:26:07,130 - app_logger - ERROR - Network is down
+2024-06-13 16:26:07,134 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:26:07,136 - app_logger - ERROR - Network is down
+2024-06-13 16:26:07,136 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:26:07,137 - app_logger - ERROR - Network is down
+2024-06-13 16:26:07,147 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:26:07,148 - app_logger - ERROR - Network is down
+2024-06-13 16:26:27,784 - app_logger - INFO - CAN bus shutdown completed
+2024-06-13 16:26:36,992 - app_logger - ERROR - Error opening video stream or file
+2024-06-13 16:32:04,679 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:32:04,679 - app_logger - ERROR - Network is down
+2024-06-13 16:32:04,685 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:32:04,686 - app_logger - ERROR - Network is down
+2024-06-13 16:32:04,686 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:32:04,686 - app_logger - ERROR - Network is down
+2024-06-13 16:32:04,686 - app_logger - ERROR - CAN Error: Failed to transmit: Network is down [Error Code 100]
+2024-06-13 16:32:04,686 - app_logger - ERROR - Network is down
+2024-06-13 16:32:14,773 - app_logger - INFO - Session info: {'name': 'sesion1', 'captures': [], 'records': [], 'recording': False}
+2024-06-13 16:32:14,778 - app_logger - INFO - Session 'sesion1' found.
+2024-06-13 16:32:14,778 - app_logger - INFO - No existen grabaciones.
+2024-06-13 16:32:14,778 - app_logger - ERROR - Error downloading session 'sesion1': not enough values to unpack (expected 2, got 0)
+2024-06-13 16:32:22,647 - app_logger - INFO - Session info: {'name': 'pruebas lab 2', 'captures': [{'path': '/home/iiot/Pictures/pruebas lab 2/image_20240613_144958.jpg', 'capture_date_time': '20240613_144958'}, {'path': '/home/iiot/Pictures/pruebas lab 2/image_20240613_144958.jpg', 'capture_date_time': '20240613_144958'}], 'records': [{'path': '/home/iiot/Pictures/pruebas lab 2', 'stop_date_time': '20240613_144957', 'start_date_time': '20240613_144956'}], 'recording': False}
+2024-06-13 16:32:22,647 - app_logger - INFO - Session 'pruebas lab 2' found.
+2024-06-13 16:32:22,648 - app_logger - INFO - File 'image_20240613_144958.jpg' copied successfully.
+2024-06-13 16:32:22,648 - app_logger - INFO - File 'image_20240613_144958.jpg' copied successfully.
+2024-06-13 16:32:22,649 - app_logger - INFO - Start Time: 2024-06-13T14:49:56Z, Stop Time: 2024-06-13T14:49:57Z
+2024-06-13 16:32:22,662 - app_logger - INFO - All images and videos processed successfully for session 'pruebas lab 2'.
+2024-06-13 16:32:35,554 - app_logger - INFO - Session info: {'name': 'pruebas lab 2', 'captures': [{'path': '/home/iiot/Pictures/pruebas lab 2/image_20240613_144958.jpg', 'capture_date_time': '20240613_144958'}, {'path': '/home/iiot/Pictures/pruebas lab 2/image_20240613_144958.jpg', 'capture_date_time': '20240613_144958'}], 'records': [{'path': '/home/iiot/Pictures/pruebas lab 2', 'stop_date_time': '20240613_144957', 'start_date_time': '20240613_144956'}], 'recording': False}
+2024-06-13 16:32:35,554 - app_logger - INFO - Session 'pruebas lab 2' found.
+2024-06-13 16:32:35,555 - app_logger - INFO - File 'image_20240613_144958.jpg' copied successfully.
+2024-06-13 16:32:35,555 - app_logger - INFO - File 'image_20240613_144958.jpg' copied successfully.
+2024-06-13 16:32:35,556 - app_logger - INFO - Start Time: 2024-06-13T14:49:56Z, Stop Time: 2024-06-13T14:49:57Z
+2024-06-13 16:32:38,094 - app_logger - ERROR - Timeout en la conexión a la API.
+2024-06-13 16:32:43,583 - app_logger - ERROR - Videos could not be processed for session 'pruebas lab 2'.
+2024-06-13 16:32:47,023 - app_logger - INFO - CAN bus shutdown completed
+2024-06-17 16:18:20,878 - app_logger - ERROR - Error opening or reading from serial port: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2024-06-17 16:18:28,348 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:28,633 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:29,048 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:29,218 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:29,247 - app_logger - ERROR - Error processing CAN message: string index out of range
+2024-06-17 16:18:29,639 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:30,162 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:32,859 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:32,988 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:33,362 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:33,495 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:33,694 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:33,797 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:33,919 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:34,035 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:34,163 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:34,328 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:34,537 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:34,700 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:34,945 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:35,100 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:35,543 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:35,687 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:35,884 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:35,991 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:36,147 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:36,256 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:36,385 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:36,494 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:36,684 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:36,806 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:36,989 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:37,099 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:37,289 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:37,421 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:37,561 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:37,669 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:43,932 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:44,041 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:44,686 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:44,801 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:44,964 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:45,067 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:45,223 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:45,325 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:45,454 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:45,549 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:45,678 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:45,780 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:45,889 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:46,011 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:46,140 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:46,250 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:46,378 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:46,480 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:46,609 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:46,718 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:46,827 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:46,982 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:47,098 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:47,234 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:47,384 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:47,505 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:47,655 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:47,764 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:47,906 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:48,005 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:48,145 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:48,241 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:48,376 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:48,484 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:48,660 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:48,803 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:48,939 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:50,087 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:50,308 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:50,454 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:50,633 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:50,740 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:50,862 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:50,930 - app_logger - ERROR - Error opening video stream or file
+2024-06-17 16:18:50,952 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:51,080 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:51,167 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:51,276 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:51,358 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:53,429 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:53,533 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:53,857 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:53,989 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:54,238 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:54,327 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:54,557 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:54,693 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:54,950 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:55,081 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:55,347 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:55,481 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:55,712 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:55,834 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:56,085 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:56,222 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:56,426 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:56,577 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:56,827 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:56,983 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:57,207 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:57,331 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:57,499 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:57,615 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:57,724 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:18:57,825 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:19:17,326 - app_logger - INFO - CAN bus shutdown completed
+2024-06-17 16:23:04,277 - app_logger - ERROR - Error opening or reading from serial port: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2024-06-17 16:23:17,735 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:17,856 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:18,684 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:19,077 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:19,227 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:19,349 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:19,465 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:19,566 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:19,662 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:19,770 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:19,853 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:19,953 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:20,058 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:20,147 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:20,232 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:20,315 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:20,408 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:20,490 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:20,589 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:20,667 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:20,869 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:20,957 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:21,053 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:21,122 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:21,222 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:21,284 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:21,379 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:21,453 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:21,549 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:22,458 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:22,743 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:22,920 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:22,938 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:23,811 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:23,911 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:23,956 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:24,034 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:24,092 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:25,070 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:25,224 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:25,285 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:25,367 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:25,457 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:25,542 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:25,646 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:25,701 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:25,792 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:25,883 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:25,960 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:26,053 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:26,164 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:26,230 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:26,314 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:26,406 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:26,481 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:26,582 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:26,658 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:26,753 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:26,842 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:26,923 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:27,024 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:27,102 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:27,170 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:27,370 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:27,459 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:27,594 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:27,696 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:27,817 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:27,914 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:29,263 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:34,280 - app_logger - ERROR - Error opening video stream or file
+2024-06-17 16:23:36,363 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:37,196 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:37,665 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:23:37,750 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:55:50,788 - app_logger - ERROR - CAN Error: Failed to transmit: No such device or address [Error Code 6]
+2024-06-17 16:55:50,789 - app_logger - ERROR - No such device or address
+2024-06-17 16:55:50,978 - app_logger - ERROR - CAN Error: Failed to transmit: No such device or address [Error Code 6]
+2024-06-17 16:55:50,979 - app_logger - ERROR - No such device or address
+2024-06-17 16:55:53,362 - app_logger - INFO - CAN bus shutdown completed
+2024-06-17 16:56:43,507 - app_logger - ERROR - Error opening or reading from serial port: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2024-06-17 16:56:47,141 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:56:47,193 - app_logger - ERROR - Error processing CAN message: string index out of range
+2024-06-17 16:56:47,350 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:56:48,227 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:56:48,376 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:56:48,927 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:56:49,083 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:56:49,314 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:56:49,517 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:13,328 - app_logger - ERROR - Error opening video stream or file
+2024-06-17 16:57:26,588 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:26,710 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:27,390 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:27,559 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:27,750 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:27,885 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:27,989 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:28,394 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:28,497 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:28,591 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:28,694 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:28,795 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:28,859 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:28,965 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:29,042 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:29,134 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:29,773 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:29,909 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:29,980 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,078 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,161 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,243 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,311 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,424 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,480 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,573 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,656 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,739 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,808 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,900 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:30,971 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,056 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,127 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,219 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,288 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,384 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,444 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,545 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,613 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,714 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,783 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,877 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:31,953 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:32,061 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:32,245 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:32,359 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:32,516 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:32,632 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:32,747 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:32,849 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:32,919 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:32,998 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,065 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,160 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,224 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,316 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,406 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,475 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,545 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,624 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,680 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,785 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,851 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,923 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:33,998 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:34,097 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:34,927 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:35,056 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:35,151 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:35,251 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:35,355 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:35,455 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:35,526 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:57:35,653 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:11,716 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:11,837 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:12,164 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:12,259 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:12,340 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:12,461 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:12,545 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:12,655 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:12,724 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:12,828 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:12,891 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:12,998 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:13,061 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:13,820 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:13,950 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:14,899 - app_logger - INFO - Robot message sent successfully
+2024-06-17 16:59:17,416 - app_logger - INFO - CAN bus shutdown completed
+2024-06-17 17:00:57,544 - app_logger - ERROR - Error opening or reading from serial port: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2024-06-17 17:00:59,009 - app_logger - INFO - Robot message sent successfully
+2024-06-17 17:00:59,098 - app_logger - INFO - Robot message sent successfully
+2024-06-17 17:00:59,200 - app_logger - INFO - Robot message sent successfully
+2024-06-17 17:00:59,285 - app_logger - INFO - Robot message sent successfully
+2024-06-17 17:00:59,370 - app_logger - INFO - Robot message sent successfully
+2024-06-17 17:00:59,457 - app_logger - INFO - Robot message sent successfully
+2024-06-17 17:01:27,614 - app_logger - ERROR - Error opening video stream or file
+2024-06-17 17:34:49,925 - app_logger - INFO - CAN bus shutdown completed
+2024-06-17 17:35:02,492 - app_logger - ERROR - Error opening or reading from serial port: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2024-06-17 17:35:04,504 - app_logger - INFO - Robot message sent successfully
+2024-06-17 17:35:04,661 - app_logger - INFO - Robot message sent successfully
+2024-06-17 17:35:32,294 - app_logger - ERROR - Error opening video stream or file
+2024-06-17 17:35:36,070 - app_logger - INFO - Robot message sent successfully
+2024-06-17 17:35:36,603 - app_logger - INFO - Robot message sent successfully
+2024-06-17 17:39:17,771 - app_logger - INFO - Robot message sent successfully
+2024-06-17 17:39:17,899 - app_logger - INFO - Robot message sent successfully
+2024-06-17 19:44:15,508 - app_logger - ERROR - Failed to establish communication with the CAN bus: [Errno 19] No such device
+Traceback (most recent call last):
+  File "/home/iiot/Documents/Terminal/src/containers.py", line 57, in create_can_bus
+    return can.interface.Bus(channel=channel, interface=interface, bitrate=bitrate)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/util.py", line 378, in wrapper
+    return f(*args, **kwargs)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interface.py", line 135, in Bus
+    bus = cls(channel, **kwargs)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interfaces/socketcan/socketcan.py", line 706, in __init__
+    bind_socket(self.socket, channel)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interfaces/socketcan/socketcan.py", line 512, in bind_socket
+    sock.bind((channel,))
+OSError: [Errno 19] No such device
+2024-06-17 19:44:19,183 - app_logger - ERROR - Failed to establish communication with the CAN bus: [Errno 19] No such device
+Traceback (most recent call last):
+  File "/home/iiot/Documents/Terminal/src/containers.py", line 57, in create_can_bus
+    return can.interface.Bus(channel=channel, interface=interface, bitrate=bitrate)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/util.py", line 378, in wrapper
+    return f(*args, **kwargs)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interface.py", line 135, in Bus
+    bus = cls(channel, **kwargs)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interfaces/socketcan/socketcan.py", line 706, in __init__
+    bind_socket(self.socket, channel)
+  File "/home/iiot/.local/share/virtualenvs/Terminal-fXE9v5HP/lib/python3.10/site-packages/can/interfaces/socketcan/socketcan.py", line 512, in bind_socket
+    sock.bind((channel,))
+OSError: [Errno 19] No such device
+2024-06-17 19:44:31,298 - app_logger - ERROR - Error opening or reading from serial port: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2024-06-17 19:44:47,426 - app_logger - INFO - Robot message sent successfully
+2024-06-17 19:44:47,523 - app_logger - INFO - Robot message sent successfully
+2024-06-17 19:44:48,254 - app_logger - INFO - Robot message sent successfully
+2024-06-17 19:44:48,357 - app_logger - INFO - Robot message sent successfully
+2024-06-17 19:44:48,791 - app_logger - INFO - Robot message sent successfully
+2024-06-17 19:44:48,901 - app_logger - INFO - Robot message sent successfully
+2024-06-17 19:45:01,217 - app_logger - ERROR - Error opening video stream or file

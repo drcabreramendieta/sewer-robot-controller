@@ -4,9 +4,13 @@ from Panel_and_Feeder.domain.entities import RobotControlData, CameraControlData
 import threading
 import serial
 from logging import Logger
+from PyQt6.QtCore import QMetaObject, Qt
+from PyQt6.QtWidgets import QMessageBox
 
 class SerialPeripheralLink(PeripheralLink):
-    def __init__(self, serial_conf:SerialConfig, logger:Logger) -> None:
+    _error_dialog_instance = None
+    
+    def __init__(self, serial_conf: SerialConfig, logger: Logger) -> None:
         super().__init__()
         self.robot_callback = None
         self.camera_callback = None
@@ -16,13 +20,13 @@ class SerialPeripheralLink(PeripheralLink):
         self.logger = logger
         self.thread_capture = threading.Thread(target=self._capture_peripheral_data)
 
-    def robot_callback_setup(self, robot_callback:Callable[[RobotControlData],None]) -> None:
+    def robot_callback_setup(self, robot_callback: Callable[[RobotControlData], None]) -> None:
         self.robot_callback = robot_callback
 
-    def camera_callback_setup(self, camera_callback:Callable[[CameraControlData],None]) -> None:
+    def camera_callback_setup(self, camera_callback: Callable[[CameraControlData], None]) -> None:
         self.camera_callback = camera_callback
 
-    def feeder_callback_setup(self, feeder_callback:Callable[[FeederControlData],None]) -> None:
+    def feeder_callback_setup(self, feeder_callback: Callable[[FeederControlData], None]) -> None:
         self.feeder_callback = feeder_callback
 
     def start_listening(self) -> None:
@@ -35,7 +39,7 @@ class SerialPeripheralLink(PeripheralLink):
             self.running = False
             self.thread_capture.join()
 
-    def _process_data(self, data:str) -> None:
+    def _process_data(self, data: str) -> None:
         print('Arrived data:', data)
         data = data.decode('utf-8').strip()
         data_fields = data.split(sep=' ')
@@ -46,7 +50,7 @@ class SerialPeripheralLink(PeripheralLink):
         elif data_fields[0] == 'camera':
             movement = data_fields[1]
             light = data_fields[2]
-            camera_control_data = CameraControlData(movement=movement,light=light)
+            camera_control_data = CameraControlData(movement=movement, light=light)
             self.camera_callback(camera_control_data)
         elif data_fields[0] == 'feeder':
             distance = data_fields[1]
@@ -66,8 +70,15 @@ class SerialPeripheralLink(PeripheralLink):
                         data = ser.readline()
                         if data:
                             self._process_data(data=data)
+            except serial.SerialException as e:
+                self.logger.error(f"Error opening or reading from serial port: {e}")
+                              
+            except Exception as e:
+                self.logger.error(f"Unexpected error: {e}")
+                
             finally:
-                ser.close()
+                if 'ser' in locals() and ser.is_open:
+                    ser.close()
                 print("Finalizando el hilo de captura de datos serial.")
 
     def send_message(self, message: str):
@@ -76,8 +87,6 @@ class SerialPeripheralLink(PeripheralLink):
                 ser.write((message + "\n").encode())
                 print("Mensaje enviado:", message)
         except serial.SerialException as e:
-            print("Error al enviar mensaje:", e)
-
-
-
+            self.logger.error(f"Error al enviar mensaje: {e}")
             
+

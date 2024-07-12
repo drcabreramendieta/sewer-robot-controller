@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):
     robot_control_changed_signal = pyqtSignal(RobotControlData)
     camera_control_changed_signal = pyqtSignal(CameraControlData)
     feeder_control_changed_signal = pyqtSignal(FeederControlData)
-    
+    _error_dialog_instance = None
     
     def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController, panel_observer:QtPanelObserver, panel_notifier:PanelNotifier, feeder_observer:QtFeederObserver, feeder_notifier:FeederNotifier) -> None:
         super().__init__()
@@ -535,6 +535,7 @@ class MainWindow(QMainWindow):
             self.warning_text.setText(self.tr("No warnings."))
         elif motor_status == 0xE0:
             self.warning_text.setText(self.tr("Caution locked wheels."))
+        
 
     @pyqtSlot(RobotControlData)
     def robot_control_data_controller(self, data: RobotControlData):
@@ -669,7 +670,37 @@ class MainWindow(QMainWindow):
             self.btn_init_encoder.setDown(False)
 
         print('Feeder data UI Controller:', data)
-
-
-
     
+    @classmethod
+    def show_error_dialog_connections(cls):
+        if cls._error_dialog_instance is not None:
+            return
+
+        error_dialog = QMessageBox()
+        error_dialog.setIcon(QMessageBox.Icon.Critical)
+        error_dialog.setText(cls.tr("             Connection Error.             "))
+        error_dialog.setInformativeText(cls.tr("             Please check connections between robot and reel.             "))
+        error_dialog.setWindowTitle(cls.tr("             Connection Error.             "))
+        error_dialog.finished.connect(cls._clear_error_dialog_instance)
+        cls._error_dialog_instance = error_dialog
+
+        error_dialog.exec()
+
+    @classmethod
+    def show_error_dialog_restart(cls):
+        if cls._error_dialog_instance is not None:
+            return  
+
+        error_dialog = QMessageBox()
+        error_dialog.setIcon(QMessageBox.Icon.Critical)
+        error_dialog.setText(cls.tr("             Connection Error.                "))
+        error_dialog.setInformativeText(cls.tr("             Please restart the system.             "))
+        error_dialog.setWindowTitle(cls.tr("             Communication Error.             "))
+        error_dialog.finished.connect(cls._clear_error_dialog_instance)
+        cls._error_dialog_instance = error_dialog
+
+        error_dialog.exec()
+
+    @staticmethod
+    def _clear_error_dialog_instance():
+        MainWindow._error_dialog_instance = None

@@ -1,12 +1,22 @@
 from containers import CommunicationModuleContainer
-import time
-import can
 import sys
 from PyQt6.QtWidgets import QApplication
+from Inspection.ui.main_window import MainWindow
+
+
 
 def run():
     app = QApplication(sys.argv)
     container = CommunicationModuleContainer()
+
+    if container.bus() is None:
+        MainWindow.show_error_dialog_connections()
+        sys.exit(1)
+
+    robot_link = None
+    notify_video_use_case = None
+    main_window = None
+
     robot_link = container.robot_link()
     
     notify_video_use_case = container.notify_video_use_case()

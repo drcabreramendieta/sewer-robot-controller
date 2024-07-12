@@ -52,11 +52,25 @@ def get_logger(name='app_logger'):
 
     return logger
 
+def create_can_bus(channel: str, interface: str, bitrate: int, logger: logging.Logger):
+    try:
+        return can.interface.Bus(channel=channel, interface=interface, bitrate=bitrate)
+    except OSError as e:
+        logger.error(f"Failed to establish communication with the CAN bus: {e}", exc_info=True)
+        return None
+
 class CommunicationModuleContainer(containers.DeclarativeContainer):
     configuration = providers.Configuration()
     logger = providers.ThreadSafeSingleton(get_logger)
-    bus = providers.Singleton(can.interface.Bus, channel='can0', interface='socketcan', bitrate=250000)
-    #bus = providers.Singleton(can.interface.Bus, channel='test', interface='virtual', bitrate=1000000)
+    
+    bus = providers.Singleton(
+        create_can_bus, 
+        channel='can0', 
+        interface='socketcan', 
+        bitrate=250000,
+        logger=logger
+    )
+    
     robot_link = providers.Singleton(CANRobotLink, bus=bus, logger=logger)
     move_robot_use_case = providers.Factory(MoveRobot, link=robot_link, logger=logger)
     robot_controller = providers.Singleton(GidtecRobotController, communication_controller=move_robot_use_case, logger=logger)
@@ -68,7 +82,6 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
 
     video_observer = providers.Factory(QtVideoObserver, logger=logger)
     video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='rtsp://admin:inspection24@192.168.18.155:554/Streaming/Channels/101', logger=logger)
-    #video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='/home/dcabrera/UPS/Terminal/src/example.mp4')
     notify_video_use_case = providers.Singleton(VideoNotifier, link=video_link, logger=logger)
     
     db_link = providers.Factory(TinyDbLink, db_name='SessionsDB.json', logger=logger)
@@ -83,5 +96,15 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
     feeder_observer = providers.Factory(QtFeederObserver, logger=logger)
     feeder_notifier = providers.Factory(FeederNotifier, link=peripheral_link, logger=logger)
 
-    main_window = providers.Singleton(MainWindow, robot_controller=robot_controller,camera_controller=camera_controller, video_observer=video_observer, video_notifier=notify_video_use_case, telemetry_observer=telemetry_observer, telemetry_notifier=notify_telemetry_use_case, session_controller=session_controller,  panel_observer=panel_observer, panel_notifier=panel_notifier, feeder_observer=feeder_observer, feeder_notifier=feeder_notifier)
-    
+    main_window = providers.Singleton(MainWindow, 
+                                      robot_controller=robot_controller,
+                                      camera_controller=camera_controller,
+                                      video_observer=video_observer,
+                                      video_notifier=notify_video_use_case,
+                                      telemetry_observer=telemetry_observer,
+                                      telemetry_notifier=notify_telemetry_use_case,
+                                      session_controller=session_controller,
+                                      panel_observer=panel_observer,
+                                      panel_notifier=panel_notifier,
+                                      feeder_observer=feeder_observer,
+                                      feeder_notifier=feeder_notifier)
