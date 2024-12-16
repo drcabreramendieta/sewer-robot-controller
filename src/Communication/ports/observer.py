@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from Communication.domain.entities import TelemetryMessage
+from Communication.domain.entities.entities import TelemetryMessage
 
 class TelemetryObserver(ABC):
     @abstractmethod

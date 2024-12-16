@@ -1,5 +1,5 @@
-from Communication.ports.link import RobotLink
-from Communication.domain.entities import CameraStateModule
+from Communication.ports.output.link import RobotLink
+from Communication.domain.entities.entities import CameraStateModule
 from logging import Logger
 
 class ControlCamera:

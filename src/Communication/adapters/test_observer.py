@@ -1,5 +1,5 @@
 from Communication.ports.observer import TelemetryObserver
-from Communication.domain.entities import TelemetryMessage
+from Communication.domain.entities.entities import TelemetryMessage
 from PyQt6.QtCore import pyqtSignal
 from logging import Logger
 

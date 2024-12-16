@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from Communication.domain.entities import WheelsModule, TelemetryMessage, CameraStateModule
+from Communication.domain.entities.entities import WheelsModule, TelemetryMessage, CameraStateModule
 from typing import Callable
 from multipledispatch import dispatch
 

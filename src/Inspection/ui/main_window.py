@@ -8,7 +8,7 @@ from Video.domain.use_cases.video_notifier import VideoNotifier
 from Video.domain.entities import VideoMessage
 from Inspection.adapters.qt_video_observer import QtVideoObserver
 from Communication.adapters.test_observer import TestTelemetryObserver
-from Communication.domain.entities import TelemetryMessage
+from Communication.domain.entities.entities import TelemetryMessage
 from Communication.domain.use_cases.notify_telemetry import NotifyTelemetry
 from Inspection.ports.session_controller import SessionController
 from Inspection.ui.session_name_dialog import SessionNameDialog

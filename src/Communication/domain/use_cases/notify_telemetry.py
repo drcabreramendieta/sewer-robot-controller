@@ -1,6 +1,6 @@
 from Communication.ports.observer import TelemetryObserver
-from Communication.domain.entities import TelemetryMessage
-from Communication.ports.link import RobotLink
+from Communication.domain.entities.entities import TelemetryMessage
+from Communication.ports.output.link import RobotLink
 from logging import Logger
 
 class NotifyTelemetry:

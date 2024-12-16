@@ -1,5 +1,5 @@
-from Communication.ports.link import RobotLink
-from Communication.domain.entities import WheelsModule, TelemetryMessage, CameraStateModule
+from Communication.ports.output.link import RobotLink
+from Communication.domain.entities.entities import WheelsModule, TelemetryMessage, CameraStateModule
 from typing import Callable
 import can
 from multipledispatch import dispatch

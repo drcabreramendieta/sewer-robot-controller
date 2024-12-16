@@ -1,5 +1,5 @@
-from Communication.ports.link import RobotLink
-from Communication.domain.entities import WheelsModule
+from Communication.ports.output.link import RobotLink
+from Communication.domain.entities.entities import WheelsModule
 from logging import Logger
 
 class MoveRobot:
