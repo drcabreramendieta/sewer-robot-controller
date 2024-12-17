@@ -1,8 +1,8 @@
 from dependency_injector import containers, providers
 from Communication.domain.use_cases.move_robot import MoveRobot
-from Communication.domain.use_cases.notify_telemetry import NotifyTelemetry
-from Communication.adapters.can_bus import CANRobotLink
-from Communication.adapters.test_observer import TestTelemetryObserver
+from Communication.application.services.telemetry_services import TelemetryServices
+from Communication.adapters.frameworks.can_telemetry_controller_adapter import CanTelemetryControllerAdapter
+from Communication.tests.integration.test_observer import TestTelemetryObserver
 import can
 
 from Inspection.ui.main_window import MainWindow
@@ -71,14 +71,14 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
         logger=logger
     )
     
-    robot_link = providers.Singleton(CANRobotLink, bus=bus, logger=logger)
+    robot_link = providers.Singleton(CanTelemetryControllerAdapter, bus=bus, logger=logger)
     move_robot_use_case = providers.Factory(MoveRobot, link=robot_link, logger=logger)
     robot_controller = providers.Singleton(GidtecRobotController, communication_controller=move_robot_use_case, logger=logger)
     control_camera_use_case = providers.Factory(ControlCamera, robot_link=robot_link, logger=logger)
     camera_controller = providers.Singleton(GidtecCameraController, control_camera=control_camera_use_case, logger=logger)
 
     telemetry_observer = providers.Factory(TestTelemetryObserver, logger=logger)
-    notify_telemetry_use_case = providers.Singleton(NotifyTelemetry, link=robot_link, logger=logger)
+    notify_telemetry_use_case = providers.Singleton(TelemetryServices, link=robot_link, logger=logger)
 
     video_observer = providers.Factory(QtVideoObserver, logger=logger)
     video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='rtsp://admin:inspection24@192.168.18.155:554/Streaming/Channels/101', logger=logger)

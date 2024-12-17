@@ -3,9 +3,14 @@ from Communication.ports.output import CameraControllerPort
 from Communication.domain.entities.camera_entities import LightState, TiltState, PanState, ZoomState, FocusState, CameraState
 
 class CameraServices(CameraServicePort):
-    def __init__(self, camera:CameraState, camera_controller:CameraControllerPort):
+    def __init__(self, camera_controller:CameraControllerPort):
         super().__init__()
-        self.camera = camera
+        self.camera = CameraState(initialized=False, 
+                                  tilt=TiltState.STOP,
+                                  pan=PanState.STOP,
+                                  focus=FocusState.STOP,
+                                  zoom=ZoomState.STOP,
+                                  light=LightState.ONE)
         self.camera_controller = camera_controller
 
     def initialize_camera(self) -> None:

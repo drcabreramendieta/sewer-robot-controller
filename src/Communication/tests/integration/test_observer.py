@@ -1,9 +1,9 @@
-from Communication.ports.observer import TelemetryObserver
-from Communication.domain.entities.entities import TelemetryMessage
+from Communication.ports.output import TelemetryObserverPort
+from Communication.domain.entities.telemetry_entities import TelemetryMessage
 from PyQt6.QtCore import pyqtSignal
 from logging import Logger
 
-class TestTelemetryObserver(TelemetryObserver):
+class TestTelemetryObserver(TelemetryObserverPort):
     telemetry_updated_signal = pyqtSignal(TelemetryMessage)
     def __init__(self, logger:Logger) -> None:
         super().__init__()

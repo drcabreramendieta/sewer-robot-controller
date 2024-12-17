@@ -5,11 +5,6 @@ from logging import Logger
 from Inspection.ui.main_window import MainWindow
 # TODO: Remove the dependency of MainWindow here
 
-class CANError(Exception):
-    def __init__(self, message, error_code):
-        super().__init__(message)
-        self.error_code = error_code
-
 class CanCameraControllerAdapter(CameraControllerPort):
     def __init__(self, bus: can.BusABC, logger: Logger) -> None:
         self.callback = None

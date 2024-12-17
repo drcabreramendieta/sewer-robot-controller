@@ -1,8 +1,9 @@
-from Communication.application.services.movement_services import MovementService
+from Communication.application.services.movement_service import MovementService
 from Communication.domain.entities.wheels_entities import WheelsModule
 import can
 from logging import Logger
 from Inspection.ui.main_window import MainWindow
+# TODO: Remove the dependency of MainWindow here
 
 class CanWheelsControllerAdapter(MovementService):
     def __init__(self, bus: can.BusABC, logger: Logger) -> None:

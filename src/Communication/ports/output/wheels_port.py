@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from Communication.domain.entities.entities import WheelsModule, TelemetryMessage, CameraStateModule
+from Communication.domain.entities.telemetry_entities import WheelsModule, TelemetryMessage, CameraStateModule
 from typing import Callable
 from multipledispatch import dispatch
 
-class RobotLink(ABC):
+class CameraPort(ABC):
     @abstractmethod
-    def initialize_camera(self, camera_state:CameraStateModule) -> bool:
+    def initialize_camera(self) -> bool:
         pass
 
     @dispatch(WheelsModule)

@@ -7,9 +7,9 @@ from Inspection.ports.camera_controller import CameraController
 from Video.domain.use_cases.video_notifier import VideoNotifier
 from Video.domain.entities import VideoMessage
 from Inspection.adapters.qt_video_observer import QtVideoObserver
-from Communication.adapters.test_observer import TestTelemetryObserver
-from Communication.domain.entities.entities import TelemetryMessage
-from Communication.domain.use_cases.notify_telemetry import NotifyTelemetry
+from Communication.tests.integration.test_observer import TestTelemetryObserver
+from Communication.domain.entities.telemetry_entities import TelemetryMessage
+from Communication.application.services.telemetry_services import TelemetryServices
 from Inspection.ports.session_controller import SessionController
 from Inspection.ui.session_name_dialog import SessionNameDialog
 from Inspection.ui.sessions_list_dialog import SessionsListDialog
@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
     feeder_control_changed_signal = pyqtSignal(FeederControlData)
     _error_dialog_instance = None
     
-    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: NotifyTelemetry, session_controller: SessionController, panel_observer:QtPanelObserver, panel_notifier:PanelNotifier, feeder_observer:QtFeederObserver, feeder_notifier:FeederNotifier) -> None:
+    def __init__(self, robot_controller: RobotController, camera_controller: CameraController, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: TelemetryServices, session_controller: SessionController, panel_observer:QtPanelObserver, panel_notifier:PanelNotifier, feeder_observer:QtFeederObserver, feeder_notifier:FeederNotifier) -> None:
         super().__init__()
         self.latest_temperature = "N/A"
         self.latest_humidity = "N/A"
