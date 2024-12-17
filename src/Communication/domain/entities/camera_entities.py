@@ -33,7 +33,7 @@ class ZoomState(Enum):
     STOP = auto()
 
 @dataclass
-class CameraStateModule:
+class CameraState:
     initialized: bool
     tilt: TiltState
     pan: PanState
