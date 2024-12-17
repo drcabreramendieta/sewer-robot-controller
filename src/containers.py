@@ -1,7 +1,7 @@
 from dependency_injector import containers, providers
 from Communication.domain.use_cases.move_robot import MoveRobot
 from Communication.application.services.telemetry_services import TelemetryServices
-from Communication.adapters.frameworks.can_telemetry_controller_adapter import CanTelemetryControllerAdapter
+from Communication.adapters.external_services.can_telemetry_controller_adapter import CanTelemetryControllerAdapter
 from Communication.tests.integration.test_observer import TestTelemetryObserver
 import can
 
