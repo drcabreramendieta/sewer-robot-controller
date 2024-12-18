@@ -10,7 +10,7 @@ class CameraServices(CameraServicePort):
                                   pan=PanState.STOP,
                                   focus=FocusState.STOP,
                                   zoom=ZoomState.STOP,
-                                  light=LightState.ONE)
+                                  light=LightState(value=0))
         self.camera_controller = camera_controller
 
     def initialize_camera(self) -> None:

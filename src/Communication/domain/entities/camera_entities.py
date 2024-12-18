@@ -1,16 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 
-class LightState(Enum):
-    ONE = auto()
-    TWO = auto()
-    THREE = auto()
-    FOUR = auto()
-    FIVE = auto()
-    SIX = auto()
-    SEVEN = auto()
-    EIGHT = auto()
-    NINE = auto()
+@dataclass
+class LightState:
+    value: int
 
 class FocusState(Enum):
     OUT = auto()

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class CameraController(ABC):
+class CameraControllerPort(ABC):
     @abstractmethod
     def tilt_up(self) -> None:
         pass
