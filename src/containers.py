@@ -6,8 +6,8 @@ from Communication.tests.integration.test_observer import TestTelemetryObserver
 import can
 
 from Inspection.ui.main_window import MainWindow
-from Inspection.adapters.gidtec_robot_controller import GidtecRobotController
-from Inspection.adapters.gidtec_camera_controller import GidtecCameraController 
+from Inspection.adapters.external_services.comm_movement_controller_adapter import CommMovementControllerAdapter
+from Inspection.adapters.external_services.comm_camera_controller_adapter import CommCameraControllerAdapter 
 from Communication.domain.use_cases.control_camera import ControlCamera
 
 from Video.adapters.test_video_observer import TestVideoObserver
@@ -73,9 +73,9 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
     
     robot_link = providers.Singleton(CanTelemetryControllerAdapter, bus=bus, logger=logger)
     move_robot_use_case = providers.Factory(MoveRobot, link=robot_link, logger=logger)
-    robot_controller = providers.Singleton(GidtecRobotController, communication_controller=move_robot_use_case, logger=logger)
+    robot_controller = providers.Singleton(CommMovementControllerAdapter, communication_controller=move_robot_use_case, logger=logger)
     control_camera_use_case = providers.Factory(ControlCamera, robot_link=robot_link, logger=logger)
-    camera_controller = providers.Singleton(GidtecCameraController, control_camera=control_camera_use_case, logger=logger)
+    camera_controller = providers.Singleton(CommCameraControllerAdapter, control_camera=control_camera_use_case, logger=logger)
 
     telemetry_observer = providers.Factory(TestTelemetryObserver, logger=logger)
     notify_telemetry_use_case = providers.Singleton(TelemetryServices, link=robot_link, logger=logger)

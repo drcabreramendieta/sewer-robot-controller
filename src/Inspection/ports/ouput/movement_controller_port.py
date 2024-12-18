@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class RobotController(ABC):
+class MovementControllerPort(ABC):
     @abstractmethod
     def move_forward(self) -> None:
         pass
