@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug with Pytest",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/.venv/bin/pytest",
+            "args": [
+                "src/Communication/tests/integration/test_telemetry_integration.py"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "QT_QPA_PLATFORM": "offscreen"
+            }
+        }
+    ]
+}
