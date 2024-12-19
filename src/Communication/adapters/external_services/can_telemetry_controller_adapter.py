@@ -3,8 +3,6 @@ from Communication.domain.entities.telemetry_entities import TelemetryMessage
 from typing import Callable
 import can
 from logging import Logger
-from Inspection.ui.main_window import MainWindow
-# TODO: Remove MainWindow dependency 
 
 class CanTelemetryControllerAdapter(TelemetryControllerPort):
     def __init__(self, bus: can.BusABC, logger: Logger) -> None:
@@ -25,18 +23,14 @@ class CanTelemetryControllerAdapter(TelemetryControllerPort):
             self.logger.error(f"Error CAN: {e}")
             if e.error_code == 100:  # Network is down
                 self.logger.error("Network is down")
-                MainWindow.show_error_dialog_restart()
             elif e.error_code == 6:  # No such device or address
                 self.logger.error("No such device or address")
-                MainWindow.show_error_dialog_restart()
             else:
                 self.logger.error("Unknown CAN error")
-                MainWindow.show_error_dialog_restart()
         except OSError as e:
             self.logger.error(f"OSError: {e}")
             if e.errno == 19:  # No such device or address
                 self.logger.error("No such device or address")
-                MainWindow.show_error_dialog_restart()
 
     def stop_listening(self) -> None:
         if self.notifier:
