@@ -7,7 +7,7 @@ from Inspection.ports.ouput.camera_controller_port import CameraControllerPort
 from Video.domain.use_cases.video_notifier import VideoNotifier
 from Video.domain.entities import VideoMessage
 from Inspection.adapters.qt_video_observer import QtVideoObserver
-from Communication.tests.integration.test_observer import TestTelemetryObserver
+from Communication.adapters.external_services.pyqt_telemetry_observer_adapter import PyqtTelemetryObserverAdapter
 from Communication.domain.entities.telemetry_entities import TelemetryMessage
 from Communication.application.services.telemetry_services import TelemetryServices
 from Inspection.ports.session_controller import SessionController
@@ -21,13 +21,12 @@ from Panel_and_Feeder.domain.entities import RobotControlData, CameraControlData
 
 class MainWindow(QMainWindow):
     video_changed_signal = pyqtSignal(VideoMessage)
-    telemetry_updated_signal = pyqtSignal(TelemetryMessage)
     robot_control_changed_signal = pyqtSignal(RobotControlData)
     camera_control_changed_signal = pyqtSignal(CameraControlData)
     feeder_control_changed_signal = pyqtSignal(FeederControlData)
     _error_dialog_instance = None
     
-    def __init__(self, robot_controller: MovementControllerPort, camera_controller: CameraControllerPort, video_observer: QtVideoObserver, video_notifier: VideoNotifier, telemetry_observer: TestTelemetryObserver, telemetry_notifier: TelemetryServices, session_controller: SessionController, panel_observer:QtPanelObserver, panel_notifier:PanelNotifier, feeder_observer:QtFeederObserver, feeder_notifier:FeederNotifier) -> None:
+    def __init__(self, robot_controller: MovementControllerPort, camera_controller: CameraControllerPort, video_observer: QtVideoObserver, video_notifier: VideoNotifier, session_controller: SessionController, panel_observer:QtPanelObserver, panel_notifier:PanelNotifier, feeder_observer:QtFeederObserver, feeder_notifier:FeederNotifier) -> None:
         super().__init__()
         self.latest_temperature = "N/A"
         self.latest_humidity = "N/A"
@@ -40,10 +39,6 @@ class MainWindow(QMainWindow):
         self.video_observer = video_observer
         self.video_observer.register_signal(self.video_changed_signal)
         self.video_notifier.register_observer(self.video_observer)
-        self.telemetry_notifier = telemetry_notifier
-        self.telemetry_observer = telemetry_observer
-        self.telemetry_observer.register_signal(self.telemetry_updated_signal)
-        self.telemetry_notifier.register_observer(self.telemetry_observer)
         self.panel_notifier = panel_notifier
         self.panel_observer = panel_observer
         self.panel_observer.register_robot_signal(self.robot_control_changed_signal)
@@ -321,10 +316,6 @@ class MainWindow(QMainWindow):
         # Connect translation
         self.languageComboBox.currentIndexChanged.connect(self.changeLanguage)
 
-        #Connect telemetry
-        self.telemetry_updated_signal.connect(self.update_telemetry)
-        self.telemetry_notifier.start_listening()
-
         #Connect session
         self.record_button.clicked.connect(self.toggleRecording)
         self.capture_button.clicked.connect(self.session_controller.take_capture)
@@ -506,35 +497,6 @@ class MainWindow(QMainWindow):
         convert_to_Qt_format = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
         p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)
         return QPixmap.fromImage(p)
-    
-    @pyqtSlot(TelemetryMessage)
-    def update_telemetry(self, telemetry: TelemetryMessage):
-        # Actualizar los atributos con los nuevos valores si están disponibles
-        self.latest_temperature = telemetry.variables.get("Temperature", self.latest_temperature)
-        self.latest_humidity = telemetry.variables.get("Humidity", self.latest_humidity)
-        self.latest_x_slop = telemetry.variables.get("X slop", self.latest_x_slop)
-        self.latest_y_slop = telemetry.variables.get("Y slop", self.latest_y_slop)
-        
-        motor_status = telemetry.variables.get("Motor status", "N/A")
-        
-
-        # Construir el texto de telemetría con los últimos valores conocidos
-        telemetry_text = (f"{self.tr('Telemetry')}\n"
-                          f"{self.tr('Temperature:')} {self.latest_temperature} °C \n"
-                          f"{self.tr('Humidity:')} {self.latest_humidity} HR \n"
-                          f"{self.tr('X slop:')} {self.latest_x_slop} °\n"
-                          f"{self.tr('Y slop:')} {self.latest_y_slop} °\n"
-                          f"{self.tr('Distance:')} {self.latest_distance}")
-
-        # Actualizar la etiqueta con el texto de telemetría
-        self.telemetry_label.setText(telemetry_text)
-        self.telemetry_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        #print(telemetry.variables) 
-        # Actualizar el texto de advertencia basado en el estado del motor
-        if motor_status == 0xC0:
-            self.warning_text.setText(self.tr("No warnings."))
-        elif motor_status == 0xE0:
-            self.warning_text.setText(self.tr("Caution locked wheels."))
         
 
     @pyqtSlot(RobotControlData)

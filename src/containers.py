@@ -2,7 +2,7 @@ from dependency_injector import containers, providers
 from Communication.domain.use_cases.move_robot import MoveRobot
 from Communication.application.services.telemetry_services import TelemetryServices
 from Communication.adapters.external_services.can_telemetry_controller_adapter import CanTelemetryControllerAdapter
-from Communication.tests.integration.test_observer import TestTelemetryObserver
+from Communication.adapters.external_services.pyqt_telemetry_observer_adapter import PyqtTelemetryObserverAdapter
 import can
 
 from Inspection.ui.main_window import MainWindow
@@ -77,7 +77,7 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
     control_camera_use_case = providers.Factory(ControlCamera, robot_link=robot_link, logger=logger)
     camera_controller = providers.Singleton(CommCameraControllerAdapter, control_camera=control_camera_use_case, logger=logger)
 
-    telemetry_observer = providers.Factory(TestTelemetryObserver, logger=logger)
+    telemetry_observer = providers.Factory(PyqtTelemetryObserverAdapter, logger=logger)
     notify_telemetry_use_case = providers.Singleton(TelemetryServices, link=robot_link, logger=logger)
 
     video_observer = providers.Factory(QtVideoObserver, logger=logger)
