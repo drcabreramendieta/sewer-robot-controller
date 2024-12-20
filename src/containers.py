@@ -23,12 +23,12 @@ from Video.application.services.session_services import SessionServices
 from Inspection.adapters.gidtec_session_controller import GidtecSessionController
 from Inspection.ui.sessions_list_dialog import SessionsListDialog
 
-from Panel_and_Feeder.adapters.serial_peripheral_link import SerialPeripheralLink
-from Panel_and_Feeder.adapters.qt_feeder_observer import QtFeederObserver
-from Panel_and_Feeder.adapters.qt_panel_observer import QtPanelObserver
-from Panel_and_Feeder.domain.entities import SerialConfig
-from Panel_and_Feeder.domain.feeder_notifier import FeederNotifier
-from Panel_and_Feeder.domain.panel_notifier import PanelNotifier
+from Panel_and_Feeder.adapters.serial_panel_and_feeder_controller_adapter import SerialPanelAndFeederControllerAdapter
+from Panel_and_Feeder.adapters.pyqt_feeder_observer_adapter import PyqtFeederObserverAdapter
+from Panel_and_Feeder.adapters.pyqt_panel_observer_adapter import PyqtPanelObserverAdapter
+from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import SerialConfig
+from Panel_and_Feeder.application.services.feeder_services import FeederServices
+from Panel_and_Feeder.application.services.panel_services import PanelServices
 
 import logging
 
@@ -90,11 +90,11 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
     session_controller = providers.Factory(GidtecSessionController, control_session=control_session_use_case, logger=logger)
 
     serial_conf = providers.Factory(SerialConfig, port='/dev/ttyACM0', baudrate=115200, timeout=0.1)
-    peripheral_link = providers.Singleton(SerialPeripheralLink, serial_conf=serial_conf, logger=logger)
-    panel_observer = providers.Factory(QtPanelObserver, logger=logger)
-    panel_notifier = providers.Factory(PanelNotifier, link=peripheral_link, logger=logger)
-    feeder_observer = providers.Factory(QtFeederObserver, logger=logger)
-    feeder_notifier = providers.Factory(FeederNotifier, link=peripheral_link, logger=logger)
+    peripheral_link = providers.Singleton(SerialPanelAndFeederControllerAdapter, serial_conf=serial_conf, logger=logger)
+    panel_observer = providers.Factory(PyqtPanelObserverAdapter, logger=logger)
+    panel_notifier = providers.Factory(PanelServices, link=peripheral_link, logger=logger)
+    feeder_observer = providers.Factory(PyqtFeederObserverAdapter, logger=logger)
+    feeder_notifier = providers.Factory(FeederServices, link=peripheral_link, logger=logger)
 
     main_window = providers.Singleton(MainWindow, 
                                       robot_controller=robot_controller,

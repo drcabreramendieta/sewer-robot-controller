@@ -13,11 +13,11 @@ from Communication.application.services.telemetry_services import TelemetryServi
 from Inspection.ports.session_controller import SessionController
 from Inspection.ui.session_name_dialog import SessionNameDialog
 from Inspection.ui.sessions_list_dialog import SessionsListDialog
-from Panel_and_Feeder.adapters.qt_panel_observer import QtPanelObserver
-from Panel_and_Feeder.adapters.qt_feeder_observer import QtFeederObserver
-from Panel_and_Feeder.domain.feeder_notifier import FeederNotifier
-from Panel_and_Feeder.domain.panel_notifier import PanelNotifier
-from Panel_and_Feeder.domain.entities import RobotControlData, CameraControlData, FeederControlData
+from Panel_and_Feeder.adapters.pyqt_panel_observer_adapter import PyqtPanelObserverAdapter
+from Panel_and_Feeder.adapters.pyqt_feeder_observer_adapter import PyqtFeederObserverAdapter
+from Panel_and_Feeder.application.services.feeder_services import FeederServices
+from Panel_and_Feeder.application.services.panel_services import PanelServices
+from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData, FeederControlData
 
 class MainWindow(QMainWindow):
     video_changed_signal = pyqtSignal(VideoMessage)
@@ -26,7 +26,7 @@ class MainWindow(QMainWindow):
     feeder_control_changed_signal = pyqtSignal(FeederControlData)
     _error_dialog_instance = None
     
-    def __init__(self, robot_controller: MovementControllerPort, camera_controller: CameraControllerPort, video_observer: PyqtVideoObserverAdapter, video_notifier: VideoServices, session_controller: SessionController, panel_observer:QtPanelObserver, panel_notifier:PanelNotifier, feeder_observer:QtFeederObserver, feeder_notifier:FeederNotifier) -> None:
+    def __init__(self, robot_controller: MovementControllerPort, camera_controller: CameraControllerPort, video_observer: PyqtVideoObserverAdapter, video_notifier: VideoServices, session_controller: SessionController, panel_observer:PyqtPanelObserverAdapter, panel_notifier:PanelServices, feeder_observer:PyqtFeederObserverAdapter, feeder_notifier:FeederServices) -> None:
         super().__init__()
         self.latest_temperature = "N/A"
         self.latest_humidity = "N/A"

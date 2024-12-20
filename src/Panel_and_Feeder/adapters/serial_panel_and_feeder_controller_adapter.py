@@ -1,13 +1,13 @@
-from Panel_and_Feeder.ports.peripheral_link import PeripheralLink
+from Panel_and_Feeder.ports.output.panel_and_feeder_controller_port import PanelAndFeederControllerPort
 from typing import Callable
-from Panel_and_Feeder.domain.entities import RobotControlData, CameraControlData, FeederControlData, SerialConfig
+from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData, FeederControlData, SerialConfig
 import threading
 import serial
 from logging import Logger
 from PyQt6.QtCore import QMetaObject, Qt
 from PyQt6.QtWidgets import QMessageBox
 
-class SerialPeripheralLink(PeripheralLink):
+class SerialPanelAndFeederControllerAdapter(PanelAndFeederControllerPort):
     _error_dialog_instance = None
     
     def __init__(self, serial_conf: SerialConfig, logger: Logger) -> None:

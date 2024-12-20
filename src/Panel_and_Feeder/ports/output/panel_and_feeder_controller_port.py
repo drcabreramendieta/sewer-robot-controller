@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Callable
-from Panel_and_Feeder.domain.entities import RobotControlData, CameraControlData, FeederControlData
+from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData, FeederControlData
 
-class PeripheralLink(ABC):
+class PanelAndFeederControllerPort(ABC):
     @abstractmethod
     def robot_callback_setup(self, robot_callback:Callable[[RobotControlData],None]) -> None:
         pass
