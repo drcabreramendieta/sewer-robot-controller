@@ -1,5 +1,6 @@
-from Video.ports.dvr_link import DvrLink
-from Video.domain.entities import ImageInfo, RecordInfo
+from Video.domain.entities.repository_entities import ImageInfo
+from Video.ports.output.dvr_controller_port import DvrControllerPort
+from Video.domain.entities.repository_entities import RecordInfo
 from requests.auth import HTTPBasicAuth
 from datetime import datetime, timedelta
 import xml.etree.ElementTree as ET
@@ -12,7 +13,7 @@ from Inspection.ui.main_window import MainWindow
 
 TIMEOUT = 2  # Definimos un timeout de 10 segundos
 
-class HikvisionDvrLink(DvrLink):
+class HikvisionDvrControllerAdapter(DvrControllerPort):
     def __init__(self, url: str, user: str, password: str, dir: str, logger: Logger) -> None:
         super().__init__()
         self.url = url

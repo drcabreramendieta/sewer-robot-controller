@@ -1,12 +1,13 @@
-from Video.ports.dvr_link import DvrLink
-from Video.ports.db_link import DbLink
-from Video.domain.entities import DvrOrder
+from Video.ports.input import SessionServicesPort
+from Video.ports.output.dvr_controller_port import DvrControllerPort
+from Video.ports.output.repository_port import RepositoryPort
+from Video.domain.entities.dvr_entities import DvrOrder
 import shutil
 import os
 from logging import Logger
 
-class ControlSession:
-    def __init__(self, dvr_link: DvrLink, db_link: DbLink, logger: Logger) -> None:
+class SessionServices(SessionServicesPort):
+    def __init__(self, dvr_link: DvrControllerPort, db_link: RepositoryPort, logger: Logger) -> None:
         self.dvr_link = dvr_link
         self.db_link = db_link
         self.logger = logger

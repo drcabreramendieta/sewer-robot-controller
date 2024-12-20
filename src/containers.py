@@ -10,16 +10,16 @@ from Inspection.adapters.external_services.comm_movement_controller_adapter impo
 from Inspection.adapters.external_services.comm_camera_controller_adapter import CommCameraControllerAdapter 
 from Communication.domain.use_cases.control_camera import ControlCamera
 
-from Video.adapters.test_video_observer import TestVideoObserver
-from Inspection.adapters.qt_video_observer import QtVideoObserver
-from Video.adapters.opencv_video_link import OpenCVVideoLink
-from Video.domain.use_cases.video_notifier import VideoNotifier
-from Video.domain.entities import VideoMessage
+from Video.adapters.external_services.test_video_observer import TestVideoObserver
+from Video.adapters.external_services.pyqt_video_observer_adapter import PyqtVideoObserverAdapter
+from Video.adapters.external_services.opencv_video_controller_adapter import OpencvVideoControllerAdapter
+from Video.application.services.video_services import VideoServices
+from Video.domain.entities.video_entities import VideoMessage
 from PyQt6.QtCore import pyqtSignal
 
-from Video.adapters.hikvision_dvr_link import HikvisionDvrLink
-from Video.adapters.tiny_db_link import TinyDbLink
-from Video.domain.use_cases.control_session import ControlSession
+from Video.adapters.external_services.hikvision_dvr_controller_adapter import HikvisionDvrControllerAdapter
+from Video.adapters.repositories.tinydb_repository_adapter import TinydbRepositoryAdapter
+from Video.application.services.session_services import SessionServices
 from Inspection.adapters.gidtec_session_controller import GidtecSessionController
 from Inspection.ui.sessions_list_dialog import SessionsListDialog
 
@@ -80,13 +80,13 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
     telemetry_observer = providers.Factory(PyqtTelemetryObserverAdapter, logger=logger)
     notify_telemetry_use_case = providers.Singleton(TelemetryServices, link=robot_link, logger=logger)
 
-    video_observer = providers.Factory(QtVideoObserver, logger=logger)
-    video_link = providers.Singleton(OpenCVVideoLink, rtsp_url='rtsp://admin:inspection24@192.168.18.155:554/Streaming/Channels/101', logger=logger)
-    notify_video_use_case = providers.Singleton(VideoNotifier, link=video_link, logger=logger)
+    video_observer = providers.Factory(PyqtVideoObserverAdapter, logger=logger)
+    video_link = providers.Singleton(OpencvVideoControllerAdapter, rtsp_url='rtsp://admin:inspection24@192.168.18.155:554/Streaming/Channels/101', logger=logger)
+    notify_video_use_case = providers.Singleton(VideoServices, link=video_link, logger=logger)
     
-    db_link = providers.Factory(TinyDbLink, db_name='SessionsDB.json', logger=logger)
-    dvr_link = providers.Factory(HikvisionDvrLink, url='http://192.168.18.155:80', user="admin", password="inspection24", dir="/home/iiot/Pictures", logger=logger)
-    control_session_use_case = providers.Factory(ControlSession, dvr_link=dvr_link, db_link=db_link, logger=logger)
+    db_link = providers.Factory(TinydbRepositoryAdapter, db_name='SessionsDB.json', logger=logger)
+    dvr_link = providers.Factory(HikvisionDvrControllerAdapter, url='http://192.168.18.155:80', user="admin", password="inspection24", dir="/home/iiot/Pictures", logger=logger)
+    control_session_use_case = providers.Factory(SessionServices, dvr_link=dvr_link, db_link=db_link, logger=logger)
     session_controller = providers.Factory(GidtecSessionController, control_session=control_session_use_case, logger=logger)
 
     serial_conf = providers.Factory(SerialConfig, port='/dev/ttyACM0', baudrate=115200, timeout=0.1)

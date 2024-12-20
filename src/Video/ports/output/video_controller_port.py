@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Callable
-from Video.domain.entities import VideoMessage
+from Video.domain.entities.video_entities import VideoMessage
 
-class VideoLink(ABC):
+class VideoControllerPort(ABC):
     @abstractmethod
     def callback_setup(self, callback:Callable[[VideoMessage],None]) -> None:
         pass

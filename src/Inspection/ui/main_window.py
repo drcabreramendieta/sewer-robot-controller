@@ -4,9 +4,9 @@ from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QGridLayout, QPushButton, 
 from PyQt6.QtGui import QImage, QPixmap, QIcon
 from Inspection.ports.ouput.movement_controller_port import MovementControllerPort
 from Inspection.ports.ouput.camera_controller_port import CameraControllerPort
-from Video.domain.use_cases.video_notifier import VideoNotifier
-from Video.domain.entities import VideoMessage
-from Inspection.adapters.qt_video_observer import QtVideoObserver
+from Video.application.services.video_services import VideoServices
+from Video.domain.entities.video_entities import VideoMessage
+from Video.adapters.external_services.pyqt_video_observer_adapter import PyqtVideoObserverAdapter
 from Communication.adapters.external_services.pyqt_telemetry_observer_adapter import PyqtTelemetryObserverAdapter
 from Communication.domain.entities.telemetry_entities import TelemetryMessage
 from Communication.application.services.telemetry_services import TelemetryServices
@@ -26,7 +26,7 @@ class MainWindow(QMainWindow):
     feeder_control_changed_signal = pyqtSignal(FeederControlData)
     _error_dialog_instance = None
     
-    def __init__(self, robot_controller: MovementControllerPort, camera_controller: CameraControllerPort, video_observer: QtVideoObserver, video_notifier: VideoNotifier, session_controller: SessionController, panel_observer:QtPanelObserver, panel_notifier:PanelNotifier, feeder_observer:QtFeederObserver, feeder_notifier:FeederNotifier) -> None:
+    def __init__(self, robot_controller: MovementControllerPort, camera_controller: CameraControllerPort, video_observer: PyqtVideoObserverAdapter, video_notifier: VideoServices, session_controller: SessionController, panel_observer:QtPanelObserver, panel_notifier:PanelNotifier, feeder_observer:QtFeederObserver, feeder_notifier:FeederNotifier) -> None:
         super().__init__()
         self.latest_temperature = "N/A"
         self.latest_humidity = "N/A"

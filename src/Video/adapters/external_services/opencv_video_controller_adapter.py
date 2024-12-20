@@ -1,11 +1,11 @@
-from Video.ports.video_link import VideoLink
+from Video.ports.output.video_controller_port import VideoControllerPort
 from typing import Callable
-from Video.domain.entities import VideoMessage
+from Video.domain.entities.video_entities import VideoMessage
 import cv2
 import threading
 from logging import Logger
 
-class OpenCVVideoLink(VideoLink):
+class OpencvVideoControllerAdapter(VideoControllerPort):
     def __init__(self, rtsp_url: str, logger: Logger) -> None:
         super().__init__()
         self.callback = None

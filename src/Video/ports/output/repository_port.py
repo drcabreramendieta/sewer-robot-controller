@@ -1,7 +1,8 @@
-from Video.domain.entities import ImageInfo, RecordInfo
+from Video.domain.entities.repository_entities import ImageInfo
+from Video.domain.entities.repository_entities import RecordInfo
 from abc import ABC, abstractmethod
 
-class DbLink:
+class RepositoryPort(ABC):
     @abstractmethod
     def create(self, name:str) -> bool:
         pass

@@ -1,9 +1,10 @@
-from Video.domain.entities import ImageInfo, RecordInfo
+from Video.domain.entities.repository_entities import ImageInfo
+from Video.domain.entities.repository_entities import RecordInfo
 from tinydb import TinyDB, Query
-from Video.ports.db_link import DbLink
+from Video.ports.output.repository_port import RepositoryPort
 from logging import Logger
 
-class TinyDbLink(DbLink):
+class TinydbRepositoryAdapter(RepositoryPort):
     def __init__(self, db_name: str, logger: Logger) -> None:
         self.db = TinyDB(db_name)
         self.doc_id = None

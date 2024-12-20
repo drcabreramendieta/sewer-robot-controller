@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from Video.domain.entities import ImageInfo, RecordInfo
+from Video.domain.entities.repository_entities import ImageInfo
+from Video.domain.entities.repository_entities import RecordInfo
 
-class DvrLink(ABC):
+class DvrControllerPort(ABC):
     @abstractmethod
     def take_image(self) -> ImageInfo:
         pass
