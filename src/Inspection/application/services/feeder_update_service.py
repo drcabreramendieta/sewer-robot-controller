@@ -11,7 +11,7 @@ class FeederUpdateServicePort(FeederUpdateServicePort):
         self.feeder_controller = feeder_controller
 
     def update_feeder_control(self, feeder_control_data:FeederControlData) -> None:
-        self.latest_distance = feeder_control_data.distance
+        self.gui.latest_distance = feeder_control_data.distance
         # Construir el texto de telemetría con los últimos valores conocidos
         telemetry_text = (f"{self.gui.tr('Telemetry')}\n"
                           f"{self.gui.tr('Temperature:')} {self.gui.latest_temperature} °C \n"
