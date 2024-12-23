@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QListWidget, QApplication, QPushButton, QHBoxLayout, QFileDialog, QMessageBox
-from Inspection.adapters.gidtec_session_controller import SessionController
+from Inspection.ports.input import SessionServicesPort
 import os 
 
 class SessionsListDialog(QDialog):
-    def __init__(self, control_session=SessionController ):
+    def __init__(self, control_session:SessionServicesPort ):
         super().__init__()
         self.control_session = control_session
         self.setWindowTitle(self.tr("Session Names"))

@@ -1,9 +1,9 @@
-from Inspection.ports.session_controller import SessionController
+from Inspection.ports.ouput.session_controller_port import SessionControllerPort
 from Video.application.services.session_services import SessionServices
 from Video.domain.entities.dvr_entities import DvrOrder
 from logging import Logger
 
-class GidtecSessionController(SessionController):
+class VideoSessionControllerAdapter(SessionControllerPort):
     def __init__(self, control_session:SessionServices, logger:Logger) -> None:
         super().__init__()
         self.control_session = control_session

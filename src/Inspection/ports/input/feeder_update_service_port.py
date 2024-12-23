@@ -5,3 +5,7 @@ class FeederUpdateServicePort(ABC):
     @abstractmethod
     def update_feeder_control(self, feeder_control_data:FeederControlData) -> None:
         pass
+
+    @abstractmethod
+    def send_message(self, msg:str) -> None:
+        pass

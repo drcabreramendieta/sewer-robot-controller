@@ -1,58 +1,25 @@
-import cv2
-from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QTranslator, QFile
+from PyQt6.QtCore import Qt, QSize, QTranslator, QFile
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QGridLayout, QPushButton, QWidget, QSlider, QLabel, QHBoxLayout, QCheckBox, QComboBox, QApplication, QTextEdit, QMessageBox
-from PyQt6.QtGui import QImage, QPixmap, QIcon
-from Inspection.ports.ouput.movement_controller_port import MovementControllerPort
-from Inspection.ports.ouput.camera_controller_port import CameraControllerPort
-from Video.application.services.video_services import VideoServices
-from Video.domain.entities.video_entities import VideoMessage
-from Video.adapters.external_services.pyqt_video_observer_adapter import PyqtVideoObserverAdapter
-from Communication.adapters.external_services.pyqt_telemetry_observer_adapter import PyqtTelemetryObserverAdapter
-from Communication.domain.entities.telemetry_entities import TelemetryMessage
-from Communication.application.services.telemetry_services import TelemetryServices
-from Inspection.ports.session_controller import SessionController
+from PyQt6.QtGui import QIcon
 from Inspection.ui.session_name_dialog import SessionNameDialog
 from Inspection.ui.sessions_list_dialog import SessionsListDialog
-from Panel_and_Feeder.adapters.external_services.pyqt_panel_observer_adapter import PyqtPanelObserverAdapter
-from Panel_and_Feeder.adapters.external_services.pyqt_feeder_observer_adapter import PyqtFeederObserverAdapter
-from Panel_and_Feeder.application.services.feeder_services import FeederServices
-from Panel_and_Feeder.application.services.panel_services import PanelServices
-from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData, FeederControlData
+from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData
 
+from Inspection.ports.input import PanelUpdateServicesPort, SessionServicesPort, FeederUpdateServicePort
 class MainWindow(QMainWindow):
-    video_changed_signal = pyqtSignal(VideoMessage)
-    robot_control_changed_signal = pyqtSignal(RobotControlData)
-    camera_control_changed_signal = pyqtSignal(CameraControlData)
-    feeder_control_changed_signal = pyqtSignal(FeederControlData)
     _error_dialog_instance = None
     
-    def __init__(self, robot_controller: MovementControllerPort, camera_controller: CameraControllerPort, video_observer: PyqtVideoObserverAdapter, video_notifier: VideoServices, session_controller: SessionController, panel_observer:PyqtPanelObserverAdapter, panel_notifier:PanelServices, feeder_observer:PyqtFeederObserverAdapter, feeder_notifier:FeederServices) -> None:
+    def __init__(self, panel_services: PanelUpdateServicesPort, feeder_services:FeederUpdateServicePort, session_services:SessionServicesPort) -> None:
         super().__init__()
         self.latest_temperature = "N/A"
         self.latest_humidity = "N/A"
         self.latest_x_slop = "N/A"
         self.latest_y_slop = "N/A"
         self.latest_distance = "N/A"
-        self.robot_controller = robot_controller
-        self.camera_controller = camera_controller
-        self.video_notifier = video_notifier
-        self.video_observer = video_observer
-        self.video_observer.register_signal(self.video_changed_signal)
-        self.video_notifier.register_observer(self.video_observer)
-        self.panel_notifier = panel_notifier
-        self.panel_observer = panel_observer
-        self.panel_observer.register_robot_signal(self.robot_control_changed_signal)
-        self.panel_observer.register_camera_signal(self.camera_control_changed_signal)
-        self.panel_notifier.register_observer(self.panel_observer)
-        self.feeder_notifier = feeder_notifier
-        self.feeder_observer = feeder_observer
-        self.feeder_observer.register_feeder_signal(self.feeder_control_changed_signal)
-        self.feeder_notifier.register_observer(self.feeder_observer)
-
-        self.session_controller = session_controller
-
+        self.panel_services = panel_services
+        self.session_services = session_services
+        self.feeder_services = feeder_services
         
-
         self.translator = QTranslator(self)
         self.SessionState = False  
         self.isRecording = False
@@ -269,21 +236,21 @@ class MainWindow(QMainWindow):
 
     def setup_connections(self):
         # Connect movement buttons
-        self.btn_forward.pressed.connect(self.robot_controller.move_forward)
-        self.btn_backward.pressed.connect(self.robot_controller.move_backward)
-        self.btn_left_forward.pressed.connect(self.robot_controller.rotate_left_forward)
-        self.btn_right_forward.pressed.connect(self.robot_controller.rotate_right_forward)
-        self.btn_left_backward.pressed.connect(self.robot_controller.rotate_left_backward)
-        self.btn_right_backward.pressed.connect(self.robot_controller.rotate_right_backward)
+        self.btn_forward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='F')))
+        self.btn_backward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='B')))
+        self.btn_left_forward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='FL')))
+        self.btn_right_forward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='FR')))
+        self.btn_left_backward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='BL')))
+        self.btn_right_backward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='BR')))
 
-        self.btn_forward.released.connect(self.robot_controller.stop)
-        self.btn_backward.released.connect(self.robot_controller.stop)
-        self.btn_left_forward.released.connect(self.robot_controller.stop)
-        self.btn_right_forward.released.connect(self.robot_controller.stop)
-        self.btn_left_backward.released.connect(self.robot_controller.stop)
-        self.btn_right_backward.released.connect(self.robot_controller.stop)
+        self.btn_forward.released.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='STOP')))
+        self.btn_backward.released.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='STOP')))
+        self.btn_left_forward.released.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='STOP')))
+        self.btn_right_forward.released.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='STOP')))
+        self.btn_left_backward.released.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='STOP')))
+        self.btn_right_backward.released.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='STOP')))
 
-        self.slider_speed.valueChanged.connect(self.robot_controller.change_speed)
+        self.slider_speed.valueChanged.connect(self.panel_services.update_robot_speed)
 
         self.record_button.clicked.connect(self.updateRecordButtonState)
         self.startButton.clicked.connect(self.openSessionNameDialog)
@@ -292,46 +259,36 @@ class MainWindow(QMainWindow):
         
 
         # Connect camera buttons
-        self.btn_tilt_down.pressed.connect(self.camera_controller.tilt_down)
-        self.btn_tilt_up.pressed.connect(self.camera_controller.tilt_up)
-        self.btn_pan_left.pressed.connect(self.camera_controller.pan_left)
-        self.btn_pan_right.pressed.connect(self.camera_controller.pan_right)
-        self.btn_focus_in.pressed.connect(self.camera_controller.focus_in)
-        self.btn_focus_out.pressed.connect(self.camera_controller.focus_out)
+        self.btn_tilt_down.pressed.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='TD',light=str(self.slider_light.value()))))
+        self.btn_tilt_up.pressed.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='TU',light=str(self.slider_light.value()))))
+        self.btn_pan_left.pressed.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='PL',light=str(self.slider_light.value()))))
+        self.btn_pan_right.pressed.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='PR',light=str(self.slider_light.value()))))
+        self.btn_focus_in.pressed.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='FI',light=str(self.slider_light.value()))))
+        self.btn_focus_out.pressed.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='FO',light=str(self.slider_light.value()))))
 
-        self.btn_tilt_up.released.connect(self.camera_controller.tilt_stop)
-        self.btn_tilt_down.released.connect(self.camera_controller.tilt_stop)
-        self.btn_pan_left.released.connect(self.camera_controller.pan_stop)
-        self.btn_pan_right.released.connect(self.camera_controller.pan_stop)
-        self.btn_focus_in.released.connect(self.camera_controller.focus_stop)
-        self.btn_focus_out.released.connect(self.camera_controller.focus_stop)
+        self.btn_tilt_up.released.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='STOP',light=str(self.slider_light.value()))))
+        self.btn_tilt_down.released.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='STOP',light=str(self.slider_light.value()))))
+        self.btn_pan_left.released.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='STOP',light=str(self.slider_light.value()))))
+        self.btn_pan_right.released.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='STOP',light=str(self.slider_light.value()))))
+        self.btn_focus_in.released.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='STOP',light=str(self.slider_light.value()))))
+        self.btn_focus_out.released.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='STOP',light=str(self.slider_light.value()))))
 
-        self.slider_light.valueChanged.connect(self.camera_controller.change_light)
-        self.btn_init_camera.clicked.connect(self.camera_controller.init_camera)
-
-        # Connect video update signal
-        self.video_changed_signal.connect(self.update_image)
-        self.video_notifier.start_listening()
+        self.slider_light.valueChanged.connect(self.panel_services.update_camera_light)
+        self.btn_init_camera.clicked.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='INIT',light=str(self.slider_light.value()))))
 
         # Connect translation
         self.languageComboBox.currentIndexChanged.connect(self.changeLanguage)
 
         #Connect session
         self.record_button.clicked.connect(self.toggleRecording)
-        self.capture_button.clicked.connect(self.session_controller.take_capture)
-
-        # Connect panel and feeder controllers
-        self.robot_control_changed_signal.connect(self.robot_control_data_controller)
-        self.camera_control_changed_signal.connect(self.camera_control_data_controller)
-        self.feeder_control_changed_signal.connect(self.feeder_control_data_controller)
-        self.panel_notifier.start_listening()
+        self.capture_button.clicked.connect(self.session_services.take_capture)
 
         #Connect init encoder button 
         self.btn_init_encoder.clicked.connect(self.initializate_encoder)
     
     def initializate_encoder(self):
         print("Enviar por serial")
-        self.feeder_notifier.send_message("feeder RESET")
+        self.feeder_services.send_message("feeder RESET")
         
 
 
@@ -340,9 +297,9 @@ class MainWindow(QMainWindow):
     
     def toggleRecording(self):
         if self.isRecording:
-            self.session_controller.start_recording()
+            self.session_services.start_recording()
         else:
-            self.session_controller.stop_recording()
+            self.session_services.stop_recording()
         self.isRecording = not self.isRecording
         self.updateRecordButtonState()
 
@@ -352,7 +309,7 @@ class MainWindow(QMainWindow):
             dialog = SessionNameDialog()
             if dialog.exec():
                 session_name = dialog.getSessionName().strip()
-                if session_name and self.session_controller.begin_session(session_name):
+                if session_name and self.session_services.begin_session(session_name):
                     print(f"Nombre de la sesión: {session_name}")
                     self.startButton.setText(self.tr("Log Out")) 
                     self.SessionState = True
@@ -385,10 +342,10 @@ class MainWindow(QMainWindow):
                 
                 self.record_button.setEnabled(False)
                 self.capture_button.setEnabled(False)
-                self.session_controller.finish_session()
+                self.session_services.finish_session()
 
     def openSessionsListDialog(self): 
-        dialog = SessionsListDialog(self.session_controller)
+        dialog = SessionsListDialog(self.session_services)
         if dialog.exec():
             pass
 
@@ -470,7 +427,6 @@ class MainWindow(QMainWindow):
         self.retranslateUi()
 
     def closeEvent(self, event):
-         self.panel_notifier.stop_listening()
          if self.SessionState:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Icon.Warning)
@@ -483,155 +439,6 @@ class MainWindow(QMainWindow):
             event.ignore()  
          else:
             event.accept()  
-
-        
-    @pyqtSlot(VideoMessage)
-    def update_image(self, video: VideoMessage):
-        qt_img = self.convert_cv_qt(video.frame)
-        self.image_label.setPixmap(qt_img)
-
-    def convert_cv_qt(self, cv_img):
-        rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-        h, w, ch = rgb_image.shape
-        bytes_per_line = ch * w
-        convert_to_Qt_format = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
-        p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)
-        return QPixmap.fromImage(p)
-        
-
-    @pyqtSlot(RobotControlData)
-    def robot_control_data_controller(self, data: RobotControlData):
-        if (data.direction == "F"):
-            print("Mover hacia adelante")
-            self.robot_controller.move_forward()
-            self.btn_forward.setDown(True)
-            self.btn_right_forward.setDown(False)
-            self.btn_left_forward.setDown(False)
-            self.btn_backward.setDown(False)
-            self.btn_left_backward.setDown(False)
-            self.btn_right_backward.setDown(False)
-        elif (data.direction == "FR"):
-            print("Mover hacia adelante derecha")
-            self.robot_controller.rotate_right_forward()
-            self.btn_forward.setDown(False)
-            self.btn_right_forward.setDown(True)
-            self.btn_left_forward.setDown(False)
-            self.btn_backward.setDown(False)
-            self.btn_left_backward.setDown(False)
-            self.btn_right_backward.setDown(False)
-        elif (data.direction == "FL"):
-            print("Mover hacia adelante izquierda")
-            self.robot_controller.rotate_left_forward()
-            self.btn_forward.setDown(False)
-            self.btn_right_forward.setDown(False)
-            self.btn_left_forward.setDown(True)
-            self.btn_backward.setDown(False)
-            self.btn_left_backward.setDown(False)
-            self.btn_right_backward.setDown(False)
-        elif (data.direction == "B"):
-            print("Mover hacia atrás")
-            self.robot_controller.move_backward()
-            self.btn_forward.setDown(False)
-            self.btn_right_forward.setDown(False)
-            self.btn_left_forward.setDown(False)
-            self.btn_backward.setDown(True)
-            self.btn_left_backward.setDown(False)
-            self.btn_right_backward.setDown(False)
-        elif (data.direction == "BL"):
-            print("Mover hacia atrás izquierda")
-            self.robot_controller.rotate_left_backward()
-            self.btn_forward.setDown(False)
-            self.btn_right_forward.setDown(False)
-            self.btn_left_forward.setDown(False)
-            self.btn_backward.setDown(False)
-            self.btn_left_backward.setDown(True)
-            self.btn_right_backward.setDown(False)
-        elif (data.direction == "BR"):
-            print("Mover hacia atrás derecha")
-            self.robot_controller.rotate_right_backward()
-            self.btn_forward.setDown(False)
-            self.btn_right_forward.setDown(False)
-            self.btn_left_forward.setDown(False)
-            self.btn_backward.setDown(False)
-            self.btn_left_backward.setDown(False)
-            self.btn_right_backward.setDown(True)
-        elif (data.direction == "STOP"):
-            print("Detener")
-            self.robot_controller.stop()
-            self.btn_forward.setDown(False)
-            self.btn_right_forward.setDown(False)
-            self.btn_left_forward.setDown(False)
-            self.btn_backward.setDown(False)
-            self.btn_left_backward.setDown(False)
-            self.btn_right_backward.setDown(False)
-            
-        print('Robot data UI Controller:', data)
-
-    @pyqtSlot(CameraControlData)
-    def camera_control_data_controller(self, data: CameraControlData):
-        if (data.movement == "TU"):
-            self.camera_controller.tilt_up()
-            self.btn_tilt_up.setDown(True)
-            self.btn_tilt_down.setDown(False)
-            self.btn_pan_left.setDown(False)
-            self.btn_pan_right.setDown(False)
-        elif (data.movement == "TD"): 
-            self.camera_controller.tilt_down()
-            self.btn_tilt_up.setDown(False)
-            self.btn_tilt_down.setDown(True)
-            self.btn_pan_left.setDown(False)
-            self.btn_pan_right.setDown(False)
-        elif (data.movement == "PL"): 
-            self.camera_controller.pan_left()
-            self.btn_tilt_up.setDown(False)
-            self.btn_tilt_down.setDown(False)
-            self.btn_pan_left.setDown(True)
-            self.btn_pan_right.setDown(False)
-        elif (data.movement == "PR"): 
-            self.camera_controller.pan_right()
-            self.btn_tilt_up.setDown(False)
-            self.btn_tilt_down.setDown(False)
-            self.btn_pan_left.setDown(False)
-            self.btn_pan_right.setDown(True)
-        elif (data.movement == "STOP"): 
-            self.camera_controller.tilt_stop()
-            self.camera_controller.pan_stop()
-            self.btn_tilt_up.setDown(False)
-            self.btn_tilt_down.setDown(False)
-            self.btn_pan_left.setDown(False)
-            self.btn_pan_right.setDown(False)
-        
-        if (int(data.light) >= 90):
-            data.light = "100"
-        elif (int(data.light) <= 10):
-            data.light = "0"
-
-        self.slider_light.setValue(int(data.light))
-
-        print('Camera data UI Controller:', data)
-
-    @pyqtSlot(FeederControlData)
-    def feeder_control_data_controller(self, data: FeederControlData):
-        self.latest_distance = data.distance
-        # Construir el texto de telemetría con los últimos valores conocidos
-        telemetry_text = (f"{self.tr('Telemetry')}\n"
-                          f"{self.tr('Temperature:')} {self.latest_temperature} °C \n"
-                          f"{self.tr('Humidity:')} {self.latest_humidity} HR \n"
-                          f"{self.tr('X slop:')} {self.latest_x_slop} °\n"
-                          f"{self.tr('Y slop:')} {self.latest_y_slop} °\n"
-                          f"{self.tr('Distance:')} {self.latest_distance}")
-
-        # Actualizar la etiqueta con el texto de telemetría
-        self.telemetry_label.setText(telemetry_text)
-        self.telemetry_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        
-        
-        if (data.reset == "RESET"): 
-            self.btn_init_encoder.setDown(True)
-        elif (data.reset == "NO"):
-            self.btn_init_encoder.setDown(False)
-
-        print('Feeder data UI Controller:', data)
     
     @classmethod
     def show_error_dialog_connections(cls):

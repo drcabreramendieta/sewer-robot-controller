@@ -20,7 +20,7 @@ from PyQt6.QtCore import pyqtSignal
 from Video.adapters.external_services.hikvision_dvr_controller_adapter import HikvisionDvrControllerAdapter
 from Video.adapters.repositories.tinydb_repository_adapter import TinydbRepositoryAdapter
 from Video.application.services.session_services import SessionServices
-from Inspection.adapters.gidtec_session_controller import GidtecSessionController
+from Inspection.adapters.external_services.video_session_controller_adapter import VideoSessionControllerAdapter
 from Inspection.ui.sessions_list_dialog import SessionsListDialog
 
 from Panel_and_Feeder.adapters.external_services.serial_panel_and_feeder_controller_adapter import SerialPanelAndFeederControllerAdapter
@@ -87,7 +87,7 @@ class CommunicationModuleContainer(containers.DeclarativeContainer):
     db_link = providers.Factory(TinydbRepositoryAdapter, db_name='SessionsDB.json', logger=logger)
     dvr_link = providers.Factory(HikvisionDvrControllerAdapter, url='http://192.168.18.155:80', user="admin", password="inspection24", dir="/home/iiot/Pictures", logger=logger)
     control_session_use_case = providers.Factory(SessionServices, dvr_link=dvr_link, db_link=db_link, logger=logger)
-    session_controller = providers.Factory(GidtecSessionController, control_session=control_session_use_case, logger=logger)
+    session_controller = providers.Factory(VideoSessionControllerAdapter, control_session=control_session_use_case, logger=logger)
 
     serial_conf = providers.Factory(SerialConfig, port='/dev/ttyACM0', baudrate=115200, timeout=0.1)
     peripheral_link = providers.Singleton(SerialPanelAndFeederControllerAdapter, serial_conf=serial_conf, logger=logger)

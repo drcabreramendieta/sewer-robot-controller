@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class SessionController(ABC):
+class SessionControllerPort(ABC):
     @abstractmethod
     def begin_session(self, name:str) -> bool:
         pass
@@ -23,4 +23,12 @@ class SessionController(ABC):
 
     @abstractmethod
     def is_new(self, name) -> bool:
+        pass
+    
+    @abstractmethod
+    def get_sessions(self) -> list:
+        pass
+    
+    @abstractmethod
+    def download_session(self, session_name:str, target_folder:str): 
         pass

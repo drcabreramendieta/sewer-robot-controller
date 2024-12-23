@@ -6,6 +6,14 @@ class PanelUpdateServicesPort(ABC):
     def update_robot_control(self, robot_control_data:RobotControlData) -> None:
         pass
 
+    abstractmethod
+    def update_robot_speed(self, speed:int):
+        pass
+
     @abstractmethod
     def update_camera_control(self, camera_control_data:CameraControlData) -> None:
+        pass
+
+    abstractmethod
+    def update_camera_light(self, light:int):
         pass
