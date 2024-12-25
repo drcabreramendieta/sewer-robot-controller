@@ -1,7 +1,7 @@
 from Inspection.ports.ouput import FeederControllerPort
 from Panel_and_Feeder.ports.input import FeederServicesPort
 
-class FeederControllerPort(FeederControllerPort):
+class PafFeederControllerAdapter(FeederControllerPort):
     def __init__(self, feeder_services:FeederServicesPort):
         super().__init__()
         self.feeder_services = feeder_services

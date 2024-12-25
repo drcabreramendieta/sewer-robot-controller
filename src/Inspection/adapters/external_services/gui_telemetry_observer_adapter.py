@@ -1,6 +1,6 @@
 from Inspection.ports.ouput import TelemetryObserverPort
 from Communication.domain.entities.telemetry_entities import TelemetryMessage
-from Inspection.ui.main_window import MainWindow
+from Inspection.adapters.gui.main_window import MainWindow
 from PyQt6.QtCore import Qt
 
 class GuiTelemetryObserverAdapter(TelemetryObserverPort):

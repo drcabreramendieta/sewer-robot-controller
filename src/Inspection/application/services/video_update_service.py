@@ -1,10 +1,14 @@
 from Inspection.ports.input import VideoUpdateServicePort
 from Video.domain.entities.video_entities import VideoMessage
 from Inspection.ports.ouput import VideoObserverPort
+from typing import List
 
 class VideoUpdateService(VideoUpdateServicePort):
-    def __init__(self, observers:list[VideoObserverPort]|None=None) -> None:
-        self.observers = observers if observers else [] 
+    observers:List[VideoObserverPort]
+    def __init__(self, observer:VideoObserverPort) -> None:
+        self.observer = observer
+        if self.observer:
+            self.observers.append(self.observer) 
         super().__init__()
 
     def update_video(self, msg: VideoMessage) -> None:

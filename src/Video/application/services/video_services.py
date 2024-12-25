@@ -3,24 +3,29 @@ from Video.ports.output.video_observer_port import VideoObserverPort
 from Video.domain.entities.video_entities import VideoMessage
 from Video.ports.output.video_controller_port import VideoControllerPort
 from logging import Logger
+from typing import List
 
 class VideoServices(VideoServicesPort):
-    def __init__(self, link:VideoControllerPort, logger:Logger, video_observers:list[VideoObserverPort]|None=None) -> None:
-        self.video_observers = video_observers if video_observers else []
-        self.link = link
+    observers:List[VideoObserverPort]
+    def __init__(self, video_controller:VideoControllerPort, logger:Logger, observer:VideoObserverPort) -> None:
+        self.observer = observer
+        if self.observer:
+            self.observers.append(self.observer)
+        self.video_controller = video_controller
         self.logger = logger
-        link.callback_setup(self._notify)
+        video_controller.callback_setup(self._notify)
+        super().__init__()
 
     def _notify(self, video:VideoMessage) -> None:
-        for observer in self.video_observers:
+        for observer in self.observers:
             observer.on_video_ready(video=video)
 
     def register_observer(self, observer:VideoObserverPort):
-        self.video_observers.append(observer)
+        self.observers.append(observer)
 
     def start_listening(self):
         print('start')
-        self.link.start_listening()
+        self.video_controller.start_listening()
 
     def stop_listening(self):
-        self.link.stop_listening()
+        self.video_controller.stop_listening()

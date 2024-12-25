@@ -5,7 +5,7 @@ from Communication.adapters.external_services.can_telemetry_controller_adapter i
 from Communication.adapters.external_services.pyqt_telemetry_observer_adapter import PyqtTelemetryObserverAdapter
 import can
 
-from Inspection.ui.main_window import MainWindow
+from Inspection.adapters.gui.main_window import MainWindow
 from Inspection.adapters.external_services.comm_movement_controller_adapter import CommMovementControllerAdapter
 from Inspection.adapters.external_services.comm_camera_controller_adapter import CommCameraControllerAdapter 
 from Communication.domain.use_cases.control_camera import ControlCamera
@@ -21,7 +21,7 @@ from Video.adapters.external_services.hikvision_dvr_controller_adapter import Hi
 from Video.adapters.repositories.tinydb_repository_adapter import TinydbRepositoryAdapter
 from Video.application.services.session_services import SessionServices
 from Inspection.adapters.external_services.video_session_controller_adapter import VideoSessionControllerAdapter
-from Inspection.ui.sessions_list_dialog import SessionsListDialog
+from Inspection.adapters.gui.sessions_list_dialog import SessionsListDialog
 
 from Panel_and_Feeder.adapters.external_services.serial_panel_and_feeder_controller_adapter import SerialPanelAndFeederControllerAdapter
 from Panel_and_Feeder.adapters.external_services.pyqt_feeder_observer_adapter import PyqtFeederObserverAdapter

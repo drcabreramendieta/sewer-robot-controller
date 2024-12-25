@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import FeederControlData
+from Inspection.ports.ouput import FeederObserverPort
 
 class FeederUpdateServicePort(ABC):
     @abstractmethod
@@ -8,4 +9,8 @@ class FeederUpdateServicePort(ABC):
 
     @abstractmethod
     def send_message(self, msg:str) -> None:
+        pass
+
+    @abstractmethod
+    def register_observer(self, observer:FeederObserverPort):
         pass

@@ -9,7 +9,7 @@ import requests
 import subprocess
 import shlex
 from logging import Logger
-from Inspection.ui.main_window import MainWindow
+from Inspection.adapters.gui.main_window import MainWindow
 
 TIMEOUT = 2  # Definimos un timeout de 10 segundos
 

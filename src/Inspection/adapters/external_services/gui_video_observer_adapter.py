@@ -1,6 +1,6 @@
 from Inspection.ports.ouput import VideoObserverPort
 from Video.domain.entities.video_entities import VideoMessage
-from Inspection.ui.main_window import MainWindow
+from Inspection.adapters.gui.main_window import MainWindow
 
 import cv2
 from PyQt6.QtGui import QImage, QPixmap

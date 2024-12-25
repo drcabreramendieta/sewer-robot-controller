@@ -1,7 +1,7 @@
 from containers import CommunicationModuleContainer
 import sys
 from PyQt6.QtWidgets import QApplication
-from Inspection.ui.main_window import MainWindow
+from Inspection.adapters.gui.main_window import MainWindow
 
 
 

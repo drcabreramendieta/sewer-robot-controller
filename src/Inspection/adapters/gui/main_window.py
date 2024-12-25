@@ -1,8 +1,8 @@
 from PyQt6.QtCore import Qt, QSize, QTranslator, QFile
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QGridLayout, QPushButton, QWidget, QSlider, QLabel, QHBoxLayout, QCheckBox, QComboBox, QApplication, QTextEdit, QMessageBox
 from PyQt6.QtGui import QIcon
-from Inspection.ui.session_name_dialog import SessionNameDialog
-from Inspection.ui.sessions_list_dialog import SessionsListDialog
+from Inspection.adapters.gui.session_name_dialog import SessionNameDialog
+from Inspection.adapters.gui.sessions_list_dialog import SessionsListDialog
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData
 
 from Inspection.ports.input import PanelUpdateServicesPort, SessionServicesPort, FeederUpdateServicePort

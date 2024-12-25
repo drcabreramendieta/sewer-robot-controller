@@ -7,15 +7,15 @@ import os
 from logging import Logger
 
 class SessionServices(SessionServicesPort):
-    def __init__(self, dvr_link: DvrControllerPort, db_link: RepositoryPort, logger: Logger) -> None:
-        self.dvr_link = dvr_link
-        self.db_link = db_link
+    def __init__(self, dvr_controller: DvrControllerPort, repository: RepositoryPort, logger: Logger) -> None:
+        self.dvr_controller = dvr_controller
+        self.repository = repository
         self.logger = logger
 
     def create_session(self, name: str) -> bool:
         try:
-            if self.db_link.create(name=name):
-                self.dvr_link.set_folder(name=name)
+            if self.repository.create(name=name):
+                self.dvr_controller.set_folder(name=name)
                 return True
             return False
         except Exception as e:
@@ -24,14 +24,14 @@ class SessionServices(SessionServicesPort):
 
     def name_exists(self, name: str) -> bool:
         try:
-            return self.db_link.session_exists(name=name)
+            return self.repository.session_exists(name=name)
         except Exception as e:
             self.logger.error(f"Error checking if session name exists '{name}': {e}")
             return False
 
     def get_sessions(self) -> list:
         try:
-            sessions = self.db_link.get_sessions()
+            sessions = self.repository.get_sessions()
             return [session["name"] for session in sessions]
         except Exception as e:
             self.logger.error(f"Error getting sessions: {e}")
@@ -40,7 +40,7 @@ class SessionServices(SessionServicesPort):
     def download_session(self, session_name, target_folder):
         try:
             os.makedirs(target_folder, exist_ok=True)
-            session_info = self.db_link.get_session(session_name)
+            session_info = self.repository.get_session(session_name)
             self.logger.info(f"Session info: {session_info}")
 
             if not session_info:
@@ -70,14 +70,14 @@ class SessionServices(SessionServicesPort):
                         self.logger.error(f"Error processing image '{source_path}': {e}")
                         image_success = False
 
-            [video_uris, search_success] = self.dvr_link.search_video(session_info)
+            [video_uris, search_success] = self.dvr_controller.search_video(session_info)
             if search_success == False:
                 video_success = False
             else:
                 video_success = True
             if video_uris:
                 content_found = True
-                video_success = self.dvr_link.download_video(session_info, target_folder)
+                video_success = self.dvr_controller.download_video(session_info, target_folder)
                 video_success = True
             if not content_found:
                 self.logger.info(f"No videos or images found for session '{session_name}'.")
@@ -100,13 +100,13 @@ class SessionServices(SessionServicesPort):
 
     def run(self, order: DvrOrder):
         try:
-            if self.db_link.is_session_attached():
+            if self.repository.is_session_attached():
                 if order == DvrOrder.TAKE_PHOTO:
-                    self.db_link.add_capture(self.dvr_link.take_image())
+                    self.repository.add_capture(self.dvr_controller.take_image())
                 elif order == DvrOrder.START_RECORDING:
-                    self.db_link.update_status(self.dvr_link.start_recording())
-                elif order == DvrOrder.STOP_RECORDING and self.db_link.get_status():
-                    self.db_link.add_record(self.dvr_link.stop_recording())
-                    self.db_link.update_status(recording=False)
+                    self.repository.update_status(self.dvr_controller.start_recording())
+                elif order == DvrOrder.STOP_RECORDING and self.repository.get_status():
+                    self.repository.add_record(self.dvr_controller.stop_recording())
+                    self.repository.update_status(recording=False)
         except Exception as e:
             self.logger.error(f"Error running order '{order}': {e}")
