@@ -1,9 +1,9 @@
-from Communication.application.services.movement_service import MovementService
+from Communication.ports.output import WheelsControllerPort
 from Communication.domain.entities.wheels_entities import WheelsModule
 import can
 from logging import Logger
 
-class CanWheelsControllerAdapter(MovementService):
+class CanWheelsControllerAdapter(WheelsControllerPort):
     def __init__(self, bus: can.BusABC, logger: Logger) -> None:
         self.bus = bus
         self.logger = logger
