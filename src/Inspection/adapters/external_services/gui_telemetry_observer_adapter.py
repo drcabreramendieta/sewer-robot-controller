@@ -2,13 +2,48 @@ from Inspection.ports.ouput import TelemetryObserverPort
 from Communication.domain.entities.telemetry_entities import TelemetryMessage
 from Inspection.adapters.gui.main_window import MainWindow
 from PyQt6.QtCore import Qt
+"""GUI adapter for telemetry observation and display.
+
+This module provides an adapter that implements the TelemetryObserverPort interface
+for displaying telemetry data in the GUI application.
+"""
 
 class GuiTelemetryObserverAdapter(TelemetryObserverPort):
+    """GUI adapter for displaying telemetry data.
+
+    This class handles updating the GUI elements with new telemetry data
+    including sensor readings and motor status warnings.
+
+    Args:
+        gui (MainWindow): Main window instance for GUI updates
+
+    Attributes:
+        gui: Reference to main window for updating UI elements
+    """
+
     def __init__(self, gui:MainWindow):
+        """Initialize the GUI telemetry observer.
+
+        Args:
+            gui (MainWindow): Main window instance for GUI updates.
+        """
         super().__init__()
         self.gui = gui
 
     def on_telemetry_ready(self, telemetry:TelemetryMessage) -> None:
+        """Update GUI with new telemetry data.
+
+        Handles incoming telemetry messages by updating the GUI display with new sensor values
+        and motor status information. Updates temperature, humidity, slope angles, and distance
+        readings in the telemetry label. Also sets appropriate warning messages based on motor 
+        status.
+
+        Args:
+            telemetry (TelemetryMessage): Incoming telemetry message containing sensor data
+                and motor status information in its variables dictionary. Expected keys:
+                'Temperature', 'Humidity', 'X slop', 'Y slop', 'Motor status'.
+        """
+
         # Actualizar los atributos con los nuevos valores si están disponibles
         self.gui.latest_temperature = telemetry.variables.get("Temperature", self.gui.latest_temperature)
         self.gui.latest_humidity = telemetry.variables.get("Humidity", self.gui.latest_humidity)

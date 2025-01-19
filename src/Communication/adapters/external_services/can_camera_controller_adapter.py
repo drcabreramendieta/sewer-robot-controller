@@ -2,15 +2,54 @@ from Communication.ports.output.camera_controller_port import CameraControllerPo
 from Communication.domain.entities.camera_entities import CameraState
 import can
 from logging import Logger
+"""Module for CAN bus communication adapter to control camera functionality.
+
+This module provides an implementation of the CameraControllerPort interface
+using CAN bus protocol for camera control operations.
+"""
+
 
 class CanCameraControllerAdapter(CameraControllerPort):
+    """Adapter class for controlling camera operations through CAN bus.
+
+    This class implements the CameraControllerPort interface and handles
+    the communication between the application and the camera hardware
+    using the CAN bus protocol.
+
+    Args:
+        bus (can.BusABC): CAN bus instance for communication
+        logger (Logger): Logger instance for error and info logging
+
+    Attributes:
+        callback: Callback function for CAN message handling
+        notifier: CAN bus message notifier
+        bus: CAN bus instance
+        logger: Logger instance
+    """
     def __init__(self, bus: can.BusABC, logger: Logger) -> None:
+        """Initialize the CAN camera controller adapter.
+
+        Args:
+            bus (can.BusABC): CAN bus instance for communication
+            logger (Logger): Logger instance for error and info logging
+        """
         self.callback = None
         self.notifier = None
         self.bus = bus
         self.logger = logger
 
     def initialize_camera(self) -> bool:
+        """Initialize the camera through CAN bus communication.
+
+        Sends initialization message to the camera through CAN bus.
+
+        Returns:
+            bool: True if initialization message was sent successfully
+
+        Raises:
+            can.CanError: If CAN communication fails
+            OSError: If device access fails
+        """
         m1 = [0x77, 0x74]
         #self.logger.info(f"Initializing camera with message: {m1}")
         try:
@@ -32,6 +71,18 @@ class CanCameraControllerAdapter(CameraControllerPort):
         return True
 
     def update_camera_state(self, module: CameraState) -> None:
+        """Update camera state based on focus and pan parameters.
+
+        Translates camera state parameters into CAN bus protocol bytes
+        for camera control.
+
+        Args:
+            module (CameraState): Camera state object containing focus and pan parameters
+
+        Note:
+            Focus options: 'O' (out), 'I' (in), 'S' (stop)
+            Pan options: 'R' (right), 'L' (left), 'S' (stop)
+        """
         if module.focus == "O":
             byte1 = 0x94
         elif module.focus == "I":

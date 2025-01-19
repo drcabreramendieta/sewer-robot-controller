@@ -4,18 +4,52 @@ from typing import Callable
 import can
 from logging import Logger
 
+"""CAN bus communication adapter for telemetry control.
+
+This module provides an implementation of the TelemetryControllerPort interface
+using CAN bus protocol for handling telemetry data from motor and ECU systems.
+"""
+
 class CanTelemetryControllerAdapter(TelemetryControllerPort):
+    """Adapter for handling CAN bus telemetry communication.
+
+    This class implements the TelemetryControllerPort interface and manages
+    the communication between the application and telemetry systems using
+    the CAN bus protocol.
+
+    Args:
+        bus (can.BusABC): CAN bus instance for communication
+        logger (Logger): Logger instance for error and info logging
+
+    Attributes:
+        callback: Callback function for telemetry message handling
+        notifier: CAN bus message notifier
+        bus: CAN bus instance
+        logger: Logger instance
+    """
     def __init__(self, bus: can.BusABC, logger: Logger) -> None:
+        """Initialize the CAN telemetry controller adapter."""
         self.callback = None
         self.notifier = None
         self.bus = bus
         self.logger = logger
 
     def callback_setup(self, callback: Callable[[TelemetryMessage], None]) -> None:
+        """Set up the callback function for telemetry message handling.
+
+        Args:
+            callback: Function to be called when telemetry messages are received
+        """
         self.callback = callback
         #self.logger.info("Callback setup completed")
 
     def start_listening(self) -> None:
+        """Start listening for CAN bus messages.
+
+        Raises:
+            can.CanError: If CAN communication fails
+            OSError: If device access fails
+        """
         try:
             self.notifier = can.Notifier(bus=self.bus, listeners=[self._can_message_handler], timeout=2)
             #self.logger.info("Started listening for CAN messages")
@@ -33,6 +67,7 @@ class CanTelemetryControllerAdapter(TelemetryControllerPort):
                 self.logger.error("No such device or address")
 
     def stop_listening(self) -> None:
+        """Stop listening for CAN bus messages and shutdown the bus."""
         if self.notifier:
             self.notifier.stop(4)
             #self.logger.info("Stopped listening for CAN messages")
@@ -40,6 +75,11 @@ class CanTelemetryControllerAdapter(TelemetryControllerPort):
         self.logger.info("CAN bus shutdown completed")
 
     def _can_message_handler(self, message: can.Message):
+        """Handle incoming CAN messages and process them into telemetry data.
+
+        Args:
+            message: Received CAN message to be processed
+        """
         try:
             telemetry_message = self._processing_message(message)
             self.callback(telemetry_message)
@@ -48,6 +88,14 @@ class CanTelemetryControllerAdapter(TelemetryControllerPort):
             self.logger.error(f"Error processing CAN message: {e}")
 
     def _get_message_type(self, id: int) -> str:
+        """Determine the type of telemetry message based on CAN ID.
+
+        Args:
+            id: CAN message identifier
+
+        Returns:
+            str: Message type ('motor telemetry' or 'ECU telemetry')
+        """
         id_hex = hex(id).split(sep='x')[1]
 
         if id_hex[0] == '2' and id_hex[1] == '0' and id_hex[2] == '8':
@@ -56,6 +104,14 @@ class CanTelemetryControllerAdapter(TelemetryControllerPort):
             return 'ECU telemetry'
 
     def _processing_message(self, message: can.Message) -> TelemetryMessage:
+        """Process CAN message and extract telemetry data.
+
+        Args:
+            message: CAN message to be processed
+
+        Returns:
+            TelemetryMessage: Processed telemetry data with variables and timestamp
+        """
         message_type = self._get_message_type(message.arbitration_id)
         variables = {}
         if message_type == 'motor telemetry':

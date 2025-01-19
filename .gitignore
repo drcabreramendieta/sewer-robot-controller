@@ -2,3 +2,5 @@
 __pycache__/
 SessionsDB.json
 docs
+venv/
+.vscode/
