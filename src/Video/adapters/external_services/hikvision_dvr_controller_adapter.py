@@ -10,11 +10,45 @@ import subprocess
 import shlex
 from logging import Logger
 from Inspection.adapters.gui.main_window import MainWindow
+"""Hikvision DVR controller adapter implementation.
 
+This module provides integration with Hikvision DVR systems through their
+HTTP API for video recording, image capture and file downloads.
+"""
 TIMEOUT = 2  # Definimos un timeout de 10 segundos
 
 class HikvisionDvrControllerAdapter(DvrControllerPort):
+    """Adapter for controlling Hikvision DVR through HTTP API.
+
+    Args:
+        url (str): Base URL for DVR HTTP API
+        user (str): Authentication username
+        password (str): Authentication password
+        dir (str): Base directory for storing recordings
+        logger (Logger): Logger instance for operation tracking
+
+    Attributes:
+        url: DVR API base URL
+        username: Auth username
+        password: Auth password
+        folder: Current session folder name
+        dir: Base storage directory
+        logger: Operations logger
+        storage: Current session storage path
+    """
     def __init__(self, url: str, user: str, password: str, dir: str, logger: Logger) -> None:
+        """Initialize Hikvision DVR controller.
+
+        Args:
+            url (str): DVR API base URL
+            user (str): Auth username
+            password (str): Auth password  
+            dir (str): Storage base directory
+            logger (Logger): Logger instance
+
+        Raises:
+            ValueError: If required parameters are invalid
+        """
         super().__init__()
         self.url = url
         self.username = user
@@ -26,6 +60,15 @@ class HikvisionDvrControllerAdapter(DvrControllerPort):
         os.makedirs(self.dir, exist_ok=True)
 
     def take_image(self) -> ImageInfo:
+        """Capture current camera image.
+
+        Returns:
+            ImageInfo: Image path and timestamp info. Empty if failed.
+
+        Raises:
+            requests.exceptions.RequestException: If API request fails
+            requests.exceptions.Timeout: If request times out
+        """
         if self.folder:
             image_url = f"{self.url}/ISAPI/Streaming/channels/101/picture?videoResolutionWidth=1280&videoResolutionHeight=720"
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -48,6 +91,18 @@ class HikvisionDvrControllerAdapter(DvrControllerPort):
                 return ImageInfo('', '')
 
     def search_video(self, session_info):
+        """Search for video recordings in given time range.
+
+        Args:
+            session_info (dict): Session info with start/stop times
+
+        Returns:
+            tuple: List of video URIs and search success flag
+
+        Raises:
+            requests.exceptions.RequestException: If API request fails 
+            ET.ParseError: If response XML is invalid
+        """
         records = session_info.get("records", [])
         if not records:
             self.logger.info("No existen grabaciones.")
@@ -101,6 +156,18 @@ class HikvisionDvrControllerAdapter(DvrControllerPort):
         return playback_uris, search_success
 
     def download_video(self, session_info, target_folder):
+        """Download video recordings to target folder.
+
+        Args:
+            session_info (dict): Session info with name and times
+            target_folder (str): Destination folder path
+
+        Returns:
+            bool: True if download successful
+
+        Raises:
+            subprocess.CalledProcessError: If download fails
+        """
 
         [video_uris, search_success] = self.search_video(session_info)
 
@@ -138,6 +205,19 @@ class HikvisionDvrControllerAdapter(DvrControllerPort):
         return download_success
        
     def adjust_time(self, time_str: str, delta: int, unit: str = 'minutes') -> str:
+        """Adjust timestamp by given delta.
+
+        Args:
+            time_str (str): Timestamp string (format: YYYYMMDD_HHMMSS)
+            delta (int): Time adjustment amount
+            unit (str, optional): Time unit. Defaults to 'minutes'.
+
+        Returns:
+            str: Adjusted timestamp string
+
+        Raises:
+            ValueError: If time string format is invalid
+        """
         try:
             time = datetime.strptime(time_str, '%Y%m%d_%H%M%S')
             adjusted_time = time - timedelta(**{unit: delta})
@@ -148,6 +228,15 @@ class HikvisionDvrControllerAdapter(DvrControllerPort):
             return time_str
 
     def start_recording(self) -> bool:
+        """Start video recording.
+
+        Returns:
+            bool: True if recording started successfully
+
+        Raises:
+            requests.exceptions.RequestException: If start request fails
+            requests.exceptions.Timeout: If request times out
+        """
         start_url = f"{self.url}/ISAPI/ContentMgmt/record/control/manual/start/tracks/101"
         try:
             response = requests.put(start_url, auth=HTTPBasicAuth(self.username, self.password), timeout=TIMEOUT)
@@ -165,6 +254,15 @@ class HikvisionDvrControllerAdapter(DvrControllerPort):
             return False
 
     def stop_recording(self) -> RecordInfo:
+        """Stop current video recording.
+
+        Returns:
+            RecordInfo: Recording path and timestamp info. Empty if failed.
+
+        Raises:
+            requests.exceptions.RequestException: If stop request fails
+            requests.exceptions.Timeout: If request times out
+        """
         stop_url = f"{self.url}/ISAPI/ContentMgmt/record/control/manual/stop/tracks/101"
         try:
             response = requests.put(stop_url, auth=HTTPBasicAuth(self.username, self.password), timeout=TIMEOUT)
@@ -181,6 +279,14 @@ class HikvisionDvrControllerAdapter(DvrControllerPort):
             return RecordInfo(self.storage, '', '')
 
     def set_folder(self, name: str):
+        """Set current session folder.
+
+        Args:
+            name (str): Folder name for current session
+
+        Raises:
+            OSError: If folder creation fails
+        """
         self.folder = name
         self.storage = os.path.join(self.dir, self.folder)
         os.makedirs(self.storage, exist_ok=True)

@@ -1,14 +1,39 @@
 from Inspection.ports.input import PanelUpdateServicesPort
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData
 from Inspection.ports.ouput import MovementControllerPort, CameraControllerPort
+"""Panel control service for managing robot and camera operations.
 
+This module provides services for coordinating robot movement and
+camera control operations through a unified interface.
+"""
 class PanelUpdateServices(PanelUpdateServicesPort):
+    """Service for coordinating robot and camera control operations.
+    
+    PanelUpdateServices This module provides services for coordinating robot movement and
+    camera control operations through a unified interface.
+
+    Args:
+        PanelUpdateServicesPort (PanelUpdateServicesPort): Base interface defining panel control operations
+    """    
     def __init__(self, movement_controller:MovementControllerPort, camera_controller:CameraControllerPort):
+        """Initialize panel update service.
+
+        Args:
+            movement_controller (MovementControllerPort): Interface for robot movement control
+            camera_controller (CameraControllerPort): Interface for camera operations control
+        """        
         super().__init__()
         self.movement_controller = movement_controller
         self.camera_controller = camera_controller
 
     def update_robot_control(self, robot_control_data:RobotControlData) -> None:
+        """Update robot movement based on control input.
+        update_robot_control Processes direction commands and triggers corresponding
+        movement controller operations.
+
+        Args:
+            robot_control_data (RobotControlData): Contains movement direction command
+        """        
         if (robot_control_data.direction == "F"):
             print("Mover hacia adelante")
             self.movement_controller.move_forward()
@@ -34,9 +59,26 @@ class PanelUpdateServices(PanelUpdateServicesPort):
         print('Robot data UI Controller:', robot_control_data)
 
     def update_robot_speed(self, speed:int):
+        """Update robot movement speed.
+        
+        Sets the movement speed for robot operations. Speed values
+        are constrained between 3-1000, where 3 is minimum speed
+        and 1 is maximum speed.
+
+        Args:
+            speed (int): New speed value to set
+        """        
         self.movement_controller.change_speed(value=speed)
 
     def update_camera_control(self, camera_control_data:CameraControlData) -> None:
+        """Update camera position and focus based on control input.
+        
+        update_camera_control Processes camera movement commands for pan, tilt and focus operations.
+        
+
+        Args:
+            camera_control_data (CameraControlData):  Contains camera movement and light settings
+        """        
         if (camera_control_data.movement == "INIT"):
             self.camera_controller.init_camera()
         elif (camera_control_data.movement == "TU"):
@@ -67,4 +109,13 @@ class PanelUpdateServices(PanelUpdateServicesPort):
         print('Camera data UI Controller:', camera_control_data)
 
     def update_camera_light(self, light:int):
+        """Update camera light intensity.
+        
+        update_camera_light Controls the camera's illumination system by setting the light
+        intensity level. Values are expected to be between 0-100,
+        where 0 is off and 100 is maximum brightness.
+
+        Args:
+            light (int): New light intensity value
+        """        
         self.camera_controller.change_light(value=light)

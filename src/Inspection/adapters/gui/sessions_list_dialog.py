@@ -1,9 +1,34 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QListWidget, QApplication, QPushButton, QHBoxLayout, QFileDialog, QMessageBox
 from Inspection.ports.input import SessionServicesPort
 import os 
+"""Dialog for listing and downloading inspection session data.
+
+This module provides a dialog interface for viewing available inspection
+sessions and downloading their associated data to the local filesystem.
+"""
 
 class SessionsListDialog(QDialog):
+    """Dialog for managing recorded inspection sessions.
+    
+    SessionsListDialog  Displays a list of available inspection sessions and provides
+    functionality to download their data to a user-selected location.
+    Includes error handling for file operations and data validation.
+    
+    Args:
+        QDialog (QDialog): Base Qt dialog class providing window functionality
+            including modal behavior, accept/reject mechanisms, and
+            basic window management.
+    """    
     def __init__(self, control_session:SessionServicesPort ):
+        """
+        __init__ Initialize and configure the dialog for displaying and managing inspection sessions.
+                    Sets up UI components and connects signal handlers.
+
+        Args:
+            control_session (SessionServicesPort): Service interface for accessing and
+        managing inspection session data, providing methods for listing
+        and downloading session content.
+        """        
         super().__init__()
         self.control_session = control_session
         self.setWindowTitle(self.tr("Session Names"))
@@ -34,6 +59,11 @@ class SessionsListDialog(QDialog):
      
 
     def move_to_center(self):
+        """Center the dialog window on the primary screen.
+        
+        move_to_center Calculates center position based on screen geometry and
+        moves dialog window to centered position.
+        """        
         screen = QApplication.primaryScreen()
         screenGeometry = screen.geometry()
         
@@ -43,6 +73,17 @@ class SessionsListDialog(QDialog):
         self.move(centerX - self.width() // 2, centerY - self.height() // 2)
 
     def download(self):
+        """Download selected session data to filesystem.
+        
+        download  Prompts user for download location, creates session folder,
+        and downloads session data. Handles various error conditions:
+        - No session selected
+        - Failed folder creation
+        - Failed download
+        - No content available
+        
+        Shows appropriate message dialogs for success/failure cases.
+        """        
         selected_session = self.listWidget.currentItem().text() if self.listWidget.currentItem() else None
         if selected_session:
             baseFolder = QFileDialog.getExistingDirectory(self, self.tr("Choose folder to save session"))

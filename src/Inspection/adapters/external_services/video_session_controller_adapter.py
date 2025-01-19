@@ -9,6 +9,8 @@ for managing video recording sessions and captures.
 """
 
 class VideoSessionControllerAdapter(SessionControllerPort):
+
+     
     """Adapter for controlling video recording sessions.
 
     This adapter implements the SessionControllerPort interface to manage

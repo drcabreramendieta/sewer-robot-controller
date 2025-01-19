@@ -31,8 +31,21 @@ from Panel_and_Feeder.application.services.feeder_services import FeederServices
 from Panel_and_Feeder.application.services.panel_services import PanelServices
 
 import logging
+"""Dependency injection container configuration.
 
+This module configures dependency injection containers for all system components
+including communication, video, inspection and panel and feeder.
+
+"""
 def get_logger(name='app_logger'):
+    """Configure application logger with file and console handlers.
+
+    Args:
+        name (str, optional): Logger name. Defaults to 'app_logger'.
+
+    Returns:
+        Logger: Configured logger instance
+    """
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
@@ -53,6 +66,20 @@ def get_logger(name='app_logger'):
     return logger
 
 def create_can_bus(channel: str, interface: str, bitrate: int, logger: logging.Logger):
+    """Create CAN bus interface.
+
+    Args:
+        channel (str): CAN interface channel
+        interface (str): Interface type (e.g. 'socketcan')
+        bitrate (int): Bus bitrate in bits/second
+        logger (Logger): Logger for error reporting
+
+    Returns:
+        Bus: CAN bus instance or None if failed
+
+    Raises:
+        OSError: If CAN interface initialization fails
+    """
     try:
         return can.interface.Bus(channel=channel, interface=interface, bitrate=bitrate)
     except OSError as e:
@@ -60,6 +87,24 @@ def create_can_bus(channel: str, interface: str, bitrate: int, logger: logging.L
         return None
 
 class CommunicationModuleContainer(containers.DeclarativeContainer):
+    """Dependency injection container for system components.
+
+    Configures and provides access to all system dependencies including:
+    - Hardware interfaces (CAN, Serial)
+    - Services (Video, Telemetry)
+    - Controllers (Robot, Camera)
+    - GUI Components
+
+    Attributes:
+        configuration: Container configuration
+        logger: Application logger
+        bus: CAN bus interface
+        robot_link: Robot telemetry interface
+        video_link: Video stream interface
+        db_link: Session storage interface
+        peripheral_link: Panel/feeder interface
+        main_window: Main application window
+    """
     configuration = providers.Configuration()
     logger = providers.ThreadSafeSingleton(get_logger)
     

@@ -4,13 +4,57 @@ from PyQt6.QtGui import QIcon
 from Inspection.adapters.gui.session_name_dialog import SessionNameDialog
 from Inspection.adapters.gui.sessions_list_dialog import SessionsListDialog
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData
+"""Main window implementation for the inspection system GUI.
 
+This module implements the primary graphical user interface window for the
+robotic inspection system, providing controls for:
+- Robot movement and camera control
+- Session management
+- Video feed display
+- Telemetry monitoring
+- Language selection
+"""
 from Inspection.ports.input import PanelUpdateServicesPort, SessionServicesPort, FeederUpdateServicePort
 class MainWindow(QMainWindow):
+    """Main window class providing the inspection system interface.
+
+    A PyQt-based window implementing all user interface controls for operating
+    the inspection robot, including movement controls, camera operations,
+    session management and system monitoring.
+
+    Attributes:
+        _error_dialog_instance: Class variable for tracking error dialog state
+        latest_temperature (str): Current temperature reading
+        latest_humidity (str): Current humidity reading
+        latest_x_slop (str): Current X axis slope reading  
+        latest_y_slop (str): Current Y axis slope reading
+        latest_distance (str): Current distance reading
+        SessionState (bool): Current session status
+        isRecording (bool): Current recording status
+    """
+
     _error_dialog_instance = None
     
     def __init__(self, panel_services: PanelUpdateServicesPort, feeder_services:FeederUpdateServicePort, session_services:SessionServicesPort) -> None:
+        """Initialize the main window and its components.
+
+        Args:
+            panel_services: Service for updating robot control panel
+            feeder_services: Service for controlling the feeder mechanism
+            session_services: Service for managing inspection sessions
+
+        The window is initialized with:
+        - Video feed display area
+        - Robot movement controls
+        - Camera controls
+        - Session management buttons
+        - Telemetry display
+        - Language selection
+        """      
         super().__init__()
+        """
+        _summary_
+        """        
         self.latest_temperature = "N/A"
         self.latest_humidity = "N/A"
         self.latest_x_slop = "N/A"
@@ -35,6 +79,17 @@ class MainWindow(QMainWindow):
         
     
     def init_ui(self):
+        """Initialize and configure all UI elements.
+
+        Sets up the complete user interface including:
+        - Window properties and layouts
+        - Video feed display
+        - Movement control buttons
+        - Camera control buttons  
+        - Session management buttons
+        - Telemetry displays
+        - Language selection
+        """    
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         main_layout = QHBoxLayout()
         
@@ -235,6 +290,15 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def setup_connections(self):
+        """Configure signal-slot connections for all UI elements.
+
+        Connects UI elements to their corresponding handlers:
+        - Movement buttons to robot control
+        - Camera buttons to camera control
+        - Session buttons to session management
+        - Speed/light sliders to corresponding updates
+        - Language selection to translation updates
+        """
         # Connect movement buttons
         self.btn_forward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='F')))
         self.btn_backward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='B')))
@@ -442,6 +506,12 @@ class MainWindow(QMainWindow):
     
     @classmethod
     def show_error_dialog_connections(cls):
+        """Display error dialog for connection problems.
+
+        Shows a modal dialog warning about connection issues between
+        the robot and reel systems. Maintains single dialog instance.
+        """
+        
         if cls._error_dialog_instance is not None:
             return
 
@@ -456,7 +526,19 @@ class MainWindow(QMainWindow):
         error_dialog.exec()
 
     @classmethod
-    def show_error_dialog_restart(cls):
+    def show_error_dialog_restart(cls):    
+        """Displays an error dialog requiring a system restart.
+
+        This method shows a modal dialog to notify users of communication errors
+        that require a system restart to resolve. Ensures only a single dialog
+        instance is active at any time.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         if cls._error_dialog_instance is not None:
             return  
 
@@ -472,4 +554,9 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def _clear_error_dialog_instance():
+        """Clear the stored error dialog instance.
+
+        Resets the class's error dialog tracking variable after
+        dialog is closed.
+        """
         MainWindow._error_dialog_instance = None

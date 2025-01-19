@@ -5,14 +5,51 @@ from Video.domain.entities.dvr_entities import DvrOrder
 import shutil
 import os
 from logging import Logger
+"""Session management service implementation.
 
+This module provides services for managing inspection sessions including
+recording control, image capture and data management operations.
+"""
 class SessionServices(SessionServicesPort):
+    """Service for managing inspection sessions and recordings.
+
+    Args:
+        dvr_controller (DvrControllerPort): DVR hardware controller
+        repository (RepositoryPort): Session data repository
+        logger (Logger): Logger for operation tracking
+
+    Attributes:
+        dvr_controller: Hardware control interface
+        repository: Data storage interface
+        logger: Operations logger
+    """
     def __init__(self, dvr_controller: DvrControllerPort, repository: RepositoryPort, logger: Logger) -> None:
+        """Initialize session services.
+
+        Args:
+            dvr_controller (DvrControllerPort): DVR hardware interface
+            repository (RepositoryPort): Data storage interface
+            logger (Logger): Logger instance
+
+        Raises:
+            ValueError: If required dependencies are invalid
+        """
         self.dvr_controller = dvr_controller
         self.repository = repository
         self.logger = logger
 
     def create_session(self, name: str) -> bool:
+        """Create new inspection session.
+
+        Args:
+            name (str): Name for the new session
+
+        Returns:
+            bool: True if session created successfully
+
+        Raises:
+            Exception: If creation fails
+        """
         try:
             if self.repository.create(name=name):
                 self.dvr_controller.set_folder(name=name)
@@ -23,6 +60,17 @@ class SessionServices(SessionServicesPort):
             return False
 
     def name_exists(self, name: str) -> bool:
+        """Check if session name exists.
+
+        Args:
+            name (str): Session name to check
+
+        Returns:
+            bool: True if name exists
+
+        Raises:
+            Exception: If check fails
+        """
         try:
             return self.repository.session_exists(name=name)
         except Exception as e:
@@ -30,6 +78,14 @@ class SessionServices(SessionServicesPort):
             return False
 
     def get_sessions(self) -> list:
+        """Get list of available sessions.
+
+        Returns:
+            list: List of session names
+
+        Raises:
+            Exception: If query fails
+        """
         try:
             sessions = self.repository.get_sessions()
             return [session["name"] for session in sessions]
@@ -38,6 +94,18 @@ class SessionServices(SessionServicesPort):
             return []
 
     def download_session(self, session_name, target_folder):
+        """Download session data to target folder.
+
+        Args:
+            session_name (str): Name of session to download
+            target_folder (str): Destination folder path
+
+        Returns:
+            bool: True if download successful, False if failed, None if no content
+
+        Raises:
+            Exception: If download fails
+        """
         try:
             os.makedirs(target_folder, exist_ok=True)
             session_info = self.repository.get_session(session_name)
@@ -99,6 +167,14 @@ class SessionServices(SessionServicesPort):
             return False
 
     def run(self, order: DvrOrder):
+        """Execute DVR control order.
+
+        Args:
+            order (DvrOrder): Control order to execute
+
+        Raises:
+            Exception: If order execution fails
+        """
         try:
             if self.repository.is_session_attached():
                 if order == DvrOrder.TAKE_PHOTO:

@@ -70,5 +70,5 @@ class CommCameraControllerAdapter(CameraControllerPort):
         self.camera.change_light_level(LightState(value=value))
 
     def init_camera(self) -> None:
-        """Initialize camera hardware."""
+        
         self.camera.initialize_camera()
