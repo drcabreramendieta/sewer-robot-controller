@@ -1,11 +1,5 @@
 from abc import ABC, abstractmethod
 from Communication.domain.entities.wheels_entities import Direction, Rotation
-"""Movement service port interface definition.
-
-This module defines the abstract interface for robot movement control services,
-providing methods for controlling wheel direction, rotation and speed.
-"""
-
 
 class MovementServicePort(ABC):
     """Abstract interface for robot movement control services.

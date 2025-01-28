@@ -1,10 +1,6 @@
 from abc import ABC, abstractmethod
 from Video.domain.entities.dvr_entities import DvrOrder
-"""Abstract interface for session management services.
 
-This module defines the interface for services that manage inspection
-sessions, recordings and downloads.
-"""
 class SessionServicesPort(ABC):
     """Abstract base class for session management services.
 

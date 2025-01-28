@@ -1,12 +1,6 @@
 from abc import ABC, abstractmethod
 from Communication.domain.entities.telemetry_entities import TelemetryMessage
 from Inspection.ports.ouput import TelemetryObserverPort
-"""Abstract interface for telemetry update services.
-
-This module defines the interface for services that manage telemetry
-updates and observer notifications.
-
-"""
 
 class TelemetryUpdateServicePort(ABC):
     """Abstract base class for telemetry update services.

@@ -1,9 +1,5 @@
 from enum import IntEnum
-"""DVR control command entities.
 
-This module defines enumerations for DVR control operations including
-recording, photo capture and content retrieval commands.
-"""
 class DvrOrder(IntEnum):
     """DVR control command enumeration.
 

@@ -1,10 +1,5 @@
 from abc import ABC, abstractmethod
-"""Abstract interface for inspection session management.
 
-This module defines the interface for services that manage inspection
-sessions, including recording, capture and data management operations.
-
-"""
 class SessionServicesPort(ABC):
     """Abstract base class for session management services.
 

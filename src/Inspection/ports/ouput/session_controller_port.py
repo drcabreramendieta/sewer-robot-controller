@@ -1,11 +1,5 @@
 from abc import ABC, abstractmethod
-"""Abstract interface for session control operations.
 
-This module defines the interface for managing inspection session data
-including recording, capture and download operations.
-
-
-"""
 class SessionControllerPort(ABC):
     """Abstract base class for session control operations.
 

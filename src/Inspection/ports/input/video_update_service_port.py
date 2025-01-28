@@ -1,11 +1,6 @@
 from abc import ABC, abstractmethod
 from Video.domain.entities.video_entities import VideoMessage
-"""Abstract interface for video update services.
 
-This module defines the interface for services that manage video stream
-updates and observer notifications.
-
-"""
 class VideoUpdateServicePort(ABC):
     """Abstract base class for video update services.
     

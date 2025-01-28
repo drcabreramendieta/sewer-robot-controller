@@ -2,12 +2,6 @@ from containers import CommunicationModuleContainer
 import sys
 from PyQt6.QtWidgets import QApplication
 from Inspection.adapters.gui.main_window import MainWindow
-"""Main application entry point.
-
-This module initializes the application components and starts
-the main event loop for the inspection system GUI.
-"""
-
 
 def run():
     """Initialize and run the application.

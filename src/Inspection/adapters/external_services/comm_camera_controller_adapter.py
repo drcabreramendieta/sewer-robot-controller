@@ -2,11 +2,7 @@ from Inspection.ports.ouput.camera_controller_port import CameraControllerPort
 from Communication.domain.entities.camera_entities import LightState, TiltState, PanState, ZoomState, FocusState
 from Communication.ports.input import CameraServicePort
 from logging import Logger
-"""Communication adapter for camera controller implementation.
 
-This module provides an adapter that implements the CameraControllerPort interface
-using the Communication service layer for camera control operations.
-"""
 class CommCameraControllerAdapter(CameraControllerPort):
     """Adapter for camera control through Communication service.
 

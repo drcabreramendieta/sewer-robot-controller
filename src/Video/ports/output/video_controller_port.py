@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Callable
 from Video.domain.entities.video_entities import VideoMessage
-"""Abstract interface for video stream control.
 
-This module defines the interface for controlling video streams
-and managing frame callbacks.
-"""
 class VideoControllerPort(ABC):
     """Abstract base class for video stream control.
 

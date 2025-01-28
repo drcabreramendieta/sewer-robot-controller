@@ -1,9 +1,5 @@
 from dataclasses import dataclass
-"""Video frame messaging entities.
 
-This module defines data classes for representing video frame data
-in the streaming pipeline.
-"""
 
 @dataclass
 class VideoMessage:

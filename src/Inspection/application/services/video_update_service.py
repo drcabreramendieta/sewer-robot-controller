@@ -2,15 +2,6 @@ from Inspection.ports.input import VideoUpdateServicePort
 from Video.domain.entities.video_entities import VideoMessage
 from Inspection.ports.ouput import VideoObserverPort
 from typing import List
-"""Video update service implementing observer pattern.
-
-This module provides services for managing video stream updates and
-notifying registered observers of new video frames.
-
-Typical usage:
-    video_service = VideoUpdateService(observer)
-    video_service.update_video(frame)
-"""
 
 class VideoUpdateService(VideoUpdateServicePort):
     """Service for managing video updates and notifications.

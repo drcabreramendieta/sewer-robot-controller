@@ -5,12 +5,6 @@ from Inspection.ports.input import TelemetryUpdateServicePort
 from PyQt6.QtCore import pyqtSignal, QObject
 from logging import Logger
 
-"""PyQt adapter for telemetry observation and signal handling.
-
-This module provides an implementation of the TelemetryObserverPort interface
-using PyQt signals for handling telemetry updates in the GUI application.
-"""
-
 class PyqtTelemetryObserverAdapter(TelemetryObserverPort):
     """PyQt adapter for telemetry observation.
 

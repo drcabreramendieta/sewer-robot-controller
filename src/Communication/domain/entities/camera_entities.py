@@ -1,12 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 
-"""Camera state and control entities.
-
-This module defines the data classes and enumerations used to represent
-camera states and control parameters for the robotic camera system.
-"""
-
 @dataclass
 class LightState:
     """Camera light intensity state.

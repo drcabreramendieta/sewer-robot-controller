@@ -4,12 +4,7 @@ from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotCont
 from Panel_and_Feeder.ports.output.panel_and_feeder_controller_port import PanelAndFeederControllerPort
 from logging import Logger
 from typing import List
-"""Panel control services implementation.
 
-This module provides services for managing panel operations including
-robot movement and camera control with observer notifications.
-
-"""
 class PanelServices(PanelServicesPort):
     """Service for managing panel operations and notifications.
 

@@ -4,12 +4,7 @@ from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import FeederCon
 from Panel_and_Feeder.ports.output.panel_and_feeder_controller_port import PanelAndFeederControllerPort
 from logging import Logger
 from typing import List
-"""Feeder control services implementation.
 
-This module provides services for managing feeder operations and
-observer notifications.
-
-"""
 class FeederServices(FeederServicesPort):
     """Service for managing feeder operations and notifications.
 

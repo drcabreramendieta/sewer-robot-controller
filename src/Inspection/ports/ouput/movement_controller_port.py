@@ -1,11 +1,5 @@
 from abc import ABC, abstractmethod
-"""Abstract interface for robot movement control.
 
-This module defines the interface for controlling robot movements
-including directional control and speed adjustment.
-
-
-"""
 class MovementControllerPort(ABC):
     """Abstract base class for robot movement control.
     

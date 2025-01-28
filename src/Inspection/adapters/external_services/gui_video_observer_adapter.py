@@ -5,11 +5,6 @@ from Inspection.adapters.gui.main_window import MainWindow
 import cv2
 from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtCore import Qt
-"""GUI adapter for video observation and display.
-
-This module provides an adapter that implements the VideoObserverPort interface
-for displaying video frames in the GUI application.
-"""
 
 class GuiVideoObserverAdapter(VideoObserverPort):
     """VideoObserverPort adapter for GUI video display.

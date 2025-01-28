@@ -1,10 +1,5 @@
 from abc import ABC, abstractmethod
 from Communication.domain.entities.camera_entities import CameraState
-"""Camera controller port interface definition.
-
-This module defines the abstract interface for camera hardware control,
-providing methods for initialization and state updates.
-"""
 
 class CameraControllerPort(ABC):
     """Abstract interface for camera hardware control.

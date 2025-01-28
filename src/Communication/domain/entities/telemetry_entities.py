@@ -1,11 +1,4 @@
 from dataclasses import dataclass
-
-"""Telemetry data entities.
-
-This module defines the data structures used for handling telemetry messages
-in the robot control system.
-"""
-
 @dataclass
 class TelemetryMessage:
     """Container for telemetry data messages.

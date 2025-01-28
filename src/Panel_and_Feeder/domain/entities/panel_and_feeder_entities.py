@@ -1,9 +1,4 @@
 from dataclasses import dataclass
-"""Panel and feeder control data entities.
-
-This module defines the data structures for robot movement,
-camera control, feeder operations and serial configuration.
-"""
 
 @dataclass
 class RobotControlData:

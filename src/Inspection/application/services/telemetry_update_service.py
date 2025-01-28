@@ -2,11 +2,6 @@ from Inspection.ports.input import TelemetryUpdateServicePort
 from Communication.domain.entities.telemetry_entities import TelemetryMessage
 from Inspection.ports.ouput import TelemetryObserverPort
 from typing import List
-"""Telemetry update service implementing observer pattern.
-
-This module provides services for managing telemetry updates and
-notifying registered observers of new telemetry data.
-"""
 
 class TelemetryUpdateService(TelemetryUpdateServicePort):
     """Service for managing telemetry updates and notifications.

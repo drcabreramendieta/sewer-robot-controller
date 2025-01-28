@@ -2,11 +2,6 @@ from Inspection.ports.ouput import TelemetryObserverPort
 from Communication.domain.entities.telemetry_entities import TelemetryMessage
 from Inspection.adapters.gui.main_window import MainWindow
 from PyQt6.QtCore import Qt
-"""GUI adapter for telemetry observation and display.
-
-This module provides an adapter that implements the TelemetryObserverPort interface
-for displaying telemetry data in the GUI application.
-"""
 
 class GuiTelemetryObserverAdapter(TelemetryObserverPort):
     """GUI adapter for displaying telemetry data.

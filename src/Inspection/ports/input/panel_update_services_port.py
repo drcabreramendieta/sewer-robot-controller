@@ -1,11 +1,6 @@
 from abc import ABC, abstractmethod
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData
-"""Abstract interface for panel update services.
 
-This module defines the interface for services that manage robot movement
-and camera control operations.
-
-"""
 class PanelUpdateServicesPort(ABC):
     """Abstract base class for panel update services.
 

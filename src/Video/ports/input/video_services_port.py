@@ -1,10 +1,6 @@
 from abc import ABC, abstractmethod
 from Video.ports.output.video_observer_port import VideoObserverPort
-"""Abstract interface for video stream services.
 
-This module defines the interface for services that manage video
-stream processing and observer notifications.
-"""
 class VideoServicesPort(ABC):
     """Abstract base class for video stream services.
 

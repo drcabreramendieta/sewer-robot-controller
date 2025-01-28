@@ -10,11 +10,7 @@ import subprocess
 import shlex
 from logging import Logger
 from Inspection.adapters.gui.main_window import MainWindow
-"""Hikvision DVR controller adapter implementation.
 
-This module provides integration with Hikvision DVR systems through their
-HTTP API for video recording, image capture and file downloads.
-"""
 TIMEOUT = 2  # Definimos un timeout de 10 segundos
 
 class HikvisionDvrControllerAdapter(DvrControllerPort):

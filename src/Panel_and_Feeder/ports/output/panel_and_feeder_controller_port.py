@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Callable
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData, FeederControlData
-"""Abstract interface for panel and feeder hardware control.
 
-This module defines the interface for controlling panel and feeder
-hardware through callbacks and message passing.
-"""
 class PanelAndFeederControllerPort(ABC):
     """Abstract base class for hardware control operations.
 

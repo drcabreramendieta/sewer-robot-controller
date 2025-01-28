@@ -1,11 +1,7 @@
 from Communication.ports.input import MovementServicePort
 from Communication.domain.entities.wheels_entities import Direction, Rotation, WheelsModule
 from Communication.ports.output import WheelsControllerPort
-"""Robot movement control service implementation.
 
-This module provides services for controlling robot movement including
-direction, rotation and speed through a wheels controller interface.
-"""
 class MovementService(MovementServicePort):
     """Service class for managing robot movement operations.
 

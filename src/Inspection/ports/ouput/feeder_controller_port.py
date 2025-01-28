@@ -1,11 +1,5 @@
 from abc import ABC, abstractmethod
-"""Abstract interface for feeder hardware control.
 
-This module defines the interface for controlling the feeder mechanism
-through message-based commands.
-
-
-"""
 class FeederControllerPort(ABC):
     """Abstract base class for feeder control operations.
 

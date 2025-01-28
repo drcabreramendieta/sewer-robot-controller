@@ -3,12 +3,6 @@ from Communication.ports.input import MovementServicePort
 from Communication.domain.entities.wheels_entities import Rotation, Direction
 from logging import Logger
 
-"""Communication adapter for movement controller implementation.
-
-This module provides an adapter that implements the MovementControllerPort interface
-using the Communication service layer for robot movement control.
-"""
-
 class CommMovementControllerAdapter(MovementControllerPort):
     """Adapter for robot movement control through Communication service.
 

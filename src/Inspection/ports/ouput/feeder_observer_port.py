@@ -1,11 +1,6 @@
 from abc import ABC, abstractmethod
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import FeederControlData
-"""Abstract interface for feeder update observers.
 
-This module defines the interface for objects that need to receive
-notifications about feeder control state changes.
-
-"""
 class FeederObserverPort(ABC):
     """Abstract base class for feeder state observers.
     

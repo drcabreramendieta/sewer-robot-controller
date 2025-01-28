@@ -4,11 +4,7 @@ from Video.domain.entities.video_entities import VideoMessage
 from Inspection.ports.input import VideoUpdateServicePort
 from PyQt6.QtCore import pyqtSignal, QObject
 from logging import Logger
-"""PyQt adapter for video frame observation.
 
-This module provides adapters to integrate video frame processing
-with PyQt's signal/slot mechanism.
-"""
 class PyqtVideoObserverAdapter(VideoObserverPort):
     """Adapter to integrate video observation with PyQt signals.
 

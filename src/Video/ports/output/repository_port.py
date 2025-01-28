@@ -1,11 +1,7 @@
 from Video.domain.entities.repository_entities import ImageInfo
 from Video.domain.entities.repository_entities import RecordInfo
 from abc import ABC, abstractmethod
-"""Abstract interface for session data repository.
 
-This module defines the interface for storing and retrieving
-session data including images and recordings.
-"""
 
 class RepositoryPort(ABC):
     """Abstract base class for session data repository.

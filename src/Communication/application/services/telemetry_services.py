@@ -4,11 +4,6 @@ from Communication.domain.entities.telemetry_entities import TelemetryMessage
 from Communication.ports.output import TelemetryControllerPort
 from logging import Logger
 from typing import List
-"""Telemetry services implementation.
-
-This module provides services for managing telemetry data collection,
-observer registration, and real-time telemetry updates handling.
-"""
 
 class TelemetryServices(TelemetryServicesPort):
     """Service class for managing telemetry operations.

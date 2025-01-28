@@ -1,9 +1,4 @@
 from dataclasses import dataclass
-"""Repository data entities.
-
-This module defines data classes for representing stored image and
-recording information in the repository.
-"""
 
 @dataclass
 class ImageInfo:

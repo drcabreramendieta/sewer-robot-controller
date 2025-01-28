@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
 from Video.domain.entities.repository_entities import ImageInfo
 from Video.domain.entities.repository_entities import RecordInfo
-"""Abstract interface for DVR hardware control.
 
-This module defines the interface for controlling DVR hardware
-including image capture, video recording and file management.
-"""
 class DvrControllerPort(ABC):
     """Abstract base class for DVR hardware control.
 

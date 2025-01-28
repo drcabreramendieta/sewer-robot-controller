@@ -6,12 +6,7 @@ import serial
 from logging import Logger
 from PyQt6.QtCore import QMetaObject, Qt
 from PyQt6.QtWidgets import QMessageBox
-"""Serial adapter for panel and feeder hardware control.
 
-This module provides adapters to integrate hardware control operations
-through serial communication.
-
-"""
 class SerialPanelAndFeederControllerAdapter(PanelAndFeederControllerPort):
     """Adapter for serial communication with panel and feeder hardware.
 

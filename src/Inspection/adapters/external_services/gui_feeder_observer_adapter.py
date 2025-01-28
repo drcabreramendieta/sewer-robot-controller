@@ -2,11 +2,6 @@ from Inspection.ports.ouput import FeederObserverPort
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import FeederControlData
 from Inspection.adapters.gui.main_window import MainWindow
 from PyQt6.QtCore import Qt
-"""GUI adapter for feeder observation and telemetry display.
-
-This module provides an adapter that implements the FeederObserverPort interface
-for displaying feeder telemetry data in the GUI.
-"""
 
 class GuiFeederObserverAdapter(FeederObserverPort):
     """GUI adapter for displaying feeder telemetry data.

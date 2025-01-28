@@ -1,12 +1,7 @@
 from abc import ABC, abstractmethod
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import FeederControlData
 from Inspection.ports.ouput import FeederObserverPort
-"""Abstract interface for feeder control update services.
 
-This module defines the interface for services that manage feeder control
-updates and observer notifications.
-
-"""
 class FeederUpdateServicePort(ABC):
     """Abstract base class for feeder update services.
 

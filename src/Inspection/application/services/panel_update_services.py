@@ -1,11 +1,7 @@
 from Inspection.ports.input import PanelUpdateServicesPort
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData
 from Inspection.ports.ouput import MovementControllerPort, CameraControllerPort
-"""Panel control service for managing robot and camera operations.
 
-This module provides services for coordinating robot movement and
-camera control operations through a unified interface.
-"""
 class PanelUpdateServices(PanelUpdateServicesPort):
     """Service for coordinating robot and camera control operations.
     

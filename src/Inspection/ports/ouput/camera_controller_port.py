@@ -1,11 +1,5 @@
 from abc import ABC, abstractmethod
-"""Abstract interface for camera control operations.
 
-This module defines the interface for controlling camera movements,
-focus, and lighting in the inspection system.
-
-
-"""
 class CameraControllerPort(ABC):
     """Abstract base class for camera control operations.
 

@@ -2,11 +2,6 @@ from Inspection.ports.ouput.session_controller_port import SessionControllerPort
 from Video.application.services.session_services import SessionServices
 from Video.domain.entities.dvr_entities import DvrOrder
 from logging import Logger
-"""Video session controller adapter implementation.
-
-This module provides an adapter that implements the SessionControllerPort interface
-for managing video recording sessions and captures.
-"""
 
 class VideoSessionControllerAdapter(SessionControllerPort):
 

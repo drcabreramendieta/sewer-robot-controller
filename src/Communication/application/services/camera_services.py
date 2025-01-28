@@ -2,13 +2,6 @@ from Communication.ports.input import CameraServicePort
 from Communication.ports.output import CameraControllerPort
 from Communication.domain.entities.camera_entities import LightState, TiltState, PanState, ZoomState, FocusState, CameraState
 
-
-"""Camera control services implementation.
-
-This module provides services for controlling camera functionality including
-initialization, movement, focus, zoom and lighting controls.
-"""
-
 class CameraServices(CameraServicePort):
     """Service class for managing camera operations.
 

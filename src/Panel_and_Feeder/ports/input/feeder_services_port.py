@@ -1,10 +1,6 @@
 from abc import ABC, abstractmethod
 from Panel_and_Feeder.ports.output import FeederObserverPort
-"""Abstract interface for feeder services.
 
-This module defines the interface for services that manage feeder
-operations and observer notifications.
-"""
 class FeederServicesPort(ABC):
     """Abstract base class for feeder service operations.
 

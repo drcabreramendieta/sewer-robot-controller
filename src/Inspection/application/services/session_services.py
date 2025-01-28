@@ -1,10 +1,5 @@
 from Inspection.ports.input import SessionServicesPort
 from Inspection.ports.ouput import SessionControllerPort
-"""Session management service implementation.
-
-This module provides services for managing inspection sessions including
-recording, image capture, and data download functionality.
-"""
 
 class SessionServices(SessionServicesPort):
     """Service for managing inspection session operations.

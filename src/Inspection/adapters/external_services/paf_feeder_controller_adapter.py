@@ -1,10 +1,6 @@
 from Inspection.ports.ouput import FeederControllerPort
 from Panel_and_Feeder.ports.input import FeederServicesPort
-"""Panel and Feeder controller adapter implementation.
 
-This module provides an adapter that implements the FeederControllerPort interface
-for controlling feeder operations through the Panel and Feeder services.
-"""
 class PafFeederControllerAdapter(FeederControllerPort):
     """Adapter for feeder control through Panel and Feeder services.
 

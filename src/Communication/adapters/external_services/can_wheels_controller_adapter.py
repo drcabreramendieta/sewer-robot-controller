@@ -3,13 +3,6 @@ from Communication.domain.entities.wheels_entities import WheelsModule
 import can
 from logging import Logger
 
-"""CAN bus communication adapter for wheels control.
-
-This module provides an implementation of the WheelsControllerPort interface 
-using CAN bus protocol for controlling robot wheel movements.
-"""
-
-
 class CanWheelsControllerAdapter(WheelsControllerPort):
     """Adapter for controlling robot wheels through CAN bus.
 

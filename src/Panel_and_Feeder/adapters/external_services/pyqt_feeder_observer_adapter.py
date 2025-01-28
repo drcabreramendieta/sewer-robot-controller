@@ -4,13 +4,7 @@ from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import FeederCon
 from Inspection.ports.input import FeederUpdateServicePort
 from PyQt6.QtCore import pyqtSignal, QObject
 from logging import Logger
-"""PyQt adapter for feeder control observation.
 
-This module provides adapters to integrate feeder control operations
-with PyQt's signal/slot mechanism.
-
-
-"""
 class PyqtFeederObserverAdapter(FeederObserverPort):
     """Adapter to integrate feeder observation with PyQt signals.
 

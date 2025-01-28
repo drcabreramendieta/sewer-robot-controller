@@ -1,10 +1,6 @@
 from abc import ABC, abstractmethod
 from Communication.domain.entities.wheels_entities import WheelsModule
-"""Wheels controller port interface definition.
 
-This module defines the abstract interface for wheels hardware control,
-providing methods for controlling robot wheel movements.
-"""
 class WheelsControllerPort(ABC):
     """Abstract interface for wheels hardware control.
 

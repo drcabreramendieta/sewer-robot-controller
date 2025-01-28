@@ -5,11 +5,7 @@ from Video.domain.entities.dvr_entities import DvrOrder
 import shutil
 import os
 from logging import Logger
-"""Session management service implementation.
 
-This module provides services for managing inspection sessions including
-recording control, image capture and data management operations.
-"""
 class SessionServices(SessionServicesPort):
     """Service for managing inspection sessions and recordings.
 

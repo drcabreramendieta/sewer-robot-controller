@@ -1,10 +1,6 @@
 from abc import ABC, abstractmethod
 from Communication.domain.entities.camera_entities import LightState, TiltState, PanState, ZoomState, FocusState
-"""Camera service port interface definition.
 
-This module defines the abstract interface for camera control services,
-providing methods for camera initialization and movement control.
-"""
 class CameraServicePort(ABC):
     """Abstract interface for camera control services.
 

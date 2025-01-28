@@ -4,12 +4,6 @@ from typing import Callable
 import can
 from logging import Logger
 
-"""CAN bus communication adapter for telemetry control.
-
-This module provides an implementation of the TelemetryControllerPort interface
-using CAN bus protocol for handling telemetry data from motor and ECU systems.
-"""
-
 class CanTelemetryControllerAdapter(TelemetryControllerPort):
     """Adapter for handling CAN bus telemetry communication.
 

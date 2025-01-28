@@ -4,11 +4,7 @@ from Video.domain.entities.video_entities import VideoMessage
 import cv2
 import threading
 from logging import Logger
-"""OpenCV video stream controller adapter.
 
-This module implements video capture and streaming using OpenCV
-VideoCapture for RTSP sources.
-"""
 class OpencvVideoControllerAdapter(VideoControllerPort):
     """Adapter for controlling video streams with OpenCV.
 

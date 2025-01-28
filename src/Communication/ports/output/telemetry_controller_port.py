@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
 from Communication.domain.entities.telemetry_entities import TelemetryMessage
 from typing import Callable
-"""Telemetry controller port interface definition.
 
-This module defines the abstract interface for telemetry hardware control,
-providing methods for callback setup and telemetry listening control.
-"""
 class TelemetryControllerPort(ABC):
     """Abstract interface for telemetry hardware control.
 

@@ -2,12 +2,6 @@ from Communication.ports.output.camera_controller_port import CameraControllerPo
 from Communication.domain.entities.camera_entities import CameraState
 import can
 from logging import Logger
-"""Module for CAN bus communication adapter to control camera functionality.
-
-This module provides an implementation of the CameraControllerPort interface
-using CAN bus protocol for camera control operations.
-"""
-
 class CanCameraControllerAdapter(CameraControllerPort):  
     """Adapter class for controlling camera operations through CAN bus.
 

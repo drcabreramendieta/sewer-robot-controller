@@ -1,11 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-"""Wheel control entities for robot movement.
-
-This module defines the data structures and enumerations used for 
-controlling the robot's wheel movements and direction.
-"""
-
 class Direction(Enum):
     """Robot movement direction states.
 

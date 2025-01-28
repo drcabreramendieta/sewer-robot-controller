@@ -4,11 +4,7 @@ from Video.domain.entities.video_entities import VideoMessage
 from Video.ports.output.video_controller_port import VideoControllerPort
 from logging import Logger
 from typing import List
-"""Video processing service implementation.
 
-This module provides services for managing video stream processing
-and observer notifications.
-"""
 class VideoServices(VideoServicesPort):
     """Service for managing video stream processing.
 

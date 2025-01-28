@@ -31,12 +31,7 @@ from Panel_and_Feeder.application.services.feeder_services import FeederServices
 from Panel_and_Feeder.application.services.panel_services import PanelServices
 
 import logging
-"""Dependency injection container configuration.
 
-This module configures dependency injection containers for all system components
-including communication, video, inspection and panel and feeder.
-
-"""
 def get_logger(name='app_logger'):
     """Configure application logger with file and console handlers.
 
