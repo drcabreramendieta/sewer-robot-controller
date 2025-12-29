@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Pipe Inspection Robot Controller"
+type: software
+license: Apache-2.0
+repository-code: "https://github.com/drcabreramendieta/sewer-robot-controller"
+url: "https://github.com/drcabreramendieta/sewer-robot-controller"
+keywords:
+  - robotics
+  - inspection
+  - pipelines
+  - control
+authors:
+  - family-names: "Cabrera"
+    given-names: "Diego"
+    orcid: "https://orcid.org/0000-0003-1023-871X"
+  - family-names: "Jimenez"
+    given-names: "Deiver"
+  - family-names: "Chaca"
+    given-names: "Kevin"
+version: "1.0.0"
+date-released: "2025-12-29"
