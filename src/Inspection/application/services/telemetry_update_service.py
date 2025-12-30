@@ -6,10 +6,11 @@ from typing import List
 class TelemetryUpdateService(TelemetryUpdateServicePort):
     observers:List[TelemetryObserverPort]
     def __init__(self, observer:TelemetryObserverPort) -> None:
+        super().__init__()
+        self.observers = []
         self.observer = observer
         if self.observer:
             self.observers.append(self.observer) 
-        super().__init__()
 
     def update_telemetry(self, telemetry: TelemetryMessage) -> None:
         self._notify(telemetry=telemetry)

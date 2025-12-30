@@ -297,9 +297,9 @@ class MainWindow(QMainWindow):
     
     def toggleRecording(self):
         if self.isRecording:
-            self.session_services.start_recording()
-        else:
             self.session_services.stop_recording()
+        else:
+            self.session_services.start_recording()
         self.isRecording = not self.isRecording
         self.updateRecordButtonState()
 
@@ -367,7 +367,6 @@ class MainWindow(QMainWindow):
             self.startButton.setText(self.tr("Log In"))
 
     def updateRecordButtonState(self):
-        self.isRecording = not self.isRecording
         if self.isRecording:
             self.record_button.setText(self.tr("Stop Record"))
         else:

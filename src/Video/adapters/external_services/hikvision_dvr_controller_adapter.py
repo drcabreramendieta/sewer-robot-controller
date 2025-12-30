@@ -51,7 +51,7 @@ class HikvisionDvrControllerAdapter(DvrControllerPort):
         records = session_info.get("records", [])
         if not records:
             self.logger.info("No existen grabaciones.")
-            return []
+            return [], True
 
         playback_uris = []
         for record in records:

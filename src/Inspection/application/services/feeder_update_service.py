@@ -7,6 +7,7 @@ class FeederUpdateService(FeederUpdateServicePort):
     observers:List[FeederObserverPort]
     def __init__(self, feeder_controller:FeederControllerPort, observer:FeederObserverPort):
         super().__init__()
+        self.observers = []
         self.observer = observer
         if self.observer:
             self.observers.append(self.observer)

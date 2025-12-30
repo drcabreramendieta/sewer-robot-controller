@@ -8,11 +8,11 @@ class DvrControllerPort(ABC):
         pass
 
     @abstractmethod
-    def download_video(self, json_data, session_name, target_folder):
+    def download_video(self, session_info, target_folder):
         pass
 
     @abstractmethod
-    def search_video(self, json_path, session_name):
+    def search_video(self, session_info):
         pass
 
     @abstractmethod

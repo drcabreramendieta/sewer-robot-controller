@@ -3,12 +3,11 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from containers_hex import DEFAULT_CONFIG_PATH, build_container
-from Inspection.adapters.gui.main_window import MainWindow
+from containers_hex_mock import DEFAULT_CONFIG_PATH, build_container
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run sewer robot controller.")
+    parser = argparse.ArgumentParser(description="Run sewer robot controller (mock).")
     parser.add_argument(
         "--config",
         default=str(DEFAULT_CONFIG_PATH),
@@ -21,10 +20,6 @@ def run() -> None:
     args = _parse_args()
     app = QApplication(sys.argv)
     container = build_container(args.config)
-
-    if container.can_bus() is None:
-        MainWindow.show_error_dialog_connections()
-        sys.exit(1)
 
     container.wire_feeder_observer()
     container.wire_gui_observers()

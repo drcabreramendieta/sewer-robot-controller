@@ -1,5 +1,5 @@
 from Communication.ports.output.camera_controller_port import CameraControllerPort
-from Communication.domain.entities.camera_entities import CameraState
+from Communication.domain.entities.camera_entities import CameraState, LightState, TiltState, PanState, ZoomState, FocusState
 import can
 from logging import Logger
 
@@ -32,44 +32,44 @@ class CanCameraControllerAdapter(CameraControllerPort):
         return True
 
     def update_camera_state(self, module: CameraState) -> None:
-        if module.focus == "O":
+        if module.focus == FocusState.OUT:
             byte1 = 0x94
-        elif module.focus == "I":
+        elif module.focus == FocusState.IN:
             byte1 = 0x91
-        elif module.focus == "S":
+        elif module.focus == FocusState.STOP:
             byte1 = 0x04
 
-        if module.pan == "R":
+        if module.pan == PanState.RIGHT:
             byte2 = 0x44
-        elif module.pan == "L":
+        elif module.pan == PanState.LEFT:
             byte2 = 0x33
-        elif module.pan == "S":
+        elif module.pan == PanState.STOP:
             byte2 = 0x02
 
-        if module.tilt == "U":
+        if module.tilt == TiltState.UP:
             byte3 = 0x11
-        elif module.tilt == "D":
+        elif module.tilt == TiltState.DOWN:
             byte3 = 0x22
-        elif module.tilt == "S":
+        elif module.tilt == TiltState.STOP:
             byte3 = 0x01
 
-        if 0 <= module.light < 11:
+        if 0 <= module.light.value < 11:
             byte4 = 0x2a
-        elif 11 <= module.light < 22:
+        elif 11 <= module.light.value < 22:
             byte4 = 0x3a
-        elif 22 <= module.light < 33:
+        elif 22 <= module.light.value < 33:
             byte4 = 0x4a
-        elif 33 <= module.light < 44:
+        elif 33 <= module.light.value < 44:
             byte4 = 0x5a
-        elif 44 <= module.light < 55:
+        elif 44 <= module.light.value < 55:
             byte4 = 0x6a
-        elif 55 <= module.light < 66:
+        elif 55 <= module.light.value < 66:
             byte4 = 0x9a
-        elif 66 <= module.light < 77:
+        elif 66 <= module.light.value < 77:
             byte4 = 0x5b
-        elif 77 <= module.light < 88:
+        elif 77 <= module.light.value < 88:
             byte4 = 0x9b
-        elif 88 <= module.light <= 100:
+        elif 88 <= module.light.value <= 100:
             byte4 = 0x6c
 
         m1 = [byte1, byte2, byte3, byte4]

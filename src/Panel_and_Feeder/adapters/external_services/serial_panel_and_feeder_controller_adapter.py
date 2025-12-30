@@ -41,7 +41,10 @@ class SerialPanelAndFeederControllerAdapter(PanelAndFeederControllerPort):
 
     def _process_data(self, data: str) -> None:
         print('Arrived data:', data)
-        data = data.decode('utf-8').strip()
+        if isinstance(data, bytes):
+            data = data.decode('utf-8').strip()
+        else:
+            data = str(data).strip()
         data_fields = data.split(sep=' ')
         if data_fields[0] == 'robot':
             direction = data_fields[1]
@@ -89,4 +92,3 @@ class SerialPanelAndFeederControllerAdapter(PanelAndFeederControllerPort):
         except serial.SerialException as e:
             self.logger.error(f"Error al enviar mensaje: {e}")
             
-

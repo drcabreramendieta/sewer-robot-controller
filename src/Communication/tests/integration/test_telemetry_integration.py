@@ -27,9 +27,8 @@ def test_telemetry_integration(qapp, qtbot):
 
     telemetry_can_adapter = CanTelemetryControllerAdapter(bus,logger)
 
-    service = TelemetryServices(telemetry_can_adapter,logger)
     observer = PyqtTelemetryObserverAdapter(mock_telemetry_update_service,logger)
-    service.register_observer(observer)
+    service = TelemetryServices(telemetry_can_adapter,logger,observer)
     service.start_listening()
     try:
         test_data = [1, 2, 3, 4, 5, 6, 7, 8]

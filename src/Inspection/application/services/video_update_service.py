@@ -6,10 +6,11 @@ from typing import List
 class VideoUpdateService(VideoUpdateServicePort):
     observers:List[VideoObserverPort]
     def __init__(self, observer:VideoObserverPort) -> None:
+        super().__init__()
+        self.observers = []
         self.observer = observer
         if self.observer:
             self.observers.append(self.observer) 
-        super().__init__()
 
     def update_video(self, msg: VideoMessage) -> None:
         self._notify(msg=msg)

@@ -51,6 +51,9 @@ class SessionServices(SessionServicesPort):
             content_found = False
 
             captures = session_info.get("captures", [])
+            image_success = True
+            video_success = True
+            
             if captures:
                 content_found = True
                 
@@ -70,15 +73,12 @@ class SessionServices(SessionServicesPort):
                         self.logger.error(f"Error processing image '{source_path}': {e}")
                         image_success = False
 
-            [video_uris, search_success] = self.dvr_controller.search_video(session_info)
-            if search_success == False:
+            video_uris, search_success = self.dvr_controller.search_video(session_info)
+            if not search_success:
                 video_success = False
-            else:
-                video_success = True
             if video_uris:
                 content_found = True
                 video_success = self.dvr_controller.download_video(session_info, target_folder)
-                video_success = True
             if not content_found:
                 self.logger.info(f"No videos or images found for session '{session_name}'.")
                 video_success = False

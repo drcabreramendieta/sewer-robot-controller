@@ -1,0 +1,18 @@
+logging:
+  name: "app_logger"
+can:
+  channel: "virtual"
+  interface: "virtual"
+  bitrate: 250000
+serial:
+  port: ""
+  baudrate: 115200
+  timeout: 0.1
+video:
+  rtsp_url: "src/example.mp4"
+  sessions_db: "SessionsDB.json"
+  dvr:
+    url: "mock://dvr"
+    user: "mock"
+    password: "mock"
+    dir: "mock_sessions"

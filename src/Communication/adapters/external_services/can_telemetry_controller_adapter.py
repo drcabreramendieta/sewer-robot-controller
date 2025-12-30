@@ -85,6 +85,6 @@ class CanTelemetryControllerAdapter(TelemetryControllerPort):
             if int.from_bytes(message.data[6:7], byteorder='big') == 0xC0:
                 self.logger.info("No warnings.")
             elif int.from_bytes(message.data[6:7], byteorder='big') == 0xE0:
-                self.logger.info(self.tr("Caution locked wheels."))
+                self.logger.info("Caution locked wheels.")
 
         return TelemetryMessage(message_type=message_type, variables=variables, timestamp=message.timestamp)

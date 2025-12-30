@@ -1,5 +1,5 @@
 from Communication.ports.output import WheelsControllerPort
-from Communication.domain.entities.wheels_entities import WheelsModule
+from Communication.domain.entities.wheels_entities import WheelsModule, Direction, Rotation
 import can
 from logging import Logger
 
@@ -8,23 +8,23 @@ class CanWheelsControllerAdapter(WheelsControllerPort):
         self.bus = bus
         self.logger = logger
 
-    def move(self, wheelsModule:WheelsModule) -> None:
-        if wheelsModule.direction == "F":
-            if wheelsModule.rotation == "N":
-                m1 = [1, 0, wheelsModule.speed]
-            elif wheelsModule.rotation == "L":
-                m1 = [1, 1, wheelsModule.speed]
-            elif wheelsModule.rotation == "R":
-                m1 = [1, 2, wheelsModule.speed]
-        elif wheelsModule.direction == "B":
-            if wheelsModule.rotation == "N":
-                m1 = [2, 0, wheelsModule.speed]
-            elif wheelsModule.rotation == "L":
-                m1 = [2, 1, wheelsModule.speed]
-            elif wheelsModule.rotation == "R":
-                m1 = [2, 2, wheelsModule.speed]
-        elif wheelsModule.direction == "S":
-            m1 = [0, 0, wheelsModule.speed]
+    def move(self, wheels_state:WheelsModule) -> None:
+        if wheels_state.direction == Direction.FORWARD:
+            if wheels_state.rotation == Rotation.CENTER:
+                m1 = [1, 0, wheels_state.speed]
+            elif wheels_state.rotation == Rotation.LEFT:
+                m1 = [1, 1, wheels_state.speed]
+            elif wheels_state.rotation == Rotation.RIGHT:
+                m1 = [1, 2, wheels_state.speed]
+        elif wheels_state.direction == Direction.BACKWARD:
+            if wheels_state.rotation == Rotation.CENTER:
+                m1 = [2, 0, wheels_state.speed]
+            elif wheels_state.rotation == Rotation.LEFT:
+                m1 = [2, 1, wheels_state.speed]
+            elif wheels_state.rotation == Rotation.RIGHT:
+                m1 = [2, 2, wheels_state.speed]
+        elif wheels_state.direction == Direction.STOP:
+            m1 = [0, 0, wheels_state.speed]
 
         #self.logger.info(f"Sending wheels module message: {m1}")
         try:

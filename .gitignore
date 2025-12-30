@@ -1,4 +1,8 @@
 *.pyc
+*.log
 __pycache__/
 SessionsDB.json
 docs
+configs/*
+!configs/config_mock.yaml
+mock_sessions/

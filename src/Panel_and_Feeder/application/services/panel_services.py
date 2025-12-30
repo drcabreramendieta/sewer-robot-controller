@@ -8,6 +8,8 @@ from typing import List
 class PanelServices(PanelServicesPort):
     observers:List[PanelObserverPort]
     def __init__(self, paf_controller:PanelAndFeederControllerPort, logger:Logger, observer:PanelObserverPort) -> None:
+        super().__init__()
+        self.observers = []
         self.observer = observer
         if self.observer:
             self.observers.append(self.observer)
@@ -15,7 +17,6 @@ class PanelServices(PanelServicesPort):
         self.logger = logger
         self.paf_controller.robot_callback_setup(self._notify_robot_control_data)
         self.paf_controller.camera_callback_setup(self._notify_camera_control_data)
-        super().__init__()
 
     def _notify_robot_control_data(self, robot_control_data:RobotControlData) -> None:
         for observer in self.observers:

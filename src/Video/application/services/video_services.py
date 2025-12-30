@@ -8,13 +8,14 @@ from typing import List
 class VideoServices(VideoServicesPort):
     observers:List[VideoObserverPort]
     def __init__(self, video_controller:VideoControllerPort, logger:Logger, observer:VideoObserverPort) -> None:
+        super().__init__()
+        self.observers = []
         self.observer = observer
         if self.observer:
             self.observers.append(self.observer)
         self.video_controller = video_controller
         self.logger = logger
         video_controller.callback_setup(self._notify)
-        super().__init__()
 
     def _notify(self, video:VideoMessage) -> None:
         for observer in self.observers:
