@@ -7,12 +7,9 @@ from typing import List
 
 class FeederServices(FeederServicesPort):
     observers:List[FeederObserverPort]
-    def __init__(self, paf_controller:PanelAndFeederControllerPort, logger:Logger, observer:FeederObserverPort) -> None:
+    def __init__(self, paf_controller:PanelAndFeederControllerPort, logger:Logger) -> None:
         super().__init__()
         self.observers = []
-        self.observer = observer
-        if self.observer:
-            self.observers.append(self.observer)
         self.paf_controller = paf_controller
         self.logger = logger
         self.paf_controller.feeder_callback_setup(self._notify_feeder_control_data)

@@ -7,12 +7,9 @@ from typing import List
 
 class VideoServices(VideoServicesPort):
     observers:List[VideoObserverPort]
-    def __init__(self, video_controller:VideoControllerPort, logger:Logger, observer:VideoObserverPort) -> None:
+    def __init__(self, video_controller:VideoControllerPort, logger:Logger) -> None:
         super().__init__()
         self.observers = []
-        self.observer = observer
-        if self.observer:
-            self.observers.append(self.observer)
         self.video_controller = video_controller
         self.logger = logger
         video_controller.callback_setup(self._notify)

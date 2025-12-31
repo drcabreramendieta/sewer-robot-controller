@@ -7,12 +7,9 @@ from typing import List
 
 class PanelServices(PanelServicesPort):
     observers:List[PanelObserverPort]
-    def __init__(self, paf_controller:PanelAndFeederControllerPort, logger:Logger, observer:PanelObserverPort) -> None:
+    def __init__(self, paf_controller:PanelAndFeederControllerPort, logger:Logger) -> None:
         super().__init__()
         self.observers = []
-        self.observer = observer
-        if self.observer:
-            self.observers.append(self.observer)
         self.paf_controller = paf_controller
         self.logger = logger
         self.paf_controller.robot_callback_setup(self._notify_robot_control_data)

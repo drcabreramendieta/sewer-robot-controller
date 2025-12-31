@@ -5,12 +5,9 @@ from typing import List
 
 class FeederUpdateService(FeederUpdateServicePort):
     observers:List[FeederObserverPort]
-    def __init__(self, feeder_controller:FeederControllerPort, observer:FeederObserverPort):
+    def __init__(self, feeder_controller:FeederControllerPort):
         super().__init__()
         self.observers = []
-        self.observer = observer
-        if self.observer:
-            self.observers.append(self.observer)
         self.feeder_controller = feeder_controller
 
     def register_observer(self, observer:FeederObserverPort):

@@ -26,20 +26,17 @@ def run() -> None:
         MainWindow.show_error_dialog_connections()
         sys.exit(1)
 
-    container.wire_feeder_observer()
-    container.wire_gui_observers()
-
-    telemetry_services = container.telemetry_services()
-    video_services = container.video_services()
-    panel_services = container.panel_services()
-    feeder_services = container.feeder_services()
+    telemetry_services = container.communication.telemetry_services()
+    video_services = container.video.video_services()
+    panel_services = container.panel_and_feeder.panel_services()
+    feeder_services = container.panel_and_feeder.feeder_services()
 
     telemetry_services.start_listening()
     video_services.start_listening()
     panel_services.start_listening()
     feeder_services.start_listening()
 
-    main_window = container.main_window()
+    main_window = container.inspection.main_window()
     main_window.show()
 
     exit_code = 0

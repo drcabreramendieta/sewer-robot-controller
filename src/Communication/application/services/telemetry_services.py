@@ -7,12 +7,9 @@ from typing import List
 
 class TelemetryServices(TelemetryServicesPort):
     observers:List[TelemetryObserverPort]
-    def __init__(self, telemetry_controller:TelemetryControllerPort, logger:Logger, telemetry_observer:TelemetryObserverPort) -> None:
+    def __init__(self, telemetry_controller:TelemetryControllerPort, logger:Logger) -> None:
         super().__init__()
         self.observers = []
-        self.observer = telemetry_observer
-        if self.observer:
-            self.observers.append(self.observer) 
         self.telemetry_controller = telemetry_controller
         self.logger = logger
         telemetry_controller.callback_setup(self._notify)
