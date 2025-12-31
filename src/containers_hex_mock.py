@@ -50,11 +50,6 @@ class HexMockContainer(containers.DeclarativeContainer):
     feeder_update_service = providers.Dependency()
     video_update_service = providers.Dependency()
 
-    movement_service = providers.Dependency()
-    camera_services = providers.Dependency()
-    feeder_services = providers.Dependency()
-    video_session_services = providers.Dependency()
-
     communication = providers.Container(
         CommunicationMockContainer,
         logger=logger,
@@ -79,10 +74,10 @@ class HexMockContainer(containers.DeclarativeContainer):
     inspection = providers.Container(
         InspectionContainer,
         logger=logger,
-        movement_service=movement_service,
-        camera_services=camera_services,
-        feeder_services=feeder_services,
-        video_session_services=video_session_services,
+        movement_service=communication.movement_service,
+        camera_services=communication.camera_services,
+        feeder_services=panel_and_feeder.feeder_services,
+        video_session_services=video.session_services,
     )
 
     wire_observers = providers.Callable(
@@ -102,11 +97,6 @@ def build_container(config_path: str = str(DEFAULT_CONFIG_PATH)) -> HexMockConta
     container.panel_update_services.override(container.inspection.panel_update_services)
     container.feeder_update_service.override(container.inspection.feeder_update_service)
     container.video_update_service.override(container.inspection.video_update_service)
-
-    container.movement_service.override(container.communication.movement_service)
-    container.camera_services.override(container.communication.camera_services)
-    container.feeder_services.override(container.panel_and_feeder.feeder_services)
-    container.video_session_services.override(container.video.session_services)
 
     container.wire_observers()
 

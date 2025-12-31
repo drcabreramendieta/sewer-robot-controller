@@ -32,6 +32,6 @@ class GuiTelemetryObserverAdapter(TelemetryObserverPort):
         #print(telemetry.variables) 
         # Actualizar el texto de advertencia basado en el estado del motor
         if motor_status == 0xC0:
-            self.gui.warning_text.setText(self.tr("No warnings."))
+            self.gui.warning_text.setText(self.gui.tr("No warnings."))
         elif motor_status == 0xE0:
-            self.gui.warning_text.setText(self.tr("Caution locked wheels."))
+            self.gui.warning_text.setText(self.gui.tr("Caution locked wheels."))
