@@ -66,7 +66,7 @@ class InspectionContainer(containers.DeclarativeContainer):
     )
     comm_arm_controller = providers.Singleton(
         CommArmControllerAdapter,
-        arm=arm_services,
+        arm_service=arm_services,
         logger=logger,
     )
     panel_update_services = providers.Singleton(

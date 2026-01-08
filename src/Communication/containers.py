@@ -18,6 +18,7 @@ from Communication.adapters.external_services.mock_can_camera_controller_adapter
 from Communication.adapters.external_services.mock_can_telemetry_controller_adapter import (
     MockCanTelemetryControllerAdapter,
 )
+from Communication.adapters.external_services.mock_arm_controller_adapter import MockArmControllerAdapter
 from Communication.adapters.external_services.mock_can_wheels_controller_adapter import (
     MockCanWheelsControllerAdapter,
 )
@@ -28,7 +29,6 @@ from Communication.application.services.camera_services import CameraServices
 from Communication.application.services.movement_service import MovementService
 from Communication.application.services.telemetry_services import TelemetryServices
 from Communication.application.services.arm_services import ArmServices
-
 
 def _register_observer(service, observer):
     service.register_observer(observer)
@@ -108,6 +108,11 @@ class CommunicationMockContainer(containers.DeclarativeContainer):
         MockCanCameraControllerAdapter,
         logger=logger,
     )
+    
+    arm_controller = providers.Singleton(
+        MockArmControllerAdapter
+    )
+
     telemetry_controller = providers.Singleton(
         MockCanTelemetryControllerAdapter,
         logger=logger,
@@ -120,6 +125,11 @@ class CommunicationMockContainer(containers.DeclarativeContainer):
     camera_services = providers.Singleton(
         CameraServices,
         camera_controller=camera_controller,
+    )
+
+    arm_services = providers.Singleton(
+        ArmServices,
+        arm_controller=arm_controller,
     )
 
     telemetry_services = providers.Singleton(

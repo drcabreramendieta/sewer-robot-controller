@@ -232,7 +232,7 @@ class MainWindow(QMainWindow):
         self.btn_arm_up.setVisible(False)
 
         # Insertarlo debajo del bloque de cámara
-        controls_layout.addWidget(self.arm_group)
+        #controls_layout.addWidget(self.arm_group)
 
 
 
@@ -463,7 +463,7 @@ class MainWindow(QMainWindow):
         self.expansionModeCheckbox.setText(self.tr("Expansion Mode"))
         self.btn_zoom_in.setText(self.tr("Zoom In"))
         self.btn_zoom_out.setText(self.tr("Zoom Out"))
-        self.arm_group.setTitle(self.tr("Arm Controls"))
+        self.label_arm_controls.setText(self.tr("Arm Controls"))
         self.btn_arm_up.setText(self.tr("Up"))
         self.btn_arm_down.setText(self.tr("Down"))
 

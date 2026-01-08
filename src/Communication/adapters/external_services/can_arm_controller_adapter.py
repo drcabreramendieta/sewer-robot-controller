@@ -23,6 +23,10 @@ class CanArmControllerAdapter(ArmControllerPort):
         self.bus = bus
         self.logger = logger
 
+    def initialize_arm(self) -> None:
+        """No initialization required for this arm controller."""
+        return
+
     def update_arm_state(self, arm_state: ArmState) -> None:
         """
         Envía comando del brazo según arm_state.motion (UP/DOWN/STOP).

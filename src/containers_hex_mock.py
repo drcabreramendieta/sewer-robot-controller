@@ -76,6 +76,7 @@ class HexMockContainer(containers.DeclarativeContainer):
         logger=logger,
         movement_service=communication.movement_service,
         camera_services=communication.camera_services,
+        arm_services=communication.arm_services,
         feeder_services=panel_and_feeder.feeder_services,
         video_session_services=video.session_services,
     )
