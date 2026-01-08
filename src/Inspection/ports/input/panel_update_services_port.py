@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData
+from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData, ArmControlData
 
 class PanelUpdateServicesPort(ABC):
     @abstractmethod
@@ -15,5 +15,10 @@ class PanelUpdateServicesPort(ABC):
         pass
 
     @abstractmethod
+    def update_arm_control(self, arm_control_data: ArmControlData) -> None:
+        pass
+
+    @abstractmethod
     def update_camera_light(self, light:int):
         pass
+

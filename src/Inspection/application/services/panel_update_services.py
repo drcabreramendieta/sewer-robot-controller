@@ -1,12 +1,13 @@
 from Inspection.ports.input import PanelUpdateServicesPort
-from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData
-from Inspection.ports.ouput import MovementControllerPort, CameraControllerPort
+from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData, ArmControlData
+from Inspection.ports.ouput import MovementControllerPort, CameraControllerPort, ArmControllerPort
 
 class PanelUpdateServices(PanelUpdateServicesPort):
-    def __init__(self, movement_controller:MovementControllerPort, camera_controller:CameraControllerPort):
+    def __init__(self, movement_controller:MovementControllerPort, camera_controller:CameraControllerPort, arm_controller: ArmControllerPort):
         super().__init__()
         self.movement_controller = movement_controller
         self.camera_controller = camera_controller
+        self.arm_controller = arm_controller
 
     def update_robot_control(self, robot_control_data:RobotControlData) -> None:
         if (robot_control_data.direction == "F"):
@@ -55,8 +56,8 @@ class PanelUpdateServices(PanelUpdateServicesPort):
             self.camera_controller.tilt_stop()
             self.camera_controller.pan_stop()
             self.camera_controller.focus_stop()
-        
-        
+
+
         if (int(camera_control_data.light) >= 90):
             camera_control_data.light = "100"
         elif (int(camera_control_data.light) <= 10):
@@ -65,6 +66,18 @@ class PanelUpdateServices(PanelUpdateServicesPort):
         # TODO: Update slider with new light value from panel self.gui.slider_light.setValue(int(camera_control_data.light))
 
         print('Camera data UI Controller:', camera_control_data)
+
+    def update_arm_control(self, arm_control_data: ArmControlData) -> None:
+        if arm_control_data.movement == "UP":
+            self.arm_controller.arm_up()
+        elif arm_control_data.movement == "DOWN":
+            self.arm_controller.arm_down()
+        elif arm_control_data.movement == "STOP":
+            self.arm_controller.arm_stop()
+
+        print("Arm data UI Controller:", arm_control_data)
+
+
 
     def update_camera_light(self, light:int):
         self.camera_controller.change_light(value=light)
