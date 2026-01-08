@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from Communication.domain.entities.arm_entities import ArmState
+from Communication.domain.entities.arm_entities import ArmMotion
 
 
 class ArmServicePort(ABC):
