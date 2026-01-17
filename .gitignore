@@ -6,3 +6,4 @@ docs
 configs/*
 !configs/config_mock.yaml
 mock_sessions/
+.venv/
