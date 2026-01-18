@@ -17,14 +17,6 @@ from Communication.domain.entities.camera_entities import (
 )
 
 class CanExpansionCameraControllerAdapter(CameraControllerPort):
-    """
-    Adapter para la camara nueva (Expansion Mode) basada en protocolo RS485 (MH70).
-
-    NOTA:
-    - El protocolo MH70 (PDF) define tramas de 7 bytes: FF 01 ... checksum.
-    - Falta definir como se encapsula esta trama RS485 dentro del bus CAN de su sistema.
-    """
-
     # RS485 (MH70) constants (segun PDF: address = 0x01)
     _HDR = 0xFF
     _ADDR = 0x01
@@ -53,24 +45,13 @@ class CanExpansionCameraControllerAdapter(CameraControllerPort):
         self.logger = logger
 
     def initialize_camera(self) -> bool:
-        """
-        Si su camara nueva requiere un INIT especifico, se define aqui.
-        Por ahora, no se inventa un INIT: puede ser no requerido a nivel RS485.
-        """
         self.logger.info("Expansion camera initialize_camera(): no-op (pendiente de confirmar INIT real)")
         return True
 
     def update_camera_state(self, module: CameraState) -> None:
-        """
-        Construye y envia un comando segun prioridad:
-        - STOP (si todo esta en STOP)
-        - Zoom / Focus / Pan / Tilt (segun estados)
-        Nota: segun el PDF, cualquier operacion debe ser seguida por STOP.
-        """
-        # 1) Determinar comando principal
         frame = None
 
-        # Zoom tiene prioridad (por ser nuevo en expansion camera)
+        # Zoom
         if hasattr(module, "zoom") and module.zoom in (ZoomState.IN, ZoomState.OUT):
             if module.zoom == ZoomState.IN:
                 frame = self._build_zoom_plus(module)
@@ -98,15 +79,12 @@ class CanExpansionCameraControllerAdapter(CameraControllerPort):
             else:
                 frame = self._build_tilt_down(module)
 
-        # Si no hay movimiento -> STOP
+        # STOP
         else:
             frame = self._STOP_FRAME
 
-        # 2) Enviar comando
         self._send_rs485_frame_over_can(frame)
 
-        # 3) Segun el PDF: toda operacion debe ser seguida por STOP
-        # Para STOP ya no se repite.
         if frame != self._STOP_FRAME:
             self._send_rs485_frame_over_can(self._STOP_FRAME)
 
@@ -172,26 +150,24 @@ class CanExpansionCameraControllerAdapter(CameraControllerPort):
     # Transport (TODO)
     # -------------------------
 
-    def _send_rs485_frame_over_can(self, frame: List[int]) -> None:
-        """
-        TODO (no se inventa):
-        Definir como se envia una trama RS485 (7 bytes) usando el bus CAN de su sistema.
+def _send_rs485_frame_over_can(self, frame: List[int]) -> None:
+    if len(frame) != 7:
+        raise ValueError(f"MH70 frame must be 7 bytes, got {len(frame)}: {frame}")
 
-        Necesito que usted confirme una de estas dos cosas:
-        - Existe un "bridge" CAN->RS485 y cual es el arbitration_id + formato de payload.
-        - O bien, que la camara nueva NO se controla via RS485 directo, sino via comandos compactos (tipo 4 bytes)
-          como la camara antigua.
-        """
-        self.logger.info(f"Expansion camera RS485 frame ready (len={len(frame)}): {frame}")
+    can_id = 0x0005  # Expansion camera CAN ID
 
-        # Placeholder seguro: no enviar nada hasta confirmar encapsulado.
-        # raise NotImplementedError("Defina encapsulado CAN->RS485 para enviar la trama RS485.")
-        try:
-            # Ejemplo SOLO de estructura (NO funcional sin especificacion):
-            # message = can.Message(arbitration_id=0x????, data=frame[:8], is_extended_id=False)
-            # self.bus.send(message)
-            pass
-        except can.CanError as e:
-            self.logger.error(f"CAN Error (expansion camera): {e}")
-        except OSError as e:
-            self.logger.error(f"OSError (expansion camera): {e}")
+    payload = frame + [0x00]  # padding a 8 bytes
+    msg = can.Message(
+        arbitration_id=can_id,
+        data=bytearray(payload),
+        is_extended_id=False
+    )
+
+    try:
+        self.bus.send(msg)
+        self.logger.info(f"Sent MH70 over CAN (id=0x{can_id:04X}, dlc=8): {payload}")
+    except can.CanError as e:
+        self.logger.error(f"CAN Error (expansion camera): {e}")
+    except OSError as e:
+        self.logger.error(f"OSError (expansion camera): {e}")
+
