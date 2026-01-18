@@ -3,6 +3,9 @@ from dependency_injector import containers, providers
 from Communication.adapters.external_services.can_camera_controller_adapter import (
     CanCameraControllerAdapter,
 )
+from Communication.adapters.external_services.can_expansion_camera_controller_adapter import (
+    CanExpansionCameraControllerAdapter,
+)
 from Communication.adapters.external_services.can_arm_controller_adapter import (
     CanArmControllerAdapter,
 )
@@ -46,7 +49,8 @@ class CommunicationContainer(containers.DeclarativeContainer):
         logger=logger,
     )
     camera_controller = providers.Singleton(
-        CanCameraControllerAdapter,
+        #CanCameraControllerAdapter,
+        CanExpansionCameraControllerAdapter,
         bus=can_bus,
         logger=logger,
     )
