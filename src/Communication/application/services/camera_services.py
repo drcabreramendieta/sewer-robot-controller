@@ -20,18 +20,30 @@ class CameraServices(CameraServicePort):
         self.camera.light = light_state
         self.camera_controller.update_camera_state(self.camera)
 
-    def move_tilt(self, tilt_state:TiltState) -> None:
+    def move_tilt(self, tilt_state: TiltState) -> None:
         self.camera.tilt = tilt_state
+        self.camera.pan = PanState.STOP
+        self.camera.focus = FocusState.STOP
+        self.camera.zoom = ZoomState.STOP
         self.camera_controller.update_camera_state(self.camera)
 
-    def move_pan(self, pan_state:PanState) -> None:
+    def move_pan(self, pan_state: PanState) -> None:
         self.camera.pan = pan_state
+        self.camera.tilt = TiltState.STOP
+        self.camera.focus = FocusState.STOP
+        self.camera.zoom = ZoomState.STOP
         self.camera_controller.update_camera_state(self.camera)
 
-    def change_focus(self, focus_state:FocusState) -> None:
+    def change_focus(self, focus_state: FocusState) -> None:
         self.camera.focus = focus_state
+        self.camera.tilt = TiltState.STOP
+        self.camera.pan = PanState.STOP
+        self.camera.zoom = ZoomState.STOP
         self.camera_controller.update_camera_state(self.camera)
 
-    def change_zoom(self, zoom_state:ZoomState) -> None:
+    def change_zoom(self, zoom_state: ZoomState) -> None:
         self.camera.zoom = zoom_state
+        self.camera.tilt = TiltState.STOP
+        self.camera.pan = PanState.STOP
+        self.camera.focus = FocusState.STOP
         self.camera_controller.update_camera_state(self.camera)

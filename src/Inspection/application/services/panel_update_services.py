@@ -52,11 +52,16 @@ class PanelUpdateServices(PanelUpdateServicesPort):
             self.camera_controller.focus_in()
         elif (camera_control_data.movement == "FO"):
             self.camera_controller.focus_out()
+        elif (camera_control_data.movement == "ZI"):
+            self.camera_controller.zoom_in()
+        elif (camera_control_data.movement == "ZO"):
+            self.camera_controller.zoom_out()
         elif (camera_control_data.movement == "STOP"): 
             self.camera_controller.tilt_stop()
             self.camera_controller.pan_stop()
             self.camera_controller.focus_stop()
-
+            self.camera_controller.zoom_stop()
+        
 
         if (int(camera_control_data.light) >= 90):
             camera_control_data.light = "100"

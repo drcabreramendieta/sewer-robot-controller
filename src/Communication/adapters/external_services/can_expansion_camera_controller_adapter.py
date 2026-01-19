@@ -17,6 +17,13 @@ from Communication.domain.entities.camera_entities import (
 )
 
 class CanExpansionCameraControllerAdapter(CameraControllerPort):
+    #Light
+    _FORCE_EXTREME_STEPS = 30   
+    _LED_PLUS_FRAME  = [0xFF, 0x01, 0x02, 0x00, 0x00, 0x3F, 0x42]
+    _LED_MINUS_FRAME = [0xFF, 0x01, 0x04, 0x00, 0x00, 0x3F, 0x44]
+
+    #speed
+    _SPD = 0x82
     # RS485 (MH70) constants (segun PDF: address = 0x01)
     _HDR = 0xFF
     _ADDR = 0x01
@@ -43,50 +50,102 @@ class CanExpansionCameraControllerAdapter(CameraControllerPort):
     def __init__(self, bus: can.BusABC, logger: Logger) -> None:
         self.bus = bus
         self.logger = logger
+        self._last_light_level = 0
 
     def initialize_camera(self) -> bool:
         self.logger.info("Expansion camera initialize_camera(): no-op (pendiente de confirmar INIT real)")
         return True
 
+    def _light_value_to_level(self, v: int) -> int:
+        v = max(0, min(100, int(v)))
+        if 0 <= v < 11:
+            return 0
+        elif 11 <= v < 22:
+            return 1
+        elif 22 <= v < 33:
+            return 2
+        elif 33 <= v < 44:
+            return 3
+        elif 44 <= v < 55:
+            return 4
+        elif 55 <= v < 66:
+            return 5
+        elif 66 <= v < 77:
+            return 6
+        elif 77 <= v < 88:
+            return 7
+        else:  # 88..100
+            return 8
+
+    def _apply_led_level(self, new_value: int) -> None:
+        v = max(0, min(100, int(new_value)))
+
+        # Forzar extremos (equivalente a "apagado total" y "maximo brillo")
+        if v <= 10:
+            for _ in range(self._FORCE_EXTREME_STEPS):
+                self._send_rs485_frame_over_can(self._LED_MINUS_FRAME)
+            self._last_light_level = 0
+            return
+
+        if v >= 90:
+            for _ in range(self._FORCE_EXTREME_STEPS):
+                self._send_rs485_frame_over_can(self._LED_PLUS_FRAME)
+            self._last_light_level = 8
+            return
+
+        # Control por niveles (intermedio)
+        new_level = self._light_value_to_level(v)
+        old_level = self._last_light_level
+
+        if new_level == old_level:
+            return
+
+        steps = abs(new_level - old_level)
+        frame = self._LED_PLUS_FRAME if new_level > old_level else self._LED_MINUS_FRAME
+
+        for _ in range(steps):
+            self._send_rs485_frame_over_can(frame)
+
+        self._last_light_level = new_level
+
+
+
     def update_camera_state(self, module: CameraState) -> None:
         frame = None
+        # If change light_Value
+        if (
+            module.tilt == TiltState.STOP
+            and module.pan == PanState.STOP
+            and module.focus == FocusState.STOP
+            and module.zoom == ZoomState.STOP
+        ):
+            self._apply_led_level(module.light.value)
+        #Stop
+        if (
+            module.tilt == TiltState.STOP
+            and module.pan == PanState.STOP
+            and module.focus == FocusState.STOP
+            and getattr(module, "zoom", ZoomState.STOP) == ZoomState.STOP
+        ):
+            frame = self._STOP_FRAME
 
-        # Zoom
-        if hasattr(module, "zoom") and module.zoom in (ZoomState.IN, ZoomState.OUT):
-            if module.zoom == ZoomState.IN:
-                frame = self._build_zoom_plus(module)
-            else:
-                frame = self._build_zoom_minus(module)
+        elif getattr(module, "zoom", ZoomState.STOP) in (ZoomState.IN, ZoomState.OUT):
+            frame = self._build_zoom_plus() if module.zoom == ZoomState.IN else self._build_zoom_minus()
 
-        # Focus
         elif module.focus in (FocusState.IN, FocusState.OUT):
-            if module.focus == FocusState.IN:
-                frame = self._build_focus_plus(module)
-            else:
-                frame = self._build_focus_minus(module)
+            frame = self._build_focus_plus() if module.focus == FocusState.IN else self._build_focus_minus()
 
-        # Pan
         elif module.pan in (PanState.LEFT, PanState.RIGHT):
-            if module.pan == PanState.RIGHT:
-                frame = self._build_pan_cw(module)
-            else:
-                frame = self._build_pan_ccw(module)
+            frame = self._build_pan_cw() if module.pan == PanState.RIGHT else self._build_pan_ccw()
 
-        # Tilt
         elif module.tilt in (TiltState.UP, TiltState.DOWN):
-            if module.tilt == TiltState.UP:
-                frame = self._build_tilt_up(module)
-            else:
-                frame = self._build_tilt_down(module)
+            frame = self._build_tilt_up() if module.tilt == TiltState.UP else self._build_tilt_down()
 
-        # STOP
         else:
             frame = self._STOP_FRAME
 
         self._send_rs485_frame_over_can(frame)
 
-        if frame != self._STOP_FRAME:
-            self._send_rs485_frame_over_can(self._STOP_FRAME)
 
     # -------------------------
     # Frame builders
@@ -106,68 +165,54 @@ class CanExpansionCameraControllerAdapter(CameraControllerPort):
         chk = self._checksum_pelco_d(base)
         return base + [chk]
 
-    def _build_tilt_up(self, module: CameraState) -> List[int]:
-        speed = self._brightness_to_0x3f(module.light.value)  # reutilizamos slider como “speed” si no hay otro
-        cmd1, cmd2 = self._CMD_TILT_UP
-        return self._build_frame(cmd1, cmd2, 0x00, speed)
+    def _build_tilt_up(self) -> List[int]:
+        return self._build_frame(0x00, 0x08, 0x00, self._SPD)
 
-    def _build_tilt_down(self, module: CameraState) -> List[int]:
-        speed = self._brightness_to_0x3f(module.light.value)
-        cmd1, cmd2 = self._CMD_TILT_DOWN
-        return self._build_frame(cmd1, cmd2, 0x00, speed)
+    def _build_tilt_down(self) -> List[int]:
+        return self._build_frame(0x00, 0x10, 0x00, self._SPD)
 
-    def _build_pan_cw(self, module: CameraState) -> List[int]:
-        speed = self._brightness_to_0x3f(module.light.value)
-        cmd1, cmd2 = self._CMD_PAN_CW
-        return self._build_frame(cmd1, cmd2, speed, 0x00)
+    def _build_pan_cw(self) -> List[int]:
+        return self._build_frame(0x00, 0x04, self._SPD, 0x00)
 
-    def _build_pan_ccw(self, module: CameraState) -> List[int]:
-        speed = self._brightness_to_0x3f(module.light.value)
-        cmd1, cmd2 = self._CMD_PAN_CCW
-        return self._build_frame(cmd1, cmd2, speed, 0x00)
+    def _build_pan_ccw(self) -> List[int]:
+        return self._build_frame(0x00, 0x02, self._SPD, 0x00)
 
-    def _build_focus_plus(self, module: CameraState) -> List[int]:
-        speed = self._brightness_to_0x3f(module.light.value)
-        cmd1, cmd2 = self._CMD_FOCUS_PLUS
-        return self._build_frame(cmd1, cmd2, 0x00, speed)
+    def _build_focus_plus(self) -> List[int]:
+        return self._build_frame(0x01, 0x00, 0x00, self._SPD)
 
-    def _build_focus_minus(self, module: CameraState) -> List[int]:
-        speed = self._brightness_to_0x3f(module.light.value)
-        cmd1, cmd2 = self._CMD_FOCUS_MINUS
-        return self._build_frame(cmd1, cmd2, 0x00, speed)
+    def _build_focus_minus(self) -> List[int]:
+        return self._build_frame(0x00, 0x80, 0x00, self._SPD)
 
-    def _build_zoom_plus(self, module: CameraState) -> List[int]:
-        speed = self._brightness_to_0x3f(module.light.value)
-        cmd1, cmd2 = self._CMD_ZOOM_PLUS
-        return self._build_frame(cmd1, cmd2, 0x00, speed)
+    def _build_zoom_plus(self) -> List[int]:
+        return self._build_frame(0x00, 0x20, 0x00, self._SPD)
 
-    def _build_zoom_minus(self, module: CameraState) -> List[int]:
-        speed = self._brightness_to_0x3f(module.light.value)
-        cmd1, cmd2 = self._CMD_ZOOM_MINUS
-        return self._build_frame(cmd1, cmd2, 0x00, speed)
+    def _build_zoom_minus(self) -> List[int]:
+        return self._build_frame(0x00, 0x40, 0x00, self._SPD)
+
+
 
     # -------------------------
     # Transport (TODO)
     # -------------------------
 
-def _send_rs485_frame_over_can(self, frame: List[int]) -> None:
-    if len(frame) != 7:
-        raise ValueError(f"MH70 frame must be 7 bytes, got {len(frame)}: {frame}")
+    def _send_rs485_frame_over_can(self, frame: List[int]) -> None:
+        if len(frame) != 7:
+            raise ValueError(f"MH70 frame must be 7 bytes, got {len(frame)}: {frame}")
 
-    can_id = 0x0005  # Expansion camera CAN ID
+        can_id = 0x0005  # Expansion camera CAN ID
 
-    payload = frame + [0x00]  # padding a 8 bytes
-    msg = can.Message(
-        arbitration_id=can_id,
-        data=bytearray(payload),
-        is_extended_id=False
-    )
+        payload = frame + [0x00]  # padding a 8 bytes
+        msg = can.Message(
+            arbitration_id=can_id,
+            data=bytearray(payload),
+            is_extended_id=False
+        )
 
-    try:
-        self.bus.send(msg)
-        self.logger.info(f"Sent MH70 over CAN (id=0x{can_id:04X}, dlc=8): {payload}")
-    except can.CanError as e:
-        self.logger.error(f"CAN Error (expansion camera): {e}")
-    except OSError as e:
-        self.logger.error(f"OSError (expansion camera): {e}")
+        try:
+            self.bus.send(msg)
+            self.logger.info(f"Sent MH70 over CAN (id=0x{can_id:04X}, dlc=8): {payload}")
+        except can.CanError as e:
+            self.logger.error(f"CAN Error (expansion camera): {e}")
+        except OSError as e:
+            self.logger.error(f"OSError (expansion camera): {e}")
 

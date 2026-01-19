@@ -35,6 +35,16 @@ class CommCameraControllerAdapter(CameraControllerPort):
 
     def focus_stop(self) -> None:
         self.camera.change_focus(FocusState.STOP)
+    
+    def zoom_in(self) -> None:
+        self.camera.change_zoom(ZoomState.IN)
+
+    def zoom_out(self) -> None:
+        self.camera.change_zoom(ZoomState.OUT)
+
+    def zoom_stop(self) -> None:
+        self.camera.change_zoom(ZoomState.STOP)
+
 
     def change_light(self, value:int) -> None:
         self.camera.change_light_level(LightState(value=value))
