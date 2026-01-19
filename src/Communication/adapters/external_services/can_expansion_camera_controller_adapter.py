@@ -51,6 +51,7 @@ class CanExpansionCameraControllerAdapter(CameraControllerPort):
         self.bus = bus
         self.logger = logger
         self._last_light_level = 0
+        self._last_led_level: int | None = None
 
     def initialize_camera(self) -> bool:
         self.logger.info("Expansion camera initialize_camera(): no-op (pendiente de confirmar INIT real)")
@@ -80,53 +81,51 @@ class CanExpansionCameraControllerAdapter(CameraControllerPort):
     def _apply_led_level(self, new_value: int) -> None:
         v = max(0, min(100, int(new_value)))
 
-        # Forzar extremos (equivalente a "apagado total" y "maximo brillo")
+        # Evita recalcular/aplicar si el valor no cambió
+        if self._last_led_level == v:
+            return
+        self._last_led_level = v
+
+        # Nivel objetivo (0..8)
         if v <= 10:
-            for _ in range(self._FORCE_EXTREME_STEPS):
-                self._send_rs485_frame_over_can(self._LED_MINUS_FRAME)
-            self._last_light_level = 0
-            return
+            target_level = 0
+        elif v >= 90:
+            target_level = 8
+        else:
+            target_level = self._light_value_to_level(v)
 
-        if v >= 90:
-            for _ in range(self._FORCE_EXTREME_STEPS):
-                self._send_rs485_frame_over_can(self._LED_PLUS_FRAME)
-            self._last_light_level = 8
-            return
-
-        # Control por niveles (intermedio)
-        new_level = self._light_value_to_level(v)
         old_level = self._last_light_level
 
-        if new_level == old_level:
+        # Nada que hacer
+        if target_level == old_level:
             return
 
-        steps = abs(new_level - old_level)
-        frame = self._LED_PLUS_FRAME if new_level > old_level else self._LED_MINUS_FRAME
+        steps = abs(target_level - old_level)
+        frame = self._LED_PLUS_FRAME if target_level > old_level else self._LED_MINUS_FRAME
 
+        # Enviar solo los pasos necesarios (no un "FORCE" fijo)
         for _ in range(steps):
             self._send_rs485_frame_over_can(frame)
 
-        self._last_light_level = new_level
+        self._last_light_level = target_level
+
 
 
 
     def update_camera_state(self, module: CameraState) -> None:
         frame = None
-        # If change light_Value
-        if (
-            module.tilt == TiltState.STOP
-            and module.pan == PanState.STOP
-            and module.focus == FocusState.STOP
-            and module.zoom == ZoomState.STOP
-        ):
+        any_motion = (
+            module.tilt in (TiltState.UP, TiltState.DOWN)
+            or module.pan in (PanState.LEFT, PanState.RIGHT)
+            or module.focus in (FocusState.IN, FocusState.OUT)
+            or getattr(module, "zoom", ZoomState.STOP) in (ZoomState.IN, ZoomState.OUT)
+        )
+
+        if not any_motion:
             self._apply_led_level(module.light.value)
-        #Stop
-        if (
-            module.tilt == TiltState.STOP
-            and module.pan == PanState.STOP
-            and module.focus == FocusState.STOP
-            and getattr(module, "zoom", ZoomState.STOP) == ZoomState.STOP
-        ):
+
+        # 1) STOP tiene prioridad cuando NO hay movimiento activo
+        if not any_motion:
             frame = self._STOP_FRAME
 
         elif getattr(module, "zoom", ZoomState.STOP) in (ZoomState.IN, ZoomState.OUT):
@@ -144,6 +143,10 @@ class CanExpansionCameraControllerAdapter(CameraControllerPort):
         else:
             frame = self._STOP_FRAME
 
+        print(
+            f"[CAM] tilt={module.tilt} pan={module.pan} focus={module.focus} zoom={getattr(module,'zoom',None)} "
+            f"light={module.light.value} any_motion={any_motion} frame={'STOP' if frame==self._STOP_FRAME else 'MOVE'}"
+        )
         self._send_rs485_frame_over_can(frame)
 
 
