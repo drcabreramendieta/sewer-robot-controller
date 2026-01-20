@@ -104,6 +104,7 @@ class MainWindow(QMainWindow):
         video_telemetry_layout.addLayout(session_layout)
                       
         controls_layout = QVBoxLayout()
+
         
         self.label_robot_controls = QLabel(self.tr("Robot Controls"))
         self.label_robot_controls.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -210,6 +211,17 @@ class MainWindow(QMainWindow):
         self.btn_zoom_out.setVisible(False)
         self.btn_zoom_in.setVisible(False)
 
+        # Layout para controles de iluminación
+        light_controls_layout = QHBoxLayout()
+        self.label_light_controls = QLabel(self.tr("Illumination Control"))
+        self.label_light_controls.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.slider_light = QSlider(Qt.Orientation.Horizontal)
+        self.slider_light.setMinimum(0)
+        self.slider_light.setMaximum(100)
+        light_controls_layout.addWidget(self.label_light_controls)
+        light_controls_layout.addWidget(self.slider_light)
+        controls_layout.addLayout(light_controls_layout)
+
         # --- NUEVO: Layout para controles de brazo (solo Expansion Mode)
         self.label_arm_controls = QLabel(self.tr("Arm Controls"))
         self.label_arm_controls.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -234,20 +246,6 @@ class MainWindow(QMainWindow):
         # Insertarlo debajo del bloque de cámara
         #controls_layout.addWidget(self.arm_group)
 
-
-
-        # Layout para controles de iluminación
-        light_controls_layout = QHBoxLayout()
-        self.label_light_controls = QLabel(self.tr("Illumination Control"))
-        self.label_light_controls.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.slider_light = QSlider(Qt.Orientation.Horizontal)
-        self.slider_light.setMinimum(0)
-        self.slider_light.setMaximum(100)
-        light_controls_layout.addWidget(self.label_light_controls)
-        light_controls_layout.addWidget(self.slider_light)
-        controls_layout.addLayout(light_controls_layout)
-
-       
 
         # Añadir el QComboBox del idioma al layout de controles principal
         encoder_controls_layout = QHBoxLayout()
