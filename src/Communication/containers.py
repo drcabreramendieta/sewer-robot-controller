@@ -3,6 +3,12 @@ from dependency_injector import containers, providers
 from Communication.adapters.external_services.can_camera_controller_adapter import (
     CanCameraControllerAdapter,
 )
+from Communication.adapters.external_services.can_expansion_camera_controller_adapter import (
+    CanExpansionCameraControllerAdapter,
+)
+from Communication.adapters.external_services.can_arm_controller_adapter import (
+    CanArmControllerAdapter,
+)
 from Communication.adapters.external_services.can_telemetry_controller_adapter import (
     CanTelemetryControllerAdapter,
 )
@@ -15,6 +21,7 @@ from Communication.adapters.external_services.mock_can_camera_controller_adapter
 from Communication.adapters.external_services.mock_can_telemetry_controller_adapter import (
     MockCanTelemetryControllerAdapter,
 )
+from Communication.adapters.external_services.mock_arm_controller_adapter import MockArmControllerAdapter
 from Communication.adapters.external_services.mock_can_wheels_controller_adapter import (
     MockCanWheelsControllerAdapter,
 )
@@ -22,9 +29,10 @@ from Communication.adapters.external_services.pyqt_telemetry_observer_adapter im
     PyqtTelemetryObserverAdapter,
 )
 from Communication.application.services.camera_services import CameraServices
+from Communication.application.services.camera_selector_signal import CameraSelectorSignal
 from Communication.application.services.movement_service import MovementService
 from Communication.application.services.telemetry_services import TelemetryServices
-
+from Communication.application.services.arm_services import ArmServices
 
 def _register_observer(service, observer):
     service.register_observer(observer)
@@ -43,9 +51,35 @@ class CommunicationContainer(containers.DeclarativeContainer):
     )
     camera_controller = providers.Singleton(
         CanCameraControllerAdapter,
+        #CanExpansionCameraControllerAdapter,
         bus=can_bus,
         logger=logger,
     )
+    expansion_camera_controller = providers.Singleton(
+        CanExpansionCameraControllerAdapter,
+        bus=can_bus,
+        logger=logger,
+    )
+
+    selector_signal = providers.Singleton(
+        CameraSelectorSignal,
+    )
+    selector_key = providers.Callable(
+        lambda signal: signal.selector_key(),
+        signal=selector_signal,
+    )
+    camera_controller_selector = providers.Selector(
+        selector_key,
+        a=camera_controller,
+        b=expansion_camera_controller,
+    )
+
+    arm_controller = providers.Singleton(
+        CanArmControllerAdapter,
+        bus=can_bus,
+        logger=logger,
+    )
+
     telemetry_controller = providers.Singleton(
         CanTelemetryControllerAdapter,
         bus=can_bus,
@@ -58,7 +92,12 @@ class CommunicationContainer(containers.DeclarativeContainer):
     )
     camera_services = providers.Singleton(
         CameraServices,
-        camera_controller=camera_controller,
+        camera_controller=providers.Delegate(camera_controller_selector),
+    )
+
+    arm_services = providers.Singleton(
+        ArmServices,
+        arm_controller=arm_controller,
     )
 
     telemetry_services = providers.Singleton(
@@ -92,6 +131,27 @@ class CommunicationMockContainer(containers.DeclarativeContainer):
         MockCanCameraControllerAdapter,
         logger=logger,
     )
+    expansion_camera_controller = providers.Singleton(
+        MockCanCameraControllerAdapter,
+        logger=logger,
+    )
+    selector_signal = providers.Singleton(
+        CameraSelectorSignal,
+    )
+    selector_key = providers.Callable(
+        lambda signal: signal.selector_key(),
+        signal=selector_signal,
+    )
+    camera_controller_selector = providers.Selector(
+        selector_key,
+        a=camera_controller,
+        b=expansion_camera_controller,
+    )
+    
+    arm_controller = providers.Singleton(
+        MockArmControllerAdapter
+    )
+
     telemetry_controller = providers.Singleton(
         MockCanTelemetryControllerAdapter,
         logger=logger,
@@ -103,7 +163,12 @@ class CommunicationMockContainer(containers.DeclarativeContainer):
     )
     camera_services = providers.Singleton(
         CameraServices,
-        camera_controller=camera_controller,
+        camera_controller=providers.Delegate(camera_controller_selector),
+    )
+
+    arm_services = providers.Singleton(
+        ArmServices,
+        arm_controller=arm_controller,
     )
 
     telemetry_services = providers.Singleton(

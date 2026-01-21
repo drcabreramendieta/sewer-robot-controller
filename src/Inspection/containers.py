@@ -3,6 +3,9 @@ from dependency_injector import containers, providers
 from Inspection.adapters.external_services.comm_camera_controller_adapter import (
     CommCameraControllerAdapter,
 )
+from Inspection.adapters.external_services.comm_arm_controller_adapter import (
+    CommArmControllerAdapter,
+)
 from Inspection.adapters.external_services.comm_movement_controller_adapter import (
     CommMovementControllerAdapter,
 )
@@ -47,8 +50,10 @@ class InspectionContainer(containers.DeclarativeContainer):
     logger = providers.Dependency()
     movement_service = providers.Dependency()
     camera_services = providers.Dependency()
+    arm_services = providers.Dependency()
     feeder_services = providers.Dependency()
     video_session_services = providers.Dependency()
+    selector_signal = providers.Dependency()
 
     comm_movement_controller = providers.Singleton(
         CommMovementControllerAdapter,
@@ -60,10 +65,17 @@ class InspectionContainer(containers.DeclarativeContainer):
         camera=camera_services,
         logger=logger,
     )
+    comm_arm_controller = providers.Singleton(
+        CommArmControllerAdapter,
+        arm_service=arm_services,
+        logger=logger,
+    )
     panel_update_services = providers.Singleton(
         PanelUpdateServices,
         movement_controller=comm_movement_controller,
         camera_controller=comm_camera_controller,
+        arm_controller=comm_arm_controller,
+        selector_signal=selector_signal,
     )
 
     feeder_controller = providers.Singleton(

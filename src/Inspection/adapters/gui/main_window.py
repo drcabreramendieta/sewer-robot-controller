@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QGridLayout, QPushButton, 
 from PyQt6.QtGui import QIcon
 from Inspection.adapters.gui.session_name_dialog import SessionNameDialog
 from Inspection.adapters.gui.sessions_list_dialog import SessionsListDialog
-from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData
+from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData, ArmControlData
 
 from Inspection.ports.input import PanelUpdateServicesPort, SessionServicesPort, FeederUpdateServicePort
 class MainWindow(QMainWindow):
@@ -35,6 +35,7 @@ class MainWindow(QMainWindow):
         
     
     def init_ui(self):
+        self._expansion_widgets = []
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         main_layout = QHBoxLayout()
         
@@ -63,6 +64,9 @@ class MainWindow(QMainWindow):
         self.telemetryCheckbox.stateChanged.connect(self.toggleTelemetryVisibility)
         settings_layout.addWidget(self.telemetryCheckbox, alignment=Qt.AlignmentFlag.AlignHCenter)
 
+        self.expansionModeCheckbox = QCheckBox(self.tr("Expansion Mode"))
+        self.expansionModeCheckbox.setChecked(False)
+        settings_layout.addWidget(self.expansionModeCheckbox, alignment=Qt.AlignmentFlag.AlignHCenter)
         
         warning_layout = QHBoxLayout()
         self.warning_label = QLabel(self.tr("Warning"))
@@ -100,6 +104,7 @@ class MainWindow(QMainWindow):
         video_telemetry_layout.addLayout(session_layout)
                       
         controls_layout = QVBoxLayout()
+
         
         self.label_robot_controls = QLabel(self.tr("Robot Controls"))
         self.label_robot_controls.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -183,11 +188,28 @@ class MainWindow(QMainWindow):
         self.btn_focus_in = QPushButton(self.tr("Focus In"))
         camera_layout.addWidget(self.btn_focus_out, 3, 0)
         camera_layout.addWidget(self.btn_focus_in, 3, 1)
-        controls_layout.addLayout(camera_layout)
+        
         self.btn_focus_out.setIcon(QIcon("src/Inspection/Icons/Focus Out.png"))
         self.btn_focus_out.setIconSize(QSize(45,25))
         self.btn_focus_in.setIcon(QIcon("src/Inspection/Icons/Focus In.png"))
         self.btn_focus_in.setIconSize(QSize(45,25))
+
+        # --- NUEVO: Zoom buttons (solo disponibles en Expansion Mode)
+        self.btn_zoom_out = QPushButton(self.tr("Zoom Out"))
+        self.btn_zoom_in = QPushButton(self.tr("Zoom In"))
+        camera_layout.addWidget(self.btn_zoom_out, 4, 0)
+        camera_layout.addWidget(self.btn_zoom_in, 4, 1)
+        controls_layout.addLayout(camera_layout)
+        #self.btn_zoom_out.setIcon(QIcon("src/Inspection/Icons/Zoom Out.png"))
+        #self.btn_zoom_out.setIconSize(QSize(45,25))
+        #self.btn_zoom_in.setIcon(QIcon("src/Inspection/Icons/Zoom In.png"))
+        #self.btn_zoom_in.setIconSize(QSize(45,25))
+
+        # Registrar como widgets "expansión" y ocultarlos por defecto
+        self._expansion_widgets.append(self.btn_zoom_out)
+        self._expansion_widgets.append(self.btn_zoom_in)
+        self.btn_zoom_out.setVisible(False)
+        self.btn_zoom_in.setVisible(False)
 
         # Layout para controles de iluminación
         light_controls_layout = QHBoxLayout()
@@ -200,7 +222,30 @@ class MainWindow(QMainWindow):
         light_controls_layout.addWidget(self.slider_light)
         controls_layout.addLayout(light_controls_layout)
 
-       
+        # --- NUEVO: Layout para controles de brazo (solo Expansion Mode)
+        self.label_arm_controls = QLabel(self.tr("Arm Controls"))
+        self.label_arm_controls.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        controls_layout.addWidget(self.label_arm_controls)
+
+        arm_layout = QGridLayout()
+        self.btn_arm_down = QPushButton(self.tr("Down"))
+        self.btn_arm_up = QPushButton(self.tr("Up"))
+        arm_layout.addWidget(self.btn_arm_down, 0, 0)
+        arm_layout.addWidget(self.btn_arm_up, 0, 1)
+        controls_layout.addLayout(arm_layout)
+        # Registrar el bloque completo como "expansión" (se oculta/activa con el checkbox)
+        self._expansion_widgets.extend([
+            self.label_arm_controls,
+            self.btn_arm_down,
+            self.btn_arm_up
+        ])
+        self.label_arm_controls.setVisible(False)
+        self.btn_arm_down.setVisible(False)
+        self.btn_arm_up.setVisible(False)
+
+        # Insertarlo debajo del bloque de cámara
+        #controls_layout.addWidget(self.arm_group)
+
 
         # Añadir el QComboBox del idioma al layout de controles principal
         encoder_controls_layout = QHBoxLayout()
@@ -235,6 +280,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def setup_connections(self):
+        # Connect ExpasionMode checkbox
+        self.expansionModeCheckbox.stateChanged.connect(self.on_expansion_mode_changed)
+
         # Connect movement buttons
         self.btn_forward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='F')))
         self.btn_backward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='B')))
@@ -276,6 +324,18 @@ class MainWindow(QMainWindow):
         self.slider_light.valueChanged.connect(self.panel_services.update_camera_light)
         self.btn_init_camera.clicked.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='INIT',light=str(self.slider_light.value()))))
 
+        # Connect zoom buttons (Expansion Mode)
+        self.btn_zoom_in.pressed.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='ZI', light=str(self.slider_light.value()))))
+        self.btn_zoom_out.pressed.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='ZO', light=str(self.slider_light.value()))))
+        self.btn_zoom_in.released.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='STOP', light=str(self.slider_light.value()))))
+        self.btn_zoom_out.released.connect(lambda: self.panel_services.update_camera_control(CameraControlData(movement='STOP', light=str(self.slider_light.value()))))
+
+        # Connect arm buttons (Expansion Mode)
+        self.btn_arm_up.pressed.connect(lambda: self.panel_services.update_arm_control(ArmControlData(movement="UP")))
+        self.btn_arm_down.pressed.connect(lambda: self.panel_services.update_arm_control(ArmControlData(movement="DOWN")))
+        self.btn_arm_up.released.connect(lambda: self.panel_services.update_arm_control(ArmControlData(movement="STOP")))
+        self.btn_arm_down.released.connect(lambda: self.panel_services.update_arm_control(ArmControlData(movement="STOP")))
+
         # Connect translation
         self.languageComboBox.currentIndexChanged.connect(self.changeLanguage)
 
@@ -290,7 +350,16 @@ class MainWindow(QMainWindow):
         print("Enviar por serial")
         self.feeder_services.send_message("feeder RESET")
         
-
+    def on_expansion_mode_changed(self, state: int):
+        is_enabled = self.expansionModeCheckbox.isChecked()
+        #send to backend
+        self.panel_services.set_expansion_mode(is_enabled)
+        for w in self._expansion_widgets:
+            w.setVisible(is_enabled)
+        #STOP camera
+        self.panel_services.update_camera_control(
+            CameraControlData(movement='STOP', light=str(self.slider_light.value()))
+        )
 
     def toggleTelemetryVisibility(self, state):
         self.telemetry_label.setVisible(self.telemetryCheckbox.isChecked())
@@ -395,6 +464,12 @@ class MainWindow(QMainWindow):
         self.label_encoder_controls.setText(self.tr("Reel"))
         self.label_language_controls.setText(self.tr("Language"))
         self.startButton.setText(self.tr("Log In"))
+        self.expansionModeCheckbox.setText(self.tr("Expansion Mode"))
+        self.btn_zoom_in.setText(self.tr("Zoom In"))
+        self.btn_zoom_out.setText(self.tr("Zoom Out"))
+        self.label_arm_controls.setText(self.tr("Arm Controls"))
+        self.btn_arm_up.setText(self.tr("Up"))
+        self.btn_arm_down.setText(self.tr("Down"))
 
 
         # Actualizar etiquetas y controles específicos

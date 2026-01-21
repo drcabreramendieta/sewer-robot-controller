@@ -5,4 +5,5 @@ from .feeder_controller_port import FeederControllerPort
 from .telemetry_observer_port import TelemetryObserverPort
 from .video_observer_port import VideoObserverPort
 from .feeder_observer_port import FeederObserverPort
-__all__ = ['MovementControllerPort','CameraControllerPort', 'SessionControllerPort', 'FeederControllerPort', 'TelemetryObserverPort', 'VideoObserverPort', 'FeederObserverPort']
+from .arm_controller_port import ArmControllerPort
+__all__ = ['MovementControllerPort','CameraControllerPort', 'SessionControllerPort', 'FeederControllerPort', 'TelemetryObserverPort', 'VideoObserverPort', 'FeederObserverPort', 'ArmControllerPort']
