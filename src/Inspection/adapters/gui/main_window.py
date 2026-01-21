@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt, QSize, QTranslator, QFile
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QGridLayout, QPushButton, QWidget, QSlider, QLabel, QHBoxLayout, QCheckBox, QComboBox, QApplication, QTextEdit, QMessageBox
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QGridLayout, QPushButton, QWidget, QSlider, QLabel, QHBoxLayout, QCheckBox, QComboBox, QApplication, QTextEdit, QMessageBox, QLineEdit
 from PyQt6.QtGui import QIcon
 from Inspection.adapters.gui.session_name_dialog import SessionNameDialog
 from Inspection.adapters.gui.sessions_list_dialog import SessionsListDialog
@@ -67,20 +67,77 @@ class MainWindow(QMainWindow):
         self.expansionModeCheckbox = QCheckBox(self.tr("Expansion Mode"))
         self.expansionModeCheckbox.setChecked(False)
         settings_layout.addWidget(self.expansionModeCheckbox, alignment=Qt.AlignmentFlag.AlignHCenter)
-        
+
+        video_telemetry_layout.addLayout(settings_layout)
+
+        # --- Expansion Mode: Diagnostic/Session controls (visible only when Expansion Mode is enabled)
+        self.expansion_diagnostic_widget = QWidget(self)
+        expansion_diag_layout = QGridLayout()
+        self.expansion_diagnostic_widget.setLayout(expansion_diag_layout)
+
+        # Buttons
+        self.btn_exp_initialize = QPushButton(self.tr("Initialize"))
+        self.btn_exp_start_diagnostic = QPushButton(self.tr("Start Diagnostic Session"))
+        self.btn_exp_stop_diagnostic = QPushButton(self.tr("Stop Diagnostic"))
+        self.btn_exp_report = QPushButton(self.tr("Report"))
+
+        # Initial enable-state logic (requested)
+        self.btn_exp_initialize.setEnabled(True)
+        self.btn_exp_start_diagnostic.setEnabled(False)
+        self.btn_exp_stop_diagnostic.setEnabled(False)
+        self.btn_exp_report.setEnabled(False)
+
+        # Dropdowns
+        self.label_models = QLabel(self.tr("Models:"))
+        self.combo_models = QComboBox()
+        self.label_sessions = QLabel(self.tr("Sessions:"))
+        self.combo_sessions = QComboBox()
+
+        # Session ID input
+        self.label_session_id = QLabel(self.tr("Session ID:"))
+        self.txt_session_id = QLineEdit()
+
+        # Internal layout for "Models" and "Sessions" aligned in a single column (as in the mockup)
+        models_sessions_layout = QGridLayout()
+        models_sessions_layout.addWidget(self.label_models, 0, 0)
+        models_sessions_layout.addWidget(self.combo_models, 0, 1)
+        models_sessions_layout.addWidget(self.label_sessions, 1, 0)
+        models_sessions_layout.addWidget(self.combo_sessions, 1, 1)
+
+        # Internal layout for "Session ID"
+        session_id_layout = QHBoxLayout()
+        session_id_layout.addWidget(self.label_session_id)
+        session_id_layout.addWidget(self.txt_session_id)
+
+        # Place elements to resemble the provided image
+        expansion_diag_layout.addWidget(self.btn_exp_initialize, 0, 0)
+        expansion_diag_layout.addLayout(models_sessions_layout, 0, 1, 2, 1)  # span two rows
+        expansion_diag_layout.addWidget(self.btn_exp_start_diagnostic, 0, 2)
+        expansion_diag_layout.addLayout(session_id_layout, 1, 0)
+        expansion_diag_layout.addWidget(self.btn_exp_stop_diagnostic, 2, 1)
+        expansion_diag_layout.addWidget(self.btn_exp_report, 2, 2)
+
+        # Register as Expansion widgets (hidden by default; toggled by checkbox)
+        self._expansion_widgets.append(self.expansion_diagnostic_widget)
+        self.expansion_diagnostic_widget.setVisible(False)
+
+
+
+
         warning_layout = QHBoxLayout()
         self.warning_label = QLabel(self.tr("Warning"))
         self.warning_text = QTextEdit(self.tr(f"There are no warnings.")) 
         self.warning_text.setReadOnly(True)  
-        self.warning_text.setFixedHeight(25)  
+        self.warning_text.setFixedHeight(25) 
+        
+        video_telemetry_layout.addWidget(self.expansion_diagnostic_widget)
+        video_telemetry_layout.addLayout(warning_layout)
+        video_telemetry_layout.addLayout(record_layout)
+        
+         
         
         warning_layout.addWidget(self.warning_label)
         warning_layout.addWidget(self.warning_text)
-        
-        video_telemetry_layout.addLayout(settings_layout) 
-        video_telemetry_layout.addLayout(warning_layout)
-        video_telemetry_layout.addLayout(record_layout)
-
         self.telemetry_label = QLabel(self.image_label)
         self.telemetry_label.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 128);")
         self.telemetry_label.move(self.disply_width_telemetry - 210, self.display_height_telemetry - 100)
@@ -283,6 +340,11 @@ class MainWindow(QMainWindow):
         # Connect ExpasionMode checkbox
         self.expansionModeCheckbox.stateChanged.connect(self.on_expansion_mode_changed)
 
+        # Expansion Mode: enable/disable chain for diagnostic controls (UI-only logic for now)
+        self.btn_exp_initialize.clicked.connect(self._on_exp_initialize_clicked)
+        self.btn_exp_start_diagnostic.clicked.connect(self._on_exp_start_diagnostic_clicked)
+        self.btn_exp_stop_diagnostic.clicked.connect(self._on_exp_stop_diagnostic_clicked)
+
         # Connect movement buttons
         self.btn_forward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='F')))
         self.btn_backward.pressed.connect(lambda: self.panel_services.update_robot_control(RobotControlData(direction='B')))
@@ -346,6 +408,32 @@ class MainWindow(QMainWindow):
         #Connect init encoder button 
         self.btn_init_encoder.clicked.connect(self.initializate_encoder)
     
+
+    # ---------------------------------------------------------------------
+    # Expansion Mode: Diagnostic/Session controls (UI-only state machine)
+    # ---------------------------------------------------------------------
+    def _reset_expansion_diagnostic_controls(self) -> None:
+        """Reset enable/disable state for Expansion Mode diagnostic controls."""
+        self.btn_exp_initialize.setEnabled(True)
+        self.btn_exp_start_diagnostic.setEnabled(False)
+        self.btn_exp_stop_diagnostic.setEnabled(False)
+        self.btn_exp_report.setEnabled(False)
+
+    def _on_exp_initialize_clicked(self) -> None:
+        # After Initialize -> enable Start Diagnostic Session; keep Stop/Report disabled
+        self.btn_exp_start_diagnostic.setEnabled(True)
+        self.btn_exp_stop_diagnostic.setEnabled(False)
+        self.btn_exp_report.setEnabled(False)
+
+    def _on_exp_start_diagnostic_clicked(self) -> None:
+        # After Start Diagnostic Session -> enable Stop Diagnostic; keep Report disabled
+        self.btn_exp_stop_diagnostic.setEnabled(True)
+        self.btn_exp_report.setEnabled(False)
+
+    def _on_exp_stop_diagnostic_clicked(self) -> None:
+        # After Stop Diagnostic -> enable Report
+        self.btn_exp_report.setEnabled(True)
+
     def initializate_encoder(self):
         print("Enviar por serial")
         self.feeder_services.send_message("feeder RESET")
