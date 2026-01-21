@@ -92,7 +92,7 @@ class CommunicationContainer(containers.DeclarativeContainer):
     )
     camera_services = providers.Singleton(
         CameraServices,
-        camera_controller=camera_controller_selector,
+        camera_controller=providers.Delegate(camera_controller_selector),
     )
 
     arm_services = providers.Singleton(
@@ -163,7 +163,7 @@ class CommunicationMockContainer(containers.DeclarativeContainer):
     )
     camera_services = providers.Singleton(
         CameraServices,
-        camera_controller=camera_controller_selector,
+        camera_controller=providers.Delegate(camera_controller_selector),
     )
 
     arm_services = providers.Singleton(
