@@ -31,3 +31,4 @@ tomlkit==0.13.2
 typing_extensions==4.11.0
 urllib3==2.2.1
 wrapt==1.16.0
+websocket-client==1.7.0

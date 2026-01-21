@@ -98,6 +98,7 @@ class HexContainer(containers.DeclarativeContainer):
         selector_signal=communication.selector_signal,
         feeder_services=panel_and_feeder.feeder_services,
         video_session_services=video.session_services,
+        vision=config.vision,   # NEW Diagnosis
     )
 
     wire_observers = providers.Callable(

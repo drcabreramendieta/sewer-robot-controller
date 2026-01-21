@@ -5,11 +5,12 @@ from Inspection.adapters.gui.session_name_dialog import SessionNameDialog
 from Inspection.adapters.gui.sessions_list_dialog import SessionsListDialog
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData, ArmControlData
 
-from Inspection.ports.input import PanelUpdateServicesPort, SessionServicesPort, FeederUpdateServicePort
+from Inspection.ports.input import PanelUpdateServicesPort, SessionServicesPort, FeederUpdateServicePort, DiagnosisServicesPort
+
 class MainWindow(QMainWindow):
     _error_dialog_instance = None
     
-    def __init__(self, panel_services: PanelUpdateServicesPort, feeder_services:FeederUpdateServicePort, session_services:SessionServicesPort) -> None:
+    def __init__(self, panel_services: PanelUpdateServicesPort, feeder_services:FeederUpdateServicePort, session_services:SessionServicesPort, diagnosis_services: DiagnosisServicesPort) -> None:
         super().__init__()
         self.latest_temperature = "N/A"
         self.latest_humidity = "N/A"
@@ -19,7 +20,11 @@ class MainWindow(QMainWindow):
         self.panel_services = panel_services
         self.session_services = session_services
         self.feeder_services = feeder_services
-        
+        self.diagnosis_services = diagnosis_services
+        self.operator_name = None
+        self.location_name = "N/A"  # puedes cambiarlo luego (config/UI)
+
+
         self.translator = QTranslator(self)
         self.SessionState = False  
         self.isRecording = False
@@ -32,6 +37,8 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.setup_connections()
         self.load_translation("es")
+
+        self.set_diag_controls_state(running=False) # Para manejar el bloque / estado de los botones de diagnóstico
         
     
     def init_ui(self):
@@ -121,9 +128,6 @@ class MainWindow(QMainWindow):
         self._expansion_widgets.append(self.expansion_diagnostic_widget)
         self.expansion_diagnostic_widget.setVisible(False)
 
-
-
-
         warning_layout = QHBoxLayout()
         self.warning_label = QLabel(self.tr("Warning"))
         self.warning_text = QTextEdit(self.tr(f"There are no warnings.")) 
@@ -133,12 +137,21 @@ class MainWindow(QMainWindow):
         video_telemetry_layout.addWidget(self.expansion_diagnostic_widget)
         video_telemetry_layout.addLayout(warning_layout)
         video_telemetry_layout.addLayout(record_layout)
-        
          
         
         warning_layout.addWidget(self.warning_label)
         warning_layout.addWidget(self.warning_text)
         self.telemetry_label = QLabel(self.image_label)
+        # Funciones de Diagnóstico
+        # Overlay para mostrar el último label del diagnóstico (NEW)
+        self.diagnosis_overlay = QLabel(self.image_label)
+        self.diagnosis_overlay.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 128);")
+        self.diagnosis_overlay.move(10, 10)
+        self.diagnosis_overlay.setFixedSize(220, 55)
+        self.diagnosis_overlay.setWordWrap(True)
+        self.diagnosis_overlay.setText(self.tr("Diagnosis:\nN/A"))
+        # Final funciones de Diagnóstico
+
         self.telemetry_label.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 128);")
         self.telemetry_label.move(self.disply_width_telemetry - 210, self.display_height_telemetry - 100)
         self.telemetry_label.setFixedSize(500, 125)
@@ -162,6 +175,43 @@ class MainWindow(QMainWindow):
                       
         controls_layout = QVBoxLayout()
 
+        # =========================
+        # Vision / Diagnosis Controls (NEW)
+        # =========================
+        diag_layout = QGridLayout()
+
+        self.btn_diag_init = QPushButton(self.tr("Initialize"))
+        self.btn_diag_init.setMinimumHeight(40)
+
+        self.cb_models = QComboBox()
+        self.cb_models.setMinimumWidth(220)
+        self.cb_sessions = QComboBox()
+        self.cb_sessions.setMinimumWidth(220)
+
+        self.btn_diag_start = QPushButton(self.tr("Start Diagnosis Session"))
+        self.btn_diag_stop = QPushButton(self.tr("Stop Diagnosis"))
+        self.btn_diag_report = QPushButton(self.tr("Report"))
+
+        # Caja de texto (reemplaza el botón tachado de tu mockup)
+        self.diag_status = QTextEdit()
+        self.diag_status.setReadOnly(True)
+        self.diag_status.setFixedHeight(60)
+
+        # Grid parecido a tu layout:
+        # Row 0: Initialize | combos | Start
+        diag_layout.addWidget(self.btn_diag_init,   0, 0)
+        diag_layout.addWidget(self.cb_models,       0, 1)
+        diag_layout.addWidget(self.cb_sessions,     0, 2)
+        diag_layout.addWidget(self.btn_diag_start,  0, 3)
+
+        # Row 1: status box | Stop | Report
+        diag_layout.addWidget(self.diag_status,     1, 0, 1, 2)
+        diag_layout.addWidget(self.btn_diag_stop,   1, 2)
+        diag_layout.addWidget(self.btn_diag_report, 1, 3)
+
+        controls_layout.addLayout(diag_layout)
+
+        ## Fin Vision / Diagnosis Controls ##
         
         self.label_robot_controls = QLabel(self.tr("Robot Controls"))
         self.label_robot_controls.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -407,6 +457,13 @@ class MainWindow(QMainWindow):
 
         #Connect init encoder button 
         self.btn_init_encoder.clicked.connect(self.initializate_encoder)
+
+        # Diagnosis (NEW)
+        self.btn_diag_init.clicked.connect(self.on_diag_init_clicked)
+        self.cb_models.currentIndexChanged.connect(self.on_model_changed)
+        self.btn_diag_start.clicked.connect(self.on_diag_start_clicked)
+        self.btn_diag_stop.clicked.connect(self.on_diag_stop_clicked)
+        self.btn_diag_report.clicked.connect(self.on_diag_report_clicked)
     
 
     # ---------------------------------------------------------------------
@@ -471,6 +528,8 @@ class MainWindow(QMainWindow):
                     self.startButton.setText(self.tr("Log Out")) 
                     self.SessionState = True
                     self.updateSessionButtonState()
+                    self.operator_name = session_name
+
                     
                     self.record_button.setEnabled(True)
                     self.capture_button.setEnabled(True)                
@@ -602,6 +661,112 @@ class MainWindow(QMainWindow):
          else:
             event.accept()  
     
+    # =========================
+    # Diagnosis UI helpers (NEW)
+    # =========================
+    def append_diagnosis_status(self, text: str) -> None:
+        try:
+            self.diag_status.append(text)
+        except Exception:
+            pass
+
+    def set_diagnosis_overlay(self, text: str) -> None:
+        try:
+            self.diagnosis_overlay.setText(self.tr("Diagnosis:") + "\n" + str(text))
+        except Exception:
+            pass
+
+    def _reload_models(self) -> None:
+        self.cb_models.blockSignals(True)
+        self.cb_models.clear()
+        try:
+            models = self.diagnosis_services.list_models()
+            for m in models:
+                mid = m.get("id")
+                name = m.get("name", mid)
+                desc = m.get("description", "")
+                self.cb_models.addItem(f"{name}", mid)
+                # opcional: tooltip
+                if desc:
+                    self.cb_models.setItemData(self.cb_models.count() - 1, desc, Qt.ItemDataRole.ToolTipRole)
+        finally:
+            self.cb_models.blockSignals(False)
+
+    def _reload_sessions(self) -> None:
+        self.cb_sessions.clear()
+        sessions = self.diagnosis_services.list_sessions()
+        for sid in sessions:
+            self.cb_sessions.addItem(sid, sid)
+
+    def on_diag_init_clicked(self) -> None:
+        self.append_diagnosis_status("Inicializando visión...")
+        resp = self.diagnosis_services.initialize_system()
+        if resp.get("ok"):
+            self._reload_models()
+            self._reload_sessions()
+        else:
+            self.append_diagnosis_status("ERROR: no se pudo inicializar visión.")
+
+    def on_model_changed(self, index: int) -> None:
+        if index < 0:
+            return
+        model_id = self.cb_models.itemData(index)
+        if not model_id:
+            return
+        try:
+            self.diagnosis_services.select_model(str(model_id))
+        except Exception as exc:
+            self.append_diagnosis_status(f"ERROR seleccionando modelo: {exc}")
+
+    def on_diag_start_clicked(self) -> None:
+        operator = self.operator_name or "operator"
+        location = self.location_name or "N/A"
+        try:
+            sid = self.diagnosis_services.start_diagnosis_session(operator=operator, location=location)
+            self.append_diagnosis_status(f"Session creada: {sid}")
+            # refrescar sesiones para que aparezca la nueva
+            self._reload_sessions()
+        except Exception as exc:
+            self.append_diagnosis_status(f"ERROR iniciando diagnóstico: {exc}")
+
+    def on_diag_stop_clicked(self) -> None:
+        try:
+            status = self.diagnosis_services.stop_diagnosis_session()
+            self.append_diagnosis_status(f"Stop: {status}")
+        except Exception as exc:
+            self.append_diagnosis_status(f"ERROR deteniendo: {exc}")
+
+    def on_diag_report_clicked(self) -> None:
+        operator = self.operator_name or "operator"
+        location = self.location_name or "N/A"
+
+        # preferir sesión seleccionada; si no, la activa
+        sid = None
+        idx = self.cb_sessions.currentIndex()
+        if idx >= 0:
+            sid = self.cb_sessions.itemData(idx)
+        sid = sid or self.diagnosis_services.get_current_session_id()
+        if not sid:
+            self.append_diagnosis_status("No hay session_id para reporte.")
+            return
+
+        try:
+            summary = self.diagnosis_services.get_summary(session_id=str(sid), operator=operator, location=location)
+            self.append_diagnosis_status(f"Summary OK. counts_by_label={summary.get('counts_by_label')}")
+        except Exception as exc:
+            self.append_diagnosis_status(f"ERROR summary: {exc}")
+
+    # Fin Diagnosis UI helpers
+
+    #Helpers para botones de diagnóstico (bloqueo)
+    def set_diag_controls_state(self, running: bool) -> None:
+        self.btn_diag_init.setEnabled(not running)
+        self.btn_diag_start.setEnabled(not running)
+        self.btn_diag_stop.setEnabled(running)
+        # Report se habilita solo cuando no está running; pero además depende del STOPPED (lo valida el service)
+        self.btn_diag_report.setEnabled(not running)
+
+
     @classmethod
     def show_error_dialog_connections(cls):
         if cls._error_dialog_instance is not None:

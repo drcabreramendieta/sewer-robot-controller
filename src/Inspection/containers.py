@@ -31,6 +31,23 @@ from Inspection.application.services.session_services import SessionServices
 from Inspection.application.services.telemetry_update_service import TelemetryUpdateService
 from Inspection.application.services.video_update_service import VideoUpdateService
 
+# Para funciones de diagnosis
+from Inspection.adapters.external_services.vision_fastapi_diagnosis_controller_adapter import (
+    VisionFastApiDiagnosisControllerAdapter,
+)
+from Inspection.adapters.external_services.mock_vision_fastapi_diagnosis_controller_adapter import (
+    MockVisionFastApiDiagnosisControllerAdapter,
+)
+from Inspection.adapters.external_services.pyqt_diagnosis_event_bridge import (
+    PyqtDiagnosisEventBridge,
+)
+from Inspection.adapters.external_services.gui_diagnosis_observer_adapter import (
+    GuiDiagnosisObserverAdapter,
+)
+
+from Inspection.application.services.diagnosis_services import DiagnosisServices
+from Inspection.application.services.diagnosis_update_service import DiagnosisUpdateService
+
 
 def _register_observers(
     feeder_update_service,
@@ -39,14 +56,19 @@ def _register_observers(
     gui_telemetry_observer,
     video_update_service,
     gui_video_observer,
+    diagnosis_update_service,   # Diagnosis
+    gui_diagnosis_observer,     # Diagnosis
 ):
     feeder_update_service.register_observer(gui_feeder_observer)
     telemetry_update_service.register_observer(gui_telemetry_observer)
     video_update_service.register_observer(gui_video_observer)
+
+    diagnosis_update_service.register_observer(gui_diagnosis_observer)  # Diagnosis
     return True
 
 
 class InspectionContainer(containers.DeclarativeContainer):
+    vision = providers.Configuration()   # Diagnosis
     logger = providers.Dependency()
     movement_service = providers.Dependency()
     camera_services = providers.Dependency()
@@ -94,6 +116,44 @@ class InspectionContainer(containers.DeclarativeContainer):
         VideoUpdateService,
     )
 
+    # Providers para Diagnosis services
+
+    diagnosis_update_service = providers.Singleton(
+        DiagnosisUpdateService,
+    )
+
+    diagnosis_event_bridge = providers.Singleton(
+        PyqtDiagnosisEventBridge,
+        diagnosis_update_service=diagnosis_update_service,
+    )
+
+    diagnosis_controller_real = providers.Singleton(
+        VisionFastApiDiagnosisControllerAdapter,
+        base_url=vision.base_url,
+        ws_base_url=vision.ws_base_url,
+        timeout_seconds=vision.timeout_seconds,
+        logger=logger,
+    )
+
+    diagnosis_controller_mock = providers.Singleton(
+        MockVisionFastApiDiagnosisControllerAdapter,
+        logger=logger,
+    )
+
+    diagnosis_controller = providers.Selector(
+        vision.mode,  # "real" o "mock"
+        real=diagnosis_controller_real,
+        mock=diagnosis_controller_mock,
+    )
+
+    diagnosis_services = providers.Singleton(
+        DiagnosisServices,
+        controller=diagnosis_controller,
+        event_bridge=diagnosis_event_bridge,
+        logger=logger,
+    )
+    # Fin Providers para Diagnosis services
+
     video_session_controller = providers.Singleton(
         VideoSessionControllerAdapter,
         control_session=video_session_services,
@@ -109,6 +169,7 @@ class InspectionContainer(containers.DeclarativeContainer):
         panel_services=panel_update_services,
         feeder_services=feeder_update_service,
         session_services=session_services,
+        diagnosis_services=diagnosis_services,
     )
 
     gui_video_observer = providers.Singleton(
@@ -123,6 +184,14 @@ class InspectionContainer(containers.DeclarativeContainer):
         GuiFeederObserverAdapter,
         gui=main_window,
     )
+    
+    # Providers para Diagnosis GUI observer. Agregamos el observer de diagnosis para el GUI
+    gui_diagnosis_observer = providers.Singleton(
+        GuiDiagnosisObserverAdapter,
+        gui=main_window,
+    )
+    # Fin Providers para Diagnosis GUI observer
+
 
     wire_observers = providers.Callable(
         _register_observers,
@@ -132,4 +201,6 @@ class InspectionContainer(containers.DeclarativeContainer):
         gui_telemetry_observer=gui_telemetry_observer,
         video_update_service=video_update_service,
         gui_video_observer=gui_video_observer,
+        diagnosis_update_service=diagnosis_update_service,  # Diagnosis
+        gui_diagnosis_observer=gui_diagnosis_observer,      # Diagnosis
     )

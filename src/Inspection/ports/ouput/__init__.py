@@ -6,4 +6,11 @@ from .telemetry_observer_port import TelemetryObserverPort
 from .video_observer_port import VideoObserverPort
 from .feeder_observer_port import FeederObserverPort
 from .arm_controller_port import ArmControllerPort
-__all__ = ['MovementControllerPort','CameraControllerPort', 'SessionControllerPort', 'FeederControllerPort', 'TelemetryObserverPort', 'VideoObserverPort', 'FeederObserverPort', 'ArmControllerPort']
+
+from .diagnosis_controller_port import DiagnosisControllerPort
+from .diagnosis_observer_port import DiagnosisObserverPort
+
+
+__all__ = ['MovementControllerPort','CameraControllerPort', 'SessionControllerPort', 'FeederControllerPort', 'TelemetryObserverPort', 'VideoObserverPort', 'FeederObserverPort', 'ArmControllerPort',
+           'DiagnosisControllerPort',
+            'DiagnosisObserverPort']
