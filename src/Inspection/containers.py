@@ -53,6 +53,7 @@ class InspectionContainer(containers.DeclarativeContainer):
     arm_services = providers.Dependency()
     feeder_services = providers.Dependency()
     video_session_services = providers.Dependency()
+    selector_signal = providers.Dependency()
 
     comm_movement_controller = providers.Singleton(
         CommMovementControllerAdapter,
@@ -74,6 +75,7 @@ class InspectionContainer(containers.DeclarativeContainer):
         movement_controller=comm_movement_controller,
         camera_controller=comm_camera_controller,
         arm_controller=comm_arm_controller,
+        selector_signal=selector_signal,
     )
 
     feeder_controller = providers.Singleton(

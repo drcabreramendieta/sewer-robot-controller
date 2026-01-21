@@ -95,6 +95,7 @@ class HexContainer(containers.DeclarativeContainer):
         movement_service=communication.movement_service,
         camera_services=communication.camera_services,
         arm_services=communication.arm_services,
+        selector_signal=communication.selector_signal,
         feeder_services=panel_and_feeder.feeder_services,
         video_session_services=video.session_services,
     )

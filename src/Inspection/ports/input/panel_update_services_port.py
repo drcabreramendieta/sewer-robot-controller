@@ -22,3 +22,6 @@ class PanelUpdateServicesPort(ABC):
     def update_camera_light(self, light:int):
         pass
 
+    @abstractmethod
+    def set_expansion_mode(self, is_enabled: bool) -> None:
+        pass

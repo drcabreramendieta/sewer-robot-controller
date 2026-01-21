@@ -353,7 +353,7 @@ class MainWindow(QMainWindow):
     def on_expansion_mode_changed(self, state: int):
         is_enabled = self.expansionModeCheckbox.isChecked()
         #send to backend
-        #self.panel_services.set_expansion_mode(is_enabled)
+        self.panel_services.set_expansion_mode(is_enabled)
         for w in self._expansion_widgets:
             w.setVisible(is_enabled)
         #STOP camera

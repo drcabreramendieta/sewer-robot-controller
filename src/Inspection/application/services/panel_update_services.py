@@ -3,11 +3,18 @@ from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotCont
 from Inspection.ports.ouput import MovementControllerPort, CameraControllerPort, ArmControllerPort
 
 class PanelUpdateServices(PanelUpdateServicesPort):
-    def __init__(self, movement_controller:MovementControllerPort, camera_controller:CameraControllerPort, arm_controller: ArmControllerPort):
+    def __init__(
+        self,
+        movement_controller: MovementControllerPort,
+        camera_controller: CameraControllerPort,
+        arm_controller: ArmControllerPort,
+        selector_signal,
+    ):
         super().__init__()
         self.movement_controller = movement_controller
         self.camera_controller = camera_controller
         self.arm_controller = arm_controller
+        self.selector_signal = selector_signal
 
     def update_robot_control(self, robot_control_data:RobotControlData) -> None:
         if (robot_control_data.direction == "F"):
@@ -86,3 +93,8 @@ class PanelUpdateServices(PanelUpdateServicesPort):
 
     def update_camera_light(self, light:int):
         self.camera_controller.change_light(value=light)
+
+    def set_expansion_mode(self, is_enabled: bool) -> None:
+        if self.selector_signal is None:
+            return
+        self.selector_signal.set_expansion_mode(is_enabled)

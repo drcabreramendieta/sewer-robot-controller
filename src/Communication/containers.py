@@ -29,6 +29,7 @@ from Communication.adapters.external_services.pyqt_telemetry_observer_adapter im
     PyqtTelemetryObserverAdapter,
 )
 from Communication.application.services.camera_services import CameraServices
+from Communication.application.services.camera_selector_signal import CameraSelectorSignal
 from Communication.application.services.movement_service import MovementService
 from Communication.application.services.telemetry_services import TelemetryServices
 from Communication.application.services.arm_services import ArmServices
@@ -49,10 +50,28 @@ class CommunicationContainer(containers.DeclarativeContainer):
         logger=logger,
     )
     camera_controller = providers.Singleton(
-        #CanCameraControllerAdapter,
+        CanCameraControllerAdapter,
+        #CanExpansionCameraControllerAdapter,
+        bus=can_bus,
+        logger=logger,
+    )
+    expansion_camera_controller = providers.Singleton(
         CanExpansionCameraControllerAdapter,
         bus=can_bus,
         logger=logger,
+    )
+
+    selector_signal = providers.Singleton(
+        CameraSelectorSignal,
+    )
+    selector_key = providers.Callable(
+        lambda signal: signal.selector_key(),
+        signal=selector_signal,
+    )
+    camera_controller_selector = providers.Selector(
+        selector_key,
+        a=camera_controller,
+        b=expansion_camera_controller,
     )
 
     arm_controller = providers.Singleton(
@@ -73,7 +92,7 @@ class CommunicationContainer(containers.DeclarativeContainer):
     )
     camera_services = providers.Singleton(
         CameraServices,
-        camera_controller=camera_controller,
+        camera_controller=camera_controller_selector,
     )
 
     arm_services = providers.Singleton(
@@ -112,6 +131,22 @@ class CommunicationMockContainer(containers.DeclarativeContainer):
         MockCanCameraControllerAdapter,
         logger=logger,
     )
+    expansion_camera_controller = providers.Singleton(
+        MockCanCameraControllerAdapter,
+        logger=logger,
+    )
+    selector_signal = providers.Singleton(
+        CameraSelectorSignal,
+    )
+    selector_key = providers.Callable(
+        lambda signal: signal.selector_key(),
+        signal=selector_signal,
+    )
+    camera_controller_selector = providers.Selector(
+        selector_key,
+        a=camera_controller,
+        b=expansion_camera_controller,
+    )
     
     arm_controller = providers.Singleton(
         MockArmControllerAdapter
@@ -128,7 +163,7 @@ class CommunicationMockContainer(containers.DeclarativeContainer):
     )
     camera_services = providers.Singleton(
         CameraServices,
-        camera_controller=camera_controller,
+        camera_controller=camera_controller_selector,
     )
 
     arm_services = providers.Singleton(
