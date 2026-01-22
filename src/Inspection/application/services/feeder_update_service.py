@@ -1,6 +1,6 @@
 from Inspection.ports.input import FeederUpdateServicePort
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import FeederControlData
-from Inspection.ports.ouput import FeederControllerPort, FeederObserverPort
+from Inspection.ports.output import FeederControllerPort, FeederObserverPort
 from typing import List
 
 class FeederUpdateService(FeederUpdateServicePort):

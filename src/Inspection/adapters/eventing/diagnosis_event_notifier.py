@@ -1,10 +1,8 @@
 from typing import Any, Dict, List
-from Inspection.ports.input import DiagnosisUpdateServicePort
-from Inspection.ports.ouput import DiagnosisObserverPort
+from Inspection.ports.output import DiagnosisObserverPort
 
-class DiagnosisUpdateService(DiagnosisUpdateServicePort):
+class DiagnosisEventNotifier:
     def __init__(self) -> None:
-        super().__init__()
         self._observers: List[DiagnosisObserverPort] = []
 
     def register_observer(self, observer: DiagnosisObserverPort) -> None:

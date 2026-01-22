@@ -38,15 +38,15 @@ from Inspection.adapters.external_services.vision_fastapi_diagnosis_controller_a
 from Inspection.adapters.external_services.mock_vision_fastapi_diagnosis_controller_adapter import (
     MockVisionFastApiDiagnosisControllerAdapter,
 )
-from Inspection.adapters.external_services.pyqt_diagnosis_event_bridge import (
-    PyqtDiagnosisEventBridge,
+from Inspection.adapters.eventing.qt_diagnosis_event_publisher_adapter import (
+    QtDiagnosisEventPublisherAdapter,
 )
-from Inspection.adapters.external_services.gui_diagnosis_observer_adapter import (
+from Inspection.adapters.gui.gui_diagnosis_observer_adapter import (
     GuiDiagnosisObserverAdapter,
 )
 
 from Inspection.application.services.diagnosis_services import DiagnosisServices
-from Inspection.application.services.diagnosis_update_service import DiagnosisUpdateService
+from Inspection.adapters.eventing.diagnosis_event_notifier import DiagnosisEventNotifier
 
 
 def _register_observers(
@@ -56,14 +56,14 @@ def _register_observers(
     gui_telemetry_observer,
     video_update_service,
     gui_video_observer,
-    diagnosis_update_service,   # Diagnosis
+    diagnosis_event_notifier,   # Diagnosis
     gui_diagnosis_observer,     # Diagnosis
 ):
     feeder_update_service.register_observer(gui_feeder_observer)
     telemetry_update_service.register_observer(gui_telemetry_observer)
     video_update_service.register_observer(gui_video_observer)
 
-    diagnosis_update_service.register_observer(gui_diagnosis_observer)  # Diagnosis
+    diagnosis_event_notifier.register_observer(gui_diagnosis_observer)  # Diagnosis
     return True
 
 
@@ -118,13 +118,13 @@ class InspectionContainer(containers.DeclarativeContainer):
 
     # Providers para Diagnosis services
 
-    diagnosis_update_service = providers.Singleton(
-        DiagnosisUpdateService,
+    diagnosis_event_notifier = providers.Singleton(
+        DiagnosisEventNotifier,
     )
 
-    diagnosis_event_bridge = providers.Singleton(
-        PyqtDiagnosisEventBridge,
-        diagnosis_update_service=diagnosis_update_service,
+    diagnosis_event_publisher = providers.Singleton(
+        QtDiagnosisEventPublisherAdapter,
+        diagnosis_event_notifier=diagnosis_event_notifier,
     )
 
     diagnosis_controller_real = providers.Singleton(
@@ -132,11 +132,13 @@ class InspectionContainer(containers.DeclarativeContainer):
         base_url=vision.base_url,
         ws_base_url=vision.ws_base_url,
         timeout_seconds=vision.timeout_seconds,
+        event_publisher=diagnosis_event_publisher,
         logger=logger,
     )
 
     diagnosis_controller_mock = providers.Singleton(
         MockVisionFastApiDiagnosisControllerAdapter,
+        event_publisher=diagnosis_event_publisher,
         logger=logger,
     )
 
@@ -149,7 +151,6 @@ class InspectionContainer(containers.DeclarativeContainer):
     diagnosis_services = providers.Singleton(
         DiagnosisServices,
         controller=diagnosis_controller,
-        event_bridge=diagnosis_event_bridge,
         logger=logger,
     )
     # Fin Providers para Diagnosis services
@@ -201,6 +202,6 @@ class InspectionContainer(containers.DeclarativeContainer):
         gui_telemetry_observer=gui_telemetry_observer,
         video_update_service=video_update_service,
         gui_video_observer=gui_video_observer,
-        diagnosis_update_service=diagnosis_update_service,  # Diagnosis
+        diagnosis_event_notifier=diagnosis_event_notifier,  # Diagnosis
         gui_diagnosis_observer=gui_diagnosis_observer,      # Diagnosis
     )

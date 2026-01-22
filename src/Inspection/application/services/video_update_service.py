@@ -1,6 +1,6 @@
 from Inspection.ports.input import VideoUpdateServicePort
 from Video.domain.entities.video_entities import VideoMessage
-from Inspection.ports.ouput import VideoObserverPort
+from Inspection.ports.output import VideoObserverPort
 from typing import List
 
 class VideoUpdateService(VideoUpdateServicePort):

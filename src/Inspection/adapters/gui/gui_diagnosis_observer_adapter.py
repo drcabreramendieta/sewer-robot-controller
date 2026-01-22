@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from Inspection.ports.ouput import DiagnosisObserverPort
+from Inspection.ports.output import DiagnosisObserverPort
 from Inspection.adapters.gui.main_window import MainWindow
 
 class GuiDiagnosisObserverAdapter(DiagnosisObserverPort):

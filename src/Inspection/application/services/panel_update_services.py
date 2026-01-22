@@ -1,6 +1,6 @@
 from Inspection.ports.input import PanelUpdateServicesPort
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData, ArmControlData
-from Inspection.ports.ouput import MovementControllerPort, CameraControllerPort, ArmControllerPort
+from Inspection.ports.output import MovementControllerPort, CameraControllerPort, ArmControllerPort
 
 class PanelUpdateServices(PanelUpdateServicesPort):
     def __init__(

@@ -1,13 +1,14 @@
 import json
 import threading
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from logging import Logger
 
 import requests
 from websocket import WebSocketApp  # websocket-client
 
-from Inspection.ports.ouput import DiagnosisControllerPort
+from Inspection.adapters.eventing.diagnosis_event_publisher import DiagnosisEventPublisher
+from Inspection.ports.output import DiagnosisControllerPort
 
 
 class _WsHandle:
@@ -23,14 +24,17 @@ class VisionFastApiDiagnosisControllerAdapter(DiagnosisControllerPort):
         base_url: str,
         ws_base_url: str,
         timeout_seconds: float,
+        event_publisher: DiagnosisEventPublisher,
         logger: Logger,
     ) -> None:
         super().__init__()
         self._base = base_url.rstrip("/")
         self._ws_base = ws_base_url.rstrip("/")
         self._timeout = timeout_seconds
+        self._event_publisher = event_publisher
         self._logger = logger
         self._session = requests.Session()
+        self._ws_handle: Optional[_WsHandle] = None
 
     def _url(self, path: str) -> str:
         return f"{self._base}{path}"
@@ -94,7 +98,8 @@ class VisionFastApiDiagnosisControllerAdapter(DiagnosisControllerPort):
         return r.json()
 
     # --------- WS ----------
-    def connect_report_ws(self, session_id: str, on_payload: Callable[[Dict[str, Any]], None]) -> Any:
+    def connect_report_ws(self, session_id: str) -> None:
+        self.disconnect_report_ws()
         ws_url = self._ws_url(f"/report/ws/{session_id}")
 
         stop_evt = threading.Event()
@@ -102,7 +107,7 @@ class VisionFastApiDiagnosisControllerAdapter(DiagnosisControllerPort):
         def _on_message(ws, message: str):
             try:
                 payload = json.loads(message)
-                on_payload(payload)
+                self._event_publisher.publish(payload)
             except Exception as exc:
                 self._logger.error("WS message parse failed: %s", exc, exc_info=True)
 
@@ -140,13 +145,15 @@ class VisionFastApiDiagnosisControllerAdapter(DiagnosisControllerPort):
         th = threading.Thread(target=_run, daemon=True)
         th.start()
 
-        return _WsHandle(app=app, thread=th, stop_evt=stop_evt)
+        self._ws_handle = _WsHandle(app=app, thread=th, stop_evt=stop_evt)
 
-    def disconnect_report_ws(self, handle: Any) -> None:
-        if not isinstance(handle, _WsHandle):
+    def disconnect_report_ws(self) -> None:
+        if self._ws_handle is None:
             return
-        handle.stop_evt.set()
+        self._ws_handle.stop_evt.set()
         try:
-            handle.app.close()
+            self._ws_handle.app.close()
         except Exception:
             pass
+        finally:
+            self._ws_handle = None

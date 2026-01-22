@@ -1,5 +1,5 @@
 from Inspection.ports.input import SessionServicesPort
-from Inspection.ports.ouput import SessionControllerPort
+from Inspection.ports.output import SessionControllerPort
 
 class SessionServices(SessionServicesPort):
     def __init__(self, session_controller:SessionControllerPort):

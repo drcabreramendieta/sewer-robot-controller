@@ -1,4 +1,4 @@
-from Inspection.ports.ouput import FeederObserverPort
+from Inspection.ports.output import FeederObserverPort
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import FeederControlData
 from Inspection.adapters.gui.main_window import MainWindow
 from PyQt6.QtCore import Qt

@@ -724,6 +724,8 @@ class MainWindow(QMainWindow):
         try:
             sid = self.diagnosis_services.start_diagnosis_session(operator=operator, location=location)
             self.append_diagnosis_status(f"Session creada: {sid}")
+            self.set_diagnosis_overlay(f"RUNNING\nsid={sid}")
+            self.set_diag_controls_state(running=True)
             # refrescar sesiones para que aparezca la nueva
             self._reload_sessions()
         except Exception as exc:
@@ -733,6 +735,8 @@ class MainWindow(QMainWindow):
         try:
             status = self.diagnosis_services.stop_diagnosis_session()
             self.append_diagnosis_status(f"Stop: {status}")
+            self.set_diagnosis_overlay("STOPPED")
+            self.set_diag_controls_state(running=False)
         except Exception as exc:
             self.append_diagnosis_status(f"ERROR deteniendo: {exc}")
 

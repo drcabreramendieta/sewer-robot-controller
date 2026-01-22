@@ -1,10 +1,11 @@
 import threading
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 from logging import Logger
 
-from Inspection.ports.ouput import DiagnosisControllerPort
+from Inspection.adapters.eventing.diagnosis_event_publisher import DiagnosisEventPublisher
+from Inspection.ports.output import DiagnosisControllerPort
 
 
 class _MockWsHandle:
@@ -14,11 +15,13 @@ class _MockWsHandle:
 
 
 class MockVisionFastApiDiagnosisControllerAdapter(DiagnosisControllerPort):
-    def __init__(self, logger: Logger) -> None:
+    def __init__(self, event_publisher: DiagnosisEventPublisher, logger: Logger) -> None:
         super().__init__()
+        self._event_publisher = event_publisher
         self._logger = logger
         self._active_model: Optional[str] = None
         self._sessions: List[str] = []
+        self._ws_handle: Optional[_MockWsHandle] = None
 
     def list_models(self) -> List[Dict[str, Any]]:
         return [
@@ -63,7 +66,8 @@ class MockVisionFastApiDiagnosisControllerAdapter(DiagnosisControllerPort):
             "total_events": 10,
         }
 
-    def connect_report_ws(self, session_id: str, on_payload: Callable[[Dict[str, Any]], None]) -> Any:
+    def connect_report_ws(self, session_id: str) -> None:
+        self.disconnect_report_ws()
         stop_evt = threading.Event()
 
         def _run():
@@ -78,14 +82,15 @@ class MockVisionFastApiDiagnosisControllerAdapter(DiagnosisControllerPort):
                     "label": labels[idx % len(labels)],
                     "timestamp": "2026-01-01T00:00:00",
                 }
-                on_payload(payload)
+                self._event_publisher.publish(payload)
                 idx += 1
                 time.sleep(0.7)
 
         th = threading.Thread(target=_run, daemon=True)
         th.start()
-        return _MockWsHandle(stop_evt=stop_evt, thread=th)
+        self._ws_handle = _MockWsHandle(stop_evt=stop_evt, thread=th)
 
-    def disconnect_report_ws(self, handle: Any) -> None:
-        if isinstance(handle, _MockWsHandle):
-            handle.stop_evt.set()
+    def disconnect_report_ws(self) -> None:
+        if self._ws_handle is not None:
+            self._ws_handle.stop_evt.set()
+            self._ws_handle = None

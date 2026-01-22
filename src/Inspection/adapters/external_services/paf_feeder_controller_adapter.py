@@ -1,4 +1,4 @@
-from Inspection.ports.ouput import FeederControllerPort
+from Inspection.ports.output import FeederControllerPort
 from Panel_and_Feeder.ports.input import FeederServicesPort
 
 class PafFeederControllerAdapter(FeederControllerPort):

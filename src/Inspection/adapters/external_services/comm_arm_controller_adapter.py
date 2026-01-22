@@ -1,4 +1,4 @@
-from Inspection.ports.ouput.arm_controller_port import ArmControllerPort
+from Inspection.ports.output.arm_controller_port import ArmControllerPort
 from Communication.ports.input import ArmServicePort
 from Communication.domain.entities.arm_entities import ArmState, ArmMotion
 from logging import Logger

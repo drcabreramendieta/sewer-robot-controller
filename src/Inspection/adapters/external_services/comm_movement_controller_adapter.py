@@ -1,4 +1,4 @@
-from Inspection.ports.ouput.movement_controller_port import MovementControllerPort
+from Inspection.ports.output.movement_controller_port import MovementControllerPort
 from Communication.ports.input import MovementServicePort
 from Communication.domain.entities.wheels_entities import Rotation, Direction
 from logging import Logger

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import FeederControlData
-from Inspection.ports.ouput import FeederObserverPort
+from Inspection.ports.output import FeederObserverPort
 
 class FeederUpdateServicePort(ABC):
     @abstractmethod

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 class DiagnosisControllerPort(ABC):
     """Puerto de salida: cliente hacia el sistema de visión (FastAPI + WS)."""
@@ -47,13 +47,12 @@ class DiagnosisControllerPort(ABC):
     def connect_report_ws(
         self,
         session_id: str,
-        on_payload: Callable[[Dict[str, Any]], None],
-    ) -> Any:
-        """Abre WS y llama on_payload(payload_dict) por cada mensaje."""
+    ) -> None:
+        """Abre WS y publica payloads según el adapter."""
         pass
 
     @abstractmethod
-    def disconnect_report_ws(self, handle: Any) -> None:
+    def disconnect_report_ws(self) -> None:
         pass
 
 # Para revisar que los sistemas estén arriba en la jetson - no es crítico

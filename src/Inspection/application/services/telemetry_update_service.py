@@ -1,6 +1,6 @@
 from Inspection.ports.input import TelemetryUpdateServicePort
 from Communication.domain.entities.telemetry_entities import TelemetryMessage
-from Inspection.ports.ouput import TelemetryObserverPort
+from Inspection.ports.output import TelemetryObserverPort
 from typing import List
 
 class TelemetryUpdateService(TelemetryUpdateServicePort):

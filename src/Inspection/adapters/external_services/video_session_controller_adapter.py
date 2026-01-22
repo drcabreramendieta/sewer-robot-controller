@@ -1,4 +1,4 @@
-from Inspection.ports.ouput.session_controller_port import SessionControllerPort
+from Inspection.ports.output.session_controller_port import SessionControllerPort
 from Video.application.services.session_services import SessionServices
 from Video.domain.entities.dvr_entities import DvrOrder
 from logging import Logger

@@ -1,4 +1,4 @@
-from Inspection.ports.ouput.camera_controller_port import CameraControllerPort
+from Inspection.ports.output.camera_controller_port import CameraControllerPort
 from Communication.domain.entities.camera_entities import LightState, TiltState, PanState, ZoomState, FocusState
 from Communication.ports.input import CameraServicePort
 from logging import Logger

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from Communication.domain.entities.telemetry_entities import TelemetryMessage
-from Inspection.ports.ouput import TelemetryObserverPort
+from Inspection.ports.output import TelemetryObserverPort
 
 class TelemetryUpdateServicePort(ABC):
     @abstractmethod
