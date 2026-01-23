@@ -15,5 +15,5 @@ class QtDiagnosisEventPublisherAdapter(DiagnosisEventPublisher):
     def __init__(self, diagnosis_event_notifier: DiagnosisEventNotifier) -> None:
         self._bridge = _Bridge(diagnosis_event_notifier)
 
-    def publish(self, event: Dict[str, Any]) -> None:
+    def publish(self, event: Dict[str, any]) -> None:
         self._bridge.event_signal.emit(event)
