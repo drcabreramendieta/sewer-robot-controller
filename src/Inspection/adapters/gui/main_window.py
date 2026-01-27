@@ -1,4 +1,8 @@
 from PyQt6.QtCore import Qt, QSize, QTranslator, QFile
+from PyQt6.QtGui import QIcon, QPixmap
+from PyQt6.QtCore import QSize
+from PyQt6.QtCore import QSignalBlocker
+from PyQt6.QtWidgets import QInputDialog, QMessageBox
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QGridLayout, QPushButton, QWidget, QSlider, QLabel, QHBoxLayout, QCheckBox, QComboBox, QApplication, QTextEdit, QMessageBox, QLineEdit
 from PyQt6.QtGui import QIcon
 from Inspection.adapters.gui.session_name_dialog import SessionNameDialog
@@ -6,6 +10,102 @@ from Inspection.adapters.gui.sessions_list_dialog import SessionsListDialog
 from Panel_and_Feeder.domain.entities.panel_and_feeder_entities import RobotControlData, CameraControlData, ArmControlData
 
 from Inspection.ports.input import PanelUpdateServicesPort, SessionServicesPort, FeederUpdateServicePort, DiagnosisServicesPort
+
+from PyQt6.QtWidgets import (
+    QDialog, QFormLayout, QDialogButtonBox, QSpinBox, QGroupBox, QSizePolicy
+)
+
+import re
+# Clase nueva
+class OperatorContextDialog(QDialog):
+    """
+    Diálogo único para pedir:
+      - Operator
+      - Location
+      - Job Order (base)
+      - Inspection Run (auto)
+
+    Regla:
+      job_order_final = "{job_order_base}_run_{run}"
+
+    El run se auto-sugiere en base al registro local:
+      mismo operator+location+job_order_base => siguiente run disponible.
+    """
+
+    def __init__(self, parent, compute_next_run_cb):
+        super().__init__(parent)
+        self.setWindowTitle("Operator Context")
+
+        self._compute_next_run_cb = compute_next_run_cb
+
+        self.operator = QLineEdit()
+        self.location = QLineEdit()
+        self.job_order_base = QLineEdit()
+
+        self.run_spin = QSpinBox()
+        self.run_spin.setMinimum(1)
+        self.run_spin.setMaximum(9999)
+        self.run_spin.setValue(1)
+
+        form = QFormLayout(self)
+        form.addRow("Operator:", self.operator)
+        form.addRow("Location:", self.location)
+        form.addRow("Job Order:", self.job_order_base)
+        form.addRow("Inspection Run:", self.run_spin)
+
+        btns = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        btns.accepted.connect(self._on_accept)
+        btns.rejected.connect(self.reject)
+        form.addRow(btns)
+
+        # Recalcular run cuando cambie cualquiera de los 3 campos base
+        self.operator.textChanged.connect(self._recompute_run)
+        self.location.textChanged.connect(self._recompute_run)
+        self.job_order_base.textChanged.connect(self._recompute_run)
+
+        self._recompute_run()
+
+    def _recompute_run(self):
+        op = self.operator.text().strip()
+        loc = self.location.text().strip()
+        job = self.job_order_base.text().strip()
+
+        # si falta algo, no forzamos
+        if not op or not loc or not job:
+            self.run_spin.setMinimum(1)
+            if self.run_spin.value() < 1:
+                self.run_spin.setValue(1)
+            return
+
+        suggested = int(self._compute_next_run_cb(op, loc, job))
+        if suggested < 1:
+            suggested = 1
+
+        # REGLA UX: si hay coincidencia exacta, no permitir run=1.
+        # Implementación: spinbox mínimo = suggested.
+        self.run_spin.setMinimum(suggested)
+        if self.run_spin.value() < suggested:
+            self.run_spin.setValue(suggested)
+
+    def _on_accept(self):
+        # Validación mínima
+        if not self.operator.text().strip() or not self.location.text().strip() or not self.job_order_base.text().strip():
+            QMessageBox.warning(self, "Missing data", "Operator, Location and Job Order are required.")
+            return
+        self.accept()
+
+    def get_values(self):
+        op = self.operator.text().strip()
+        loc = self.location.text().strip()
+        job_base = self.job_order_base.text().strip()
+        run = int(self.run_spin.value())
+        job_final = f"{job_base}_run_{run}"
+        return op, loc, job_base, run, job_final
+
+
+
 
 class MainWindow(QMainWindow):
     _error_dialog_instance = None
@@ -145,11 +245,16 @@ class MainWindow(QMainWindow):
         # Funciones de Diagnóstico
         # Overlay para mostrar el último label del diagnóstico (NEW)
         self.diagnosis_overlay = QLabel(self.image_label)
-        self.diagnosis_overlay.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 128);")
-        self.diagnosis_overlay.move(10, 10)
-        self.diagnosis_overlay.setFixedSize(220, 55)
+        self.diagnosis_overlay.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 160);")
+        self.diagnosis_overlay.setFixedSize(280, 70)
         self.diagnosis_overlay.setWordWrap(True)
-        self.diagnosis_overlay.setText(self.tr("Diagnosis:\nN/A"))
+
+        self._diag_state = "N/A"
+        self._ws_status = "DISCONNECTED"
+
+        self._position_diagnosis_overlay()
+        self._update_diagnosis_overlay()
+
         # Final funciones de Diagnóstico
 
         self.telemetry_label.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 128);")
@@ -176,40 +281,66 @@ class MainWindow(QMainWindow):
         controls_layout = QVBoxLayout()
 
         # =========================
-        # Vision / Diagnosis Controls (NEW)
+        # Vision / Diagnosis Controls (UX NEW)
         # =========================
-        diag_layout = QGridLayout()
 
-        self.btn_diag_init = QPushButton(self.tr("Initialize"))
-        self.btn_diag_init.setMinimumHeight(40)
+        vision_group = QGroupBox(self.tr("Vision System Controls"))
+        vision_group.setStyleSheet("""
+                                    QGroupBox {
+                                    font-weight: 600;
+                                    margin-top: 12px;
+                                    }
+                                    QGroupBox::title {
+                                    subcontrol-origin: margin;
+                                    subcontrol-position: top center;
+                                    padding: 0 8px;
+                                    }
+                                    """)
 
-        self.cb_models = QComboBox()
+        vision_grid = QGridLayout()
+
+        self.btn_diag_init = QPushButton(self.tr("Initialize Vision System"))
+        self.btn_diag_init.setMinimumHeight(70)
+        self.btn_diag_init.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+        self.cb_models = QComboBox()    # Lista de Modelos (NO se usa en UX nueva)
         self.cb_models.setMinimumWidth(220)
-        self.cb_sessions = QComboBox()
-        self.cb_sessions.setMinimumWidth(220)
+        self.cb_sessions = QComboBox()  # Sesiones registradas (Lista buscable)
+        self.cb_sessions.setEditable(True)
+        self.cb_sessions.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.cb_sessions.setMinimumWidth(520)  # más largo
+        self.cb_sessions.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed) # Hacemos el combo editable para permitir búsqueda por substring
+        self.cb_sessions.lineEdit().textEdited.connect(self._on_sessions_search_edited) # MUY IMPORTANTE: usar textEdited, NO textChanged
+        # guard anti-recursión
+        self._sessions_refresh_guard = False
+
+        
+        self.cb_models.hide() # Ocultamos la lista de modelos por ahora (no se usan en la UX nueva). Se mantienen en el código para referencia futura.
 
         self.btn_diag_start = QPushButton(self.tr("Start Diagnosis Session"))
         self.btn_diag_stop = QPushButton(self.tr("Stop Diagnosis"))
-        self.btn_diag_report = QPushButton(self.tr("Report"))
+        self.btn_diag_stop.hide() # Ocultamos el botón Stop (no se usa en la UX nueva)
+        self.btn_diag_report = QPushButton(self.tr("Get Summary Report"))
 
-        # Caja de texto (reemplaza el botón tachado de tu mockup)
+        # Caja de texto (Ya no se usa en la UX nueva, pero la dejamos en el código para referencia futura)
         self.diag_status = QTextEdit()
+        self.diag_status.hide() # Ocultamos la caja de estado (no se usa en la UX nueva)
         self.diag_status.setReadOnly(True)
         self.diag_status.setFixedHeight(60)
 
-        # Grid parecido a tu layout:
-        # Row 0: Initialize | combos | Start
-        diag_layout.addWidget(self.btn_diag_init,   0, 0)
-        diag_layout.addWidget(self.cb_models,       0, 1)
-        diag_layout.addWidget(self.cb_sessions,     0, 2)
-        diag_layout.addWidget(self.btn_diag_start,  0, 3)
+        # Layout: init grande a la izquierda; combo arriba; botones abajo
+        vision_grid.addWidget(self.btn_diag_init, 0, 0, 2, 1)      # rowspan 2
+        vision_grid.addWidget(self.cb_sessions,   0, 1, 1, 2)      # colspan 2
+        vision_grid.addWidget(self.btn_diag_start,1, 1)
+        vision_grid.addWidget(self.btn_diag_report,1, 2)
 
-        # Row 1: status box | Stop | Report
-        diag_layout.addWidget(self.diag_status,     1, 0, 1, 2)
-        diag_layout.addWidget(self.btn_diag_stop,   1, 2)
-        diag_layout.addWidget(self.btn_diag_report, 1, 3)
+        # Stretch para que el combo crezca bien
+        vision_grid.setColumnStretch(0, 0)
+        vision_grid.setColumnStretch(1, 1)
+        vision_grid.setColumnStretch(2, 1)
 
-        controls_layout.addLayout(diag_layout)
+        vision_group.setLayout(vision_grid)
+        controls_layout.addWidget(vision_group)
 
         ## Fin Vision / Diagnosis Controls ##
         
@@ -386,6 +517,10 @@ class MainWindow(QMainWindow):
         container.setLayout(main_layout)
         self.setCentralWidget(container)
 
+        # Después de crear los widgets, cargar modelos y sesiones. Hacemos que el botón start diagnosis esté deshabilitado hasta inicializar.
+        self.btn_diag_start.setEnabled(False)
+
+
     def setup_connections(self):
         # Connect ExpasionMode checkbox
         self.expansionModeCheckbox.stateChanged.connect(self.on_expansion_mode_changed)
@@ -462,7 +597,7 @@ class MainWindow(QMainWindow):
         self.btn_diag_init.clicked.connect(self.on_diag_init_clicked)
         self.cb_models.currentIndexChanged.connect(self.on_model_changed)
         self.btn_diag_start.clicked.connect(self.on_diag_start_clicked)
-        self.btn_diag_stop.clicked.connect(self.on_diag_stop_clicked)
+        # self.btn_diag_stop.clicked.connect(self.on_diag_stop_clicked) # (Ya no se usa en la UX nueva)
         self.btn_diag_report.clicked.connect(self.on_diag_report_clicked)
     
 
@@ -664,6 +799,136 @@ class MainWindow(QMainWindow):
     # =========================
     # Diagnosis UI helpers (NEW)
     # =========================
+    
+    def _refresh_registered_sessions(self, query: str = "") -> None:
+        """
+        Pobla el combo con las últimas sesiones del registry local.
+        Muestra display_label al usuario, pero guarda display_key en itemData.
+        """
+        self.cb_sessions.blockSignals(True)
+        try:
+            current_text = self.cb_sessions.currentText()
+            self.cb_sessions.clear()
+
+            items = self.diagnosis_services.list_registered_sessions(query=query, limit=20)
+            for it in items:
+                label = it["display_label"]      # visible
+                key = it["display_key"]          # interno
+                self.cb_sessions.addItem(label, key)
+
+            # intenta mantener el texto en la caja (para que la búsqueda no se “borre”)
+            if current_text:
+                self.cb_sessions.setCurrentText(current_text)
+        finally:
+            self.cb_sessions.blockSignals(False)
+
+    def _on_sessions_search_changed(self, text: str) -> None:
+        # refiltra con lo que va escribiendo el operador
+        self._refresh_registered_sessions(query=self.cb_sessions.lineEdit().text())
+
+    def _on_sessions_search_edited(self, text: str) -> None:
+        # Solo se dispara cuando el usuario escribe (no cuando tú cambias items/programáticamente)
+        self._refresh_registered_sessions(query=self.cb_sessions.lineEdit().text())
+
+
+    def _refresh_registered_sessions(self, query: str = "") -> None:
+        """
+        Pobla el combo con sesiones del registry local.
+        Evita recursión bloqueando señales del combo y su lineEdit.
+        """
+        # Guard reentrante (por si algo dispara refresh indirectamente)
+        if getattr(self, "_sessions_refresh_guard", False):
+            return
+
+        self._sessions_refresh_guard = True
+        try:
+            le = self.cb_sessions.lineEdit()
+
+            # Bloquear señales del combo y del lineEdit durante el refresh
+            blocker_combo = QSignalBlocker(self.cb_sessions)
+            blocker_le = QSignalBlocker(le)
+            try:
+                typed = le.text()  # preserva lo que el usuario está escribiendo
+
+                self.cb_sessions.clear()
+                items = self.diagnosis_services.list_registered_sessions(query=query, limit=20)
+
+                for it in items:
+                    label = it["display_label"]   # visible
+                    key = it["display_key"]       # interno
+                    self.cb_sessions.addItem(label, key)
+
+                # Restaura lo escrito por el usuario sin disparar señales
+                le.setText(typed)
+                le.setCursorPosition(len(typed))
+            finally:
+                # Importante: liberar blockers
+                del blocker_le
+                del blocker_combo
+
+        finally:
+            self._sessions_refresh_guard = False
+
+    def _parse_job_order_base_and_run(self, job_order: str) -> tuple[str, int]:
+        """
+        Soporta:
+        - "WO123"             => base="WO123", run=1
+        - "WO123_run_2"       => base="WO123", run=2
+        """
+        s = (job_order or "").strip()
+        m = re.match(r"^(.*)_run_(\d+)$", s)
+        if not m:
+            return s, 1
+        base = m.group(1).strip()
+        run = int(m.group(2))
+        return base, run
+
+
+    def _compute_next_run(self, operator: str, location: str, job_order_base: str) -> int:
+        """
+        Busca en el registry local (vía diagnosis_services.list_registered_sessions)
+        y calcula el siguiente run para la combinación exacta:
+        operator + location + job_order_base
+        """
+        op = operator.strip()
+        loc = location.strip()
+        base = job_order_base.strip()
+
+        # Pedimos bastantes por seguridad (normalmente habrá pocos)
+        items = self.diagnosis_services.list_registered_sessions(query="", limit=10000)
+
+        max_run = 0
+        for it in items:
+            if (it.get("operator") or "").strip() != op:
+                continue
+            if (it.get("location") or "").strip() != loc:
+                continue
+
+            jo = (it.get("job_order") or "").strip()
+            jo_base, jo_run = self._parse_job_order_base_and_run(jo)
+
+            if jo_base == base:
+                if jo_run > max_run:
+                    max_run = jo_run
+
+        return max_run + 1 if max_run > 0 else 1
+
+    def _get_selected_display_key(self) -> str | None:
+        idx = self.cb_sessions.currentIndex()
+        if idx < 0:
+            return None
+        key = self.cb_sessions.itemData(idx)
+        if not key:
+            return None
+
+        # MUY importante: asegura que el texto actual coincide con el item seleccionado,
+        # no solo con lo que escribió el usuario.
+        if self.cb_sessions.currentText() != self.cb_sessions.itemText(idx):
+            return None
+
+        return str(key)
+
+
     def append_diagnosis_status(self, text: str) -> None:
         try:
             self.diag_status.append(text)
@@ -698,14 +963,71 @@ class MainWindow(QMainWindow):
         for sid in sessions:
             self.cb_sessions.addItem(sid, sid)
 
-    def on_diag_init_clicked(self) -> None:
-        self.append_diagnosis_status("Inicializando visión...")
-        resp = self.diagnosis_services.initialize_system()
-        if resp.get("ok"):
-            self._reload_models()
-            self._reload_sessions()
-        else:
-            self.append_diagnosis_status("ERROR: no se pudo inicializar visión.")
+    def on_diag_init_clicked(self) -> None: # Inicializar sistema de visión/diagnóstico. Función Ajustada
+        # 1) Inicializa sistema y selecciona modelo fijo (config)
+        resp = self.diagnosis_services.initialize_vision_system()
+        if not resp.get("ok"):
+            QMessageBox.critical(self, self.tr("Vision Init Error"), str(resp.get("error", "Unknown error")))
+            return
+
+        # 2) Pedir Operator/Location/JobOrder/Run en UN solo diálogo
+        dlg = OperatorContextDialog(self, compute_next_run_cb=self._compute_next_run)
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            QMessageBox.warning(self, self.tr("Missing data"), self.tr("Operator context is required."))
+            return
+
+        operator, location, job_base, run, job_final = dlg.get_values()
+
+        # 3) Guardar contexto (JobOrder ya incluye _run_N)
+        self.diagnosis_services.set_operator_context(operator, location, job_final)
+
+        # 4) Cambiar estado UX: botón ON + bloqueado; habilitar Start
+        self.btn_diag_init.setText(self.tr("Vision System ON"))
+        self.btn_diag_init.setEnabled(False)
+
+        self.btn_diag_start.setEnabled(True)
+
+        # refrescar sesiones locales
+        self._refresh_registered_sessions(query=self.cb_sessions.lineEdit().text() if self.cb_sessions.isEditable() else "")
+
+        model_id = resp.get("active_model_id", "N/A")
+        QMessageBox.information(
+            self,
+            self.tr("Vision System"),
+            self.tr(f"Vision system initialized successfully.\nActive model: {model_id}\nJob Order: {job_final}")
+        )
+
+
+    # Crea un icono rojo para el botón (cuadradito)
+    def _make_red_square_icon(self, size: int = 10) -> QIcon:
+        pm = QPixmap(size, size)
+        pm.fill(Qt.GlobalColor.red)
+        return QIcon(pm)
+
+    def _position_diagnosis_overlay(self) -> None:
+        # mover hacia la derecha (top-right dentro del video)
+        margin = 12
+        ow = self.diagnosis_overlay.width()
+        self.diagnosis_overlay.move(self.image_label.width() - ow - margin, margin)
+
+    def _update_diagnosis_overlay(self) -> None:
+        txt = f"{self._diag_state}\nWS: {self._ws_status}"
+        self.diagnosis_overlay.setText(self.tr("Diagnosis:") + "\n" + txt)
+
+    def set_diag_state(self, state: str) -> None:
+        self._diag_state = str(state).upper()
+        self._update_diagnosis_overlay()
+
+    def set_ws_status(self, status: str) -> None:
+        self._ws_status = str(status).upper()
+        self._update_diagnosis_overlay()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        try:
+            self._position_diagnosis_overlay()
+        except Exception:
+            pass
 
     def on_model_changed(self, index: int) -> None:
         if index < 0:
@@ -718,47 +1040,81 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             self.append_diagnosis_status(f"ERROR seleccionando modelo: {exc}")
 
-    def on_diag_start_clicked(self) -> None:
-        operator = self.operator_name or "operator"
-        location = self.location_name or "N/A"
-        try:
-            sid = self.diagnosis_services.start_diagnosis_session(operator=operator, location=location)
-            self.append_diagnosis_status(f"Session creada: {sid}")
-            self.set_diagnosis_overlay(f"RUNNING\nsid={sid}")
-            self.set_diag_controls_state(running=True)
-            # refrescar sesiones para que aparezca la nueva
-            self._reload_sessions()
-        except Exception as exc:
-            self.append_diagnosis_status(f"ERROR iniciando diagnóstico: {exc}")
-
-    def on_diag_stop_clicked(self) -> None:
-        try:
-            status = self.diagnosis_services.stop_diagnosis_session()
-            self.append_diagnosis_status(f"Stop: {status}")
-            self.set_diagnosis_overlay("STOPPED")
-            self.set_diag_controls_state(running=False)
-        except Exception as exc:
-            self.append_diagnosis_status(f"ERROR deteniendo: {exc}")
-
-    def on_diag_report_clicked(self) -> None:
-        operator = self.operator_name or "operator"
-        location = self.location_name or "N/A"
-
-        # preferir sesión seleccionada; si no, la activa
-        sid = None
-        idx = self.cb_sessions.currentIndex()
-        if idx >= 0:
-            sid = self.cb_sessions.itemData(idx)
-        sid = sid or self.diagnosis_services.get_current_session_id()
-        if not sid:
-            self.append_diagnosis_status("No hay session_id para reporte.")
+    def on_diag_start_clicked(self) -> None:    # Iniciar/Detener diagnóstico (toggle)
+        resp = self.diagnosis_services.toggle_diagnosis()
+        if not resp.get("ok"):
+            QMessageBox.critical(self, self.tr("Diagnosis Error"), str(resp.get("error", "Unknown error")))
             return
 
-        try:
-            summary = self.diagnosis_services.get_summary(session_id=str(sid), operator=operator, location=location)
-            self.append_diagnosis_status(f"Summary OK. counts_by_label={summary.get('counts_by_label')}")
-        except Exception as exc:
-            self.append_diagnosis_status(f"ERROR summary: {exc}")
+        state = resp.get("state", "IDLE")
+        if resp.get("action") == "started":
+            # Botón entra en modo STOP
+            self.btn_diag_start.setText(self.tr("Stop Diagnosis"))
+            self.btn_diag_start.setIcon(self._make_red_square_icon(10))
+            self.btn_diag_start.setIconSize(QSize(12, 12))
+
+            # Overlay (sin UUID)
+            label = resp.get("display_label", "RUNNING")
+            self.set_diagnosis_overlay(f"RUNNING\n{label}")
+
+            # refresca sesiones para que aparezca la nueva
+            self._refresh_registered_sessions(query="")
+
+        elif resp.get("action") == "stopped":
+            # Botón vuelve a modo START
+            self.btn_diag_start.setText(self.tr("Start Diagnosis Session"))
+            self.btn_diag_start.setIcon(QIcon())  # sin icono
+            self.set_diagnosis_overlay("STOPPED")
+            # volver a exigir Initialize para la próxima sesión
+            self.btn_diag_init.setText(self.tr("Initialize Vision System"))
+            self.btn_diag_init.setEnabled(True)
+
+            self.btn_diag_start.setEnabled(False)
+
+
+#### Ya no se usa en la UX nueva, pero la dejamos en el código para referencia futura. Por eliminar #####
+#    def on_diag_stop_clicked(self) -> None:
+#        try:
+#            status = self.diagnosis_services.stop_diagnosis_session()
+#            self.append_diagnosis_status(f"Stop: {status}")
+#            self.set_diagnosis_overlay("STOPPED")
+#            self.set_diag_controls_state(running=False)
+#        except Exception as exc:
+#            self.append_diagnosis_status(f"ERROR deteniendo: {exc}")
+
+    def on_diag_report_clicked(self) -> None:   # Generar reporte resumen. Función Ajustada
+        display_key = self._get_selected_display_key()
+        if not display_key:
+            QMessageBox.warning(
+                self,
+                self.tr("Report"),
+                self.tr("You must select a session from the dropdown before generating the report.")
+            )
+            return
+
+        resp = self.diagnosis_services.get_summary_report(display_key=str(display_key), force=False)
+        if not resp.get("ok"):
+            QMessageBox.critical(self, self.tr("Report Error"), str(resp.get("error", "Unknown error")))
+            return
+
+        already = resp.get("already_generated", False)
+        pdf_path = resp.get("pdf_path") or "N/A"
+        summary = resp.get("summary")
+
+        # Mensaje: si ya existía, lo dices; si fue generado, también.
+        if already:
+            msg = self.tr(f"Report already generated.\nPDF path:\n{pdf_path}")
+        else:
+            # Muestra algo útil del summary sin saturar (puedes adaptar)
+            msg = self.tr(f"Summary generated successfully.\nPDF path:\n{pdf_path}")
+            if isinstance(summary, dict) and summary:
+                # Ejemplo: imprime counts_by_label si existe
+                cbl = summary.get("counts_by_label")
+                if cbl is not None:
+                    msg += self.tr(f"\n\ncounts_by_label:\n{cbl}")
+
+        QMessageBox.information(self, self.tr("Summary Report"), msg)
+
 
     # Fin Diagnosis UI helpers
 

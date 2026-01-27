@@ -100,9 +100,20 @@ class VisionFastApiDiagnosisControllerAdapter(DiagnosisControllerPort):
     # --------- WS ----------
     def connect_report_ws(self, session_id: str) -> None:
         self.disconnect_report_ws()
-        ws_url = self._ws_url(f"/report/ws/{session_id}")
+
+        # El server espera query param session_id (como ws_client.py del sistema 2 de visión)
+        ws_url = self._ws_url(f"/report/ws?session_id={session_id}")
 
         stop_evt = threading.Event()
+
+        def _publish_ws(status: str, extra: Optional[Dict[str, Any]] = None):
+            payload = {"type": "ws_status", "status": status}
+            if extra:
+                payload.update(extra)
+            try:
+                self._event_publisher.publish(payload)
+            except Exception:
+                pass
 
         def _on_message(ws, message: str):
             try:
@@ -113,12 +124,16 @@ class VisionFastApiDiagnosisControllerAdapter(DiagnosisControllerPort):
 
         def _on_error(ws, error):
             self._logger.error("WS error: %s", error)
+            _publish_ws("ERROR", {"error": str(error)})
 
         def _on_close(ws, close_status_code, close_msg):
             self._logger.info("WS closed: code=%s msg=%s", close_status_code, close_msg)
+            _publish_ws("CLOSED", {"code": close_status_code, "reason": str(close_msg)})
 
         def _on_open(ws):
-            # Keepalive: enviar texto periódicamente (el server hace receive_text loop)
+            _publish_ws("CONNECTED")
+
+            # Keepalive: el server hace receive_text loop
             def _keepalive():
                 while not stop_evt.is_set():
                     try:
@@ -139,17 +154,22 @@ class VisionFastApiDiagnosisControllerAdapter(DiagnosisControllerPort):
         )
 
         def _run():
-            # run_forever bloquea; por eso va en thread
-            app.run_forever()
+            # ping_interval None: nosotros hacemos keepalive manual
+            app.run_forever(ping_interval=None)
 
         th = threading.Thread(target=_run, daemon=True)
         th.start()
 
         self._ws_handle = _WsHandle(app=app, thread=th, stop_evt=stop_evt)
 
+        # Estado inicial (antes de open)
+        _publish_ws("CONNECTING")
+
+
     def disconnect_report_ws(self) -> None:
         if self._ws_handle is None:
             return
+
         self._ws_handle.stop_evt.set()
         try:
             self._ws_handle.app.close()
@@ -157,3 +177,7 @@ class VisionFastApiDiagnosisControllerAdapter(DiagnosisControllerPort):
             pass
         finally:
             self._ws_handle = None
+            try:
+                self._event_publisher.publish({"type": "ws_status", "status": "DISCONNECTED"})
+            except Exception:
+                pass

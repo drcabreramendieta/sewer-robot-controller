@@ -1,6 +1,7 @@
+# src/Inspection/application/services/diagnosis_services.py
 from __future__ import annotations
 
-from dataclasses import asdict
+import os
 from datetime import datetime
 from logging import Logger
 from typing import Any, Dict, List, Optional
@@ -16,8 +17,14 @@ from Inspection.ports.output import DiagnosisControllerPort
 
 class DiagnosisServices(DiagnosisServicesPort):
     """
-    Implementa DiagnosisServicesPort (interfaz estable).
-    Internamente soporta la nueva UX (modelo desde config, sesiones con display_key, etc.)
+    Implementación limpia del Port para la UX nueva.
+
+    Cambios clave:
+      - No expone list_models/select_model a la UI.
+      - Modelo fijo desde config (vision.model_id).
+      - Un solo botón Start/Stop -> toggle_diagnosis().
+      - Sesiones visibles son SOLO del registry local (sin UUID).
+      - Summary valida si ya existe PDF para no regenerar.
     """
 
     def __init__(
@@ -31,207 +38,68 @@ class DiagnosisServices(DiagnosisServicesPort):
         super().__init__()
         self._controller = controller
         self._logger = logger
-        self.diagnosis_sessions_registry = diagnosis_sessions_registry
+        self._registry = diagnosis_sessions_registry
 
-        self._state = "IDLE"  # IDLE | RUNNING | STOPPED
-        self._initialized: bool = False
+        self._model_id_cfg = (model_id_from_config or "").strip()
+        self._active_model_id: Optional[str] = None
 
         self._operator_ctx: Optional[DiagnosisOperatorContext] = None
 
-        self._model_id_cfg = model_id_from_config
-        self._active_model_id: Optional[str] = None
+        self._state = "IDLE"      # IDLE | RUNNING | STOPPED
+        self._initialized = False
 
         self._current_session_id: Optional[str] = None
-        self._current_display_key: Optional[str] = None
+        self._current_entry_key: Optional[str] = None
+        self._current_entry_label: Optional[str] = None
 
+        # Carpeta donde el sistema 2 deja artifacts del reporte (pdf esperado)
         self._report_artifacts_dir = report_artifacts_dir
 
     # -------------------------
-    # Helpers / estado
+    # Estado / getters
     # -------------------------
     def get_state(self) -> str:
         return self._state
 
-    def is_initialized(self) -> bool:
-        return self._initialized
+    def get_active_model_id(self) -> Optional[str]:
+        return self._active_model_id
 
-    def get_current_session_id(self) -> Optional[str]:
-        return self._current_session_id
-
-    def get_current_display_key(self) -> Optional[str]:
-        return self._current_display_key
+    def set_operator_context(self, operator: str, location: str, job_order: str) -> None:
+        self._operator_ctx = DiagnosisOperatorContext(
+            operator=(operator or "").strip(),
+            location=(location or "").strip(),
+            job_order=(job_order or "").strip(),
+        )
 
     def get_operator_context(self) -> Optional[DiagnosisOperatorContext]:
         return self._operator_ctx
 
-    # ============================================================
-    # ✅ Implementación requerida por DiagnosisServicesPort (ABSTRACT)
-    # ============================================================
+    def get_current_display_label(self) -> Optional[str]:
+        return self._current_entry_label
 
-    def initialize_system(self) -> Dict[str, Any]:
+    # -------------------------
+    # 1) Initialize Vision System
+    # -------------------------
+    def initialize_vision_system(self) -> Dict[str, Any]:
         """
-        Compatibilidad con el Port viejo: health-check y precarga.
-        En la nueva UX NO vas a poblar combos aquí, pero el Port lo exige.
-        Retornamos info mínima sin romper.
-        """
-        if self._state == "RUNNING":
-            return {"ok": False, "error": "No se puede inicializar mientras RUNNING."}
-
-        try:
-            models = self._controller.list_models()
-            has_model = self._controller.has_active_model()
-            sessions = self._controller.list_report_sessions()
-
-            return {
-                "ok": True,
-                "has_active_model": has_model,
-                "models": models,
-                "sessions": sessions,
-            }
-        except Exception as exc:
-            self._logger.error("initialize_system failed: %s", exc, exc_info=True)
-            return {"ok": False, "error": str(exc), "models": [], "sessions": []}
-
-    def list_models(self) -> List[Dict[str, Any]]:
-        return self._controller.list_models()
-
-    def select_model(self, model_id: str) -> Dict[str, Any]:
-        return self._controller.select_model(model_id)
-
-    def list_sessions(self) -> List[str]:
-        # Port viejo devuelve UUIDs del sistema 2.
-        return self._controller.list_report_sessions()
-
-    def start_diagnosis_session(
-        self,
-        operator: str,
-        location: str,
-        job_order: Optional[str] = None,
-    ) -> str:
-        """
-        Port viejo: hace TODO y devuelve UUID.
-        Lo adaptamos a tu lógica nueva:
-        - guarda operator ctx
-        - asegura modelo activo (selecciona desde config si hace falta)
-        - start + connect WS
-        - crea entry en registry con display_key
-        """
-        job_order = job_order or ""
-
-        # Si no inicializaste por la UX nueva, igual guardamos ctx aquí
-        if self._operator_ctx is None:
-            self._operator_ctx = DiagnosisOperatorContext(operator=operator, location=location, job_order=job_order)
-
-        # Bloquear start si ya está RUNNING
-        if self._state == "RUNNING":
-            raise RuntimeError("Ya hay una sesión de diagnóstico en ejecución. Detén la sesión actual antes de iniciar otra.")
-
-        # Asegurar modelo activo
-        if not self._controller.has_active_model():
-            # intentamos seleccionar el modelo desde config (modo UX nueva)
-            models = self._controller.list_models()
-            resolved_id = self._resolve_model_id(models=models, wanted=self._model_id_cfg)
-            if not resolved_id:
-                raise RuntimeError(f"No se encontró el modelo indicado en config: {self._model_id_cfg!r}")
-            self._controller.select_model(resolved_id)
-
-            if not self._controller.has_active_model():
-                raise RuntimeError("No hay modelo activo en el sistema de visión. Revisa MLflow/selección de modelo.")
-
-            self._active_model_id = resolved_id
-
-        session_id = str(self._controller.start_video_session())
-        self._current_session_id = session_id
-        self._state = "RUNNING"
-
-        # WS (no bloqueante)
-        self._controller.connect_report_ws(session_id)
-
-        # Registry local con display_key
-        display_key = self._sessions_registry.build_display_key(
-            operator=self._operator_ctx.operator,
-            location=self._operator_ctx.location,
-            job_order=self._operator_ctx.job_order,
-            when=datetime.now(),
-        )
-        self._current_display_key = display_key
-
-        entry = DiagnosisSessionEntry(
-            display_key=display_key,
-            session_id=session_id,
-            operator=self._operator_ctx.operator,
-            location=self._operator_ctx.location,
-            job_order=self._operator_ctx.job_order,
-            model_id=self._active_model_id or self._model_id_cfg,
-            created_at=datetime.now(),
-            summary_generated=False,
-            summary_generated_at=None,
-            summary_pdf_path=None,
-        )
-        self._sessions_registry.upsert(entry)
-
-        # ✅ Port pide STR
-        return session_id
-
-    def stop_diagnosis_session(self) -> str:
-        if self._current_session_id is None:
-            self._state = "STOPPED"
-            return "no-active-session"
-
-        sid = self._current_session_id
-        status = self._controller.stop_video_session(sid)
-
-        try:
-            self._controller.disconnect_report_ws()
-        finally:
-            self._current_session_id = None
-            self._state = "STOPPED"
-
-        return status
-
-    def get_summary(
-        self,
-        session_id: str,
-        operator: str,
-        location: str,
-        job_order: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        """
-        Port viejo: summary por UUID + datos.
-        Mantiene la regla: solo si STOPPED.
-        """
-        if self._state == "RUNNING":
-            raise RuntimeError("No se puede pedir el reporte/summary mientras el diagnóstico esté en ejecución. Detén el diagnóstico primero.")
-
-        return self._controller.get_report_summary(
-            session_id=session_id,
-            operator=operator,
-            location=location,
-            job_order=job_order,
-        )
-
-    # ============================================================
-    # ✅ Métodos nuevos (UX nueva)
-    # ============================================================
-
-    def initialize_vision_system(self, operator: str, location: str, job_order: str) -> Dict[str, Any]:
-        """
-        Método nuevo (UX nueva): setea modelo desde config y guarda context.
+        Selecciona modelo fijo desde config, sin exponer combos a la UI.
         """
         if self._state == "RUNNING":
             return {"ok": False, "error": "No se puede inicializar mientras el diagnóstico está en ejecución."}
 
         try:
-            self._operator_ctx = DiagnosisOperatorContext(operator=operator, location=location, job_order=job_order)
+            if not self._model_id_cfg:
+                return {"ok": False, "error": "Falta vision.model_id en el archivo de configuración."}
 
             models = self._controller.list_models()
             resolved_id = self._resolve_model_id(models=models, wanted=self._model_id_cfg)
-
             if not resolved_id:
-                return {"ok": False, "error": f"No se encontró el modelo indicado en config: {self._model_id_cfg!r}"}
+                return {"ok": False, "error": f"No se pudo resolver el modelo desde config: {self._model_id_cfg!r}"}
 
+            # Selecciona SIEMPRE el modelo de config (operadores no eligen modelo)
             self._controller.select_model(resolved_id)
 
+            # El endpoint solo da bool, validamos que al menos quede activo
             if not self._controller.has_active_model():
                 return {"ok": False, "error": "El sistema de visión no reporta un modelo activo luego de seleccionar."}
 
@@ -239,76 +107,239 @@ class DiagnosisServices(DiagnosisServicesPort):
             self._initialized = True
             self._state = "IDLE"
             self._current_session_id = None
-            self._current_display_key = None
+            self._current_entry_key = None
+            self._current_entry_label = None
 
-            return {"ok": True, "active_model_id": self._active_model_id, "operator_ctx": asdict(self._operator_ctx)}
+            return {
+                "ok": True,
+                "active_model_id": self._active_model_id,
+                "message": "Vision system initialized successfully.",
+            }
 
         except Exception as exc:
             self._logger.error("initialize_vision_system failed: %s", exc, exc_info=True)
             return {"ok": False, "error": str(exc)}
 
-    def list_recent_sessions(self, limit: int = 20) -> List[str]:
-        entries = self._sessions_registry.list_recent(limit=limit)
-        return [e.display_key for e in entries]
+    # -------------------------
+    # 2) Toggle Diagnosis (Start/Stop en un botón)
+    # -------------------------
+    def toggle_diagnosis(self) -> Dict[str, Any]:
+        # Validaciones base
+        if not self._initialized:
+            return {"ok": False, "error": "Primero debes presionar 'Initialize Vision System'."}
 
-    def search_sessions(self, query: str, limit: int = 20) -> List[str]:
-        entries = self._sessions_registry.search(query=query, limit=limit)
-        return [e.display_key for e in entries]
+        if self._operator_ctx is None:
+            return {"ok": False, "error": "Faltan datos: Operator/Location/Job Order (se piden al inicializar)."}
 
-    def get_summary_by_display_key(self, display_key: str, force: bool = False) -> Dict[str, Any]:
+        # Si está corriendo -> STOP
         if self._state == "RUNNING":
-            raise RuntimeError("Detén el diagnóstico antes de generar el reporte.")
+            return self._stop_internal()
 
-        entry = self._sessions_registry.get(display_key)
-        if entry is None:
-            raise RuntimeError("No se encontró la sesión seleccionada en el registry local.")
+        # Si NO está corriendo -> START
+        return self._start_internal()
 
-        if entry.summary_generated and not force:
+    def _ensure_model_active(self) -> Optional[str]:
+        """
+        En caso de que el sistema 2 haya reiniciado y perdió modelo activo.
+        """
+        if self._controller.has_active_model():
+            return self._active_model_id or self._model_id_cfg
+
+        models = self._controller.list_models()
+        resolved_id = self._resolve_model_id(models=models, wanted=self._model_id_cfg)
+        if not resolved_id:
+            return None
+
+        self._controller.select_model(resolved_id)
+        if not self._controller.has_active_model():
+            return None
+
+        self._active_model_id = resolved_id
+        return resolved_id
+
+    def _start_internal(self) -> Dict[str, Any]:
+        try:
+            model_id = self._ensure_model_active()
+            if not model_id:
+                return {"ok": False, "error": f"No se pudo activar el modelo requerido: {self._model_id_cfg!r}"}
+
+            session_id = str(self._controller.start_video_session())
+            self._current_session_id = session_id
+
+            # Conectar WS (no bloqueante; corre en thread del adapter)
+            self._controller.connect_report_ws(session_id)
+
+            # Crear y registrar entry local (sin UUID visible)
+            entry: DiagnosisSessionEntry = self._registry.create_entry(
+                session_id=session_id,
+                operator=self._operator_ctx.operator,
+                location=self._operator_ctx.location,
+                job_order=self._operator_ctx.job_order,
+                model_id=model_id,
+                when=datetime.now(),
+            )
+            self._registry.upsert(entry)
+
+            self._current_entry_key = entry.display_key
+            self._current_entry_label = entry.display_label
+
+            self._state = "RUNNING"
             return {
-                "ok": False,
-                "already_generated": True,
+                "ok": True,
+                "action": "started",
+                "state": self._state,
                 "display_key": entry.display_key,
-                "session_id": entry.session_id,
-                "pdf_path": entry.summary_pdf_path,
-                "message": "El reporte de esta sesión ya fue generado previamente.",
+                "display_label": entry.display_label,
             }
 
-        summary = self._controller.get_report_summary(
-            session_id=entry.session_id,
-            operator=entry.operator,
-            location=entry.location,
-            job_order=entry.job_order,
-        )
+        except Exception as exc:
+            self._logger.error("start diagnosis failed: %s", exc, exc_info=True)
+            return {"ok": False, "error": str(exc)}
 
-        pdf_path = entry.summary_pdf_path
-        if not pdf_path and self._report_artifacts_dir:
-            pdf_path = f"{self._report_artifacts_dir}/{entry.session_id}_report/report.pdf"
+    def _stop_internal(self) -> Dict[str, Any]:
+        try:
+            sid = self._current_session_id
+            # Si por alguna razón no hay sid, igual marcamos STOPPED
+            if not sid:
+                self._state = "STOPPED"
+                self._controller.disconnect_report_ws()
+                return {"ok": True, "action": "stopped", "state": self._state}
 
-        entry.summary_generated = True
-        entry.summary_generated_at = datetime.now()
-        entry.summary_pdf_path = pdf_path
-        self._sessions_registry.upsert(entry)
+            status = self._controller.stop_video_session(sid)
+            try:
+                self._controller.disconnect_report_ws()
+            finally:
+                self._current_session_id = None
+                self._state = "STOPPED"
 
-        return {"ok": True, "display_key": entry.display_key, "session_id": entry.session_id, "pdf_path": pdf_path, "summary": summary}
+            return {"ok": True, "action": "stopped", "state": self._state, "status": status}
+
+        except Exception as exc:
+            self._logger.error("stop diagnosis failed: %s", exc, exc_info=True)
+            return {"ok": False, "error": str(exc)}
+
+    # -------------------------
+    # 5) Lista de sesiones registradas (buscable)
+    # -------------------------
+    def list_registered_sessions(self, query: str = "", limit: int = 20) -> List[Dict[str, Any]]:
+        items = self._registry.search(query=query, limit=limit) if (query or "").strip() else self._registry.list_recent(limit=limit)
+
+        # Devuelve dicts listos para UI
+        out: List[Dict[str, Any]] = []
+        for e in items:
+            out.append({
+                "display_key": e.display_key,
+                "display_label": e.display_label,
+                "session_id": e.session_id,  # interno (no mostrar)
+                "created_at": e.created_at.isoformat(),
+                "operator": e.operator,
+                "location": e.location,
+                "job_order": e.job_order,
+                "model_id": e.model_id,
+                "summary_generated": bool(e.summary_generated),
+                "summary_pdf_path": e.summary_pdf_path,
+            })
+        return out
+
+    # -------------------------
+    # 6) Summary report con validación (no regenerar)
+    # -------------------------
+    def get_summary_report(self, display_key: str, force: bool = False) -> Dict[str, Any]:
+        if self._state == "RUNNING":
+            return {"ok": False, "error": "Detén el diagnóstico antes de generar el reporte."}
+
+        entry = self._registry.get(display_key)
+        if entry is None:
+            return {"ok": False, "error": "No se encontró la sesión seleccionada en el registro local."}
+
+        # Determinar ruta esperada del PDF (si se conoce carpeta artifacts)
+        expected_pdf = None
+        if self._report_artifacts_dir:
+            expected_pdf = os.path.join(self._report_artifacts_dir, f"{entry.session_id}_report", "report.pdf")
+
+        # Si ya estaba marcado como generado, y existe PDF, no regenerar
+        if not force:
+            if entry.summary_pdf_path and os.path.exists(entry.summary_pdf_path):
+                return {
+                    "ok": True,
+                    "already_generated": True,
+                    "pdf_path": entry.summary_pdf_path,
+                    "summary": None,
+                }
+            if expected_pdf and os.path.exists(expected_pdf):
+                # Auto-curación: si el pdf existe pero no estaba registrado
+                entry.summary_generated = True
+                entry.summary_generated_at = datetime.now()
+                entry.summary_pdf_path = expected_pdf
+                self._registry.upsert(entry)
+                return {
+                    "ok": True,
+                    "already_generated": True,
+                    "pdf_path": expected_pdf,
+                    "summary": None,
+                }
+
+        # Si hay que generar, llamamos al endpoint summary
+        try:
+            summary = self._controller.get_report_summary(
+                session_id=entry.session_id,
+                operator=entry.operator,
+                location=entry.location,
+                job_order=entry.job_order,
+            )
+
+            # Guardar path final (si existe). Si no existe aún, igual guardamos expected para que el operador lo busque.
+            pdf_path = entry.summary_pdf_path
+            if not pdf_path:
+                pdf_path = expected_pdf
+
+            entry.summary_generated = True
+            entry.summary_generated_at = datetime.now()
+            entry.summary_pdf_path = pdf_path
+            self._registry.upsert(entry)
+
+            return {
+                "ok": True,
+                "already_generated": False,
+                "pdf_path": pdf_path,
+                "summary": summary,
+            }
+
+        except Exception as exc:
+            self._logger.error("get_summary_report failed: %s", exc, exc_info=True)
+            return {"ok": False, "error": str(exc)}
 
     # -------------------------
     # Utils
     # -------------------------
     @staticmethod
     def _resolve_model_id(models: List[Dict[str, Any]], wanted: str) -> Optional[str]:
-        if not wanted:
+        """
+        Intenta mapear el 'wanted' del config contra list_models() del sistema 2.
+        Soporta variaciones típicas:
+          - {"id": "...", "name": "..."}
+          - {"model_id": "...", "name": "..."}
+        """
+        w = (wanted or "").strip()
+        if not w:
             return None
 
-        w = str(wanted).strip()
+        # Si no hay lista, asumimos que el id existe (dejar al server validar)
         if not models:
             return w
 
+        # match exact por id/model_id
         for m in models:
             mid = m.get("model_id") or m.get("id")
-            name = m.get("name") or m.get("model_name")
-            if mid is not None and str(mid) == w:
-                return str(mid)
-            if name is not None and str(name) == w:
-                return str(mid) if mid is not None else str(name)
+            if mid is not None and str(mid).strip() == w:
+                return str(mid).strip()
 
+        # match por nombre
+        for m in models:
+            name = m.get("name") or m.get("model_name")
+            mid = m.get("model_id") or m.get("id")
+            if name is not None and str(name).strip() == w:
+                return str(mid).strip() if mid is not None else str(name).strip()
+
+        # fallback: usar lo del config
         return w
