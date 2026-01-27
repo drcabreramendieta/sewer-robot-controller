@@ -47,6 +47,7 @@ from Inspection.adapters.gui.gui_diagnosis_observer_adapter import (
 
 from Inspection.application.services.diagnosis_services import DiagnosisServices
 from Inspection.adapters.eventing.diagnosis_event_notifier import DiagnosisEventNotifier
+from Inspection.application.services.diagnosis_sessions_registry import DiagnosisSessionsRegistry, DiagnosisSessionEntry
 
 
 def _register_observers(
@@ -76,6 +77,8 @@ class InspectionContainer(containers.DeclarativeContainer):
     feeder_services = providers.Dependency()
     video_session_services = providers.Dependency()
     selector_signal = providers.Dependency()
+    config = providers.Dependency()  # <-- NUEVO para configuración general
+
 
     comm_movement_controller = providers.Singleton(
         CommMovementControllerAdapter,
@@ -148,10 +151,20 @@ class InspectionContainer(containers.DeclarativeContainer):
         mock=diagnosis_controller_mock,
     )
 
+    # Nuevo provider para DiagnosisSessionsRegistry (Manejo información de sesiones de diagnóstico)
+    diagnosis_sessions_registry = providers.Singleton(
+        DiagnosisSessionsRegistry,
+        path=vision.sessions_registry_path,
+    )
+
+
     diagnosis_services = providers.Singleton(
         DiagnosisServices,
         controller=diagnosis_controller,
         logger=logger,
+        diagnosis_sessions_registry=diagnosis_sessions_registry,    # Agregamos el diagnosis_sessions_registry
+        model_id_from_config=vision.model_id,   # Agregamos el model_id desde configuración
+        report_artifacts_dir=vision.report_artifacts_dir,  # Usar de manera opcional
     )
     # Fin Providers para Diagnosis services
 

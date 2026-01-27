@@ -22,3 +22,5 @@ vision:
   base_url: "http://127.0.0.1:8000"
   ws_base_url: "ws://127.0.0.1:8000"
   timeout_seconds: 10
+
+  model_id: "ONLY_DB03_V8"  # NUEVO: modelo fijo para operadores
