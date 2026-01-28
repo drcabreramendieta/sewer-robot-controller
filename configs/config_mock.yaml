@@ -18,9 +18,15 @@ video:
     dir: "mock_sessions"
 # Para probar las cosas de diagnóstico
 vision:
-  mode: "real"          # "mock" o "real"
+  mode: "mock"          # "mock" o "real"
   base_url: "http://127.0.0.1:8000"
   ws_base_url: "ws://127.0.0.1:8000"
   timeout_seconds: 10
 
-  model_id: "ONLY_DB03_V8"  # NUEVO: modelo fijo para operadores
+  # NUEVO: modelo fijo para operadores
+  model_id: "ONLY_DB03_V8"
+
+  # NUEVO: registro local de sesiones (Sistema 1)
+  sessions_registry_path: "vision_sessions_registry.json"
+  # Poner aquí la carpeta “frames_dir / report dir” real del sistema 2 (si la conoces)
+  report_artifacts_dir: "/mnt/c/Users/UPS/Desktop/Proyecto Sewer-Seer/Desarrollo del Proyecto/Procesamiento de Imágenes/Video_Sessions/frames"

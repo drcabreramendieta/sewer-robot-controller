@@ -126,7 +126,7 @@ class DiagnosisServices(DiagnosisServicesPort):
     def toggle_diagnosis(self) -> Dict[str, Any]:
         # Validaciones base
         if not self._initialized:
-            return {"ok": False, "error": "Primero debes presionar 'Initialize Vision System'."}
+            return {"ok": False, "error": "Vision system is not initialized. Press 'Start Diagnosis Session' again."}
 
         if self._operator_ctx is None:
             return {"ok": False, "error": "Faltan datos: Operator/Location/Job Order (se piden al inicializar)."}
@@ -221,7 +221,7 @@ class DiagnosisServices(DiagnosisServicesPort):
     # -------------------------
     # 5) Lista de sesiones registradas (buscable)
     # -------------------------
-    def list_registered_sessions(self, query: str = "", limit: int = 20) -> List[Dict[str, Any]]:
+    def list_registered_sessions(self, query: str = "", limit: int = 50) -> List[Dict[str, Any]]:
         items = self._registry.search(query=query, limit=limit) if (query or "").strip() else self._registry.list_recent(limit=limit)
 
         # Devuelve dicts listos para UI
